@@ -1,0 +1,51 @@
+/* AURORA THEME OVERRIDES */
+body[data-theme='aurora'] {
+    /* Main Background is the Canvas */
+    background-color: transparent !important;
+}
+
+body[data-theme='aurora'] .o_aurora_bg {
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: -1;
+    width: 100vw;
+    height: 100vh;
+}
+
+/* Glassmorphism for Containers in Aurora Mode */
+body[data-theme='aurora'] .o_action_manager,
+body[data-theme='aurora'] .o_form_sheet,
+body[data-theme='aurora'] .o_list_view .o_list_table {
+    background: rgba(25, 25, 30, 0.6) !important;
+    backdrop-filter: blur(20px) !important;
+    -webkit-backdrop-filter: blur(20px) !important;
+    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+    color: #e2e8f0 !important;
+}
+
+/* Text adjustments for Dark Mode */
+body[data-theme='aurora'] h1,
+body[data-theme='aurora'] h2,
+body[data-theme='aurora'] h3,
+body[data-theme='aurora'] .o_form_label,
+body[data-theme='aurora'] .o_field_widget {
+    color: #ffffff !important;
+}
+
+body[data-theme='aurora'] input.o_input {
+    background: rgba(0, 0, 0, 0.3) !important;
+    border-color: rgba(255, 255, 255, 0.2) !important;
+    color: white !important;
+}
+
+body[data-theme='aurora'] .btn-secondary {
+    background: rgba(255, 255, 255, 0.1) !important;
+    color: white !important;
+    border: none !important;
+}
+
+/* Hide Canvas in Clean Mode */
+body[data-theme='clean'] .o_aurora_bg {
+    display: none;
+}

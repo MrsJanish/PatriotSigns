@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+    <t t-name="patriot_theme.AuroraCanvas">
+        <canvas t-ref="auroraCanvas" class="o_aurora_bg"></canvas>
+    </t>
+</templates>
