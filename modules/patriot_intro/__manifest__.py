@@ -10,6 +10,7 @@
     'author': 'Patriot Signs',
     'depends': ['base', 'web'],
     'data': [
+        'data/company_data.xml',
         'views/menus.xml',
     ],
     'assets': {

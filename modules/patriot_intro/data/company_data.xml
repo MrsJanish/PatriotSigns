@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+        <!-- Update the default company name -->
+        <record id="base.main_company" model="res.company">
+            <field name="name">Patriot Signs</field>
+        </record>
+    </data>
+</odoo>
