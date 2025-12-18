@@ -6,17 +6,18 @@
         <field name="inherit_id" ref="sale.view_order_form"/>
         <field name="arch" type="xml">
             <!-- 
-                 Attempt 4: Failsafe.
-                 Instead of looking for a neighbor field, just append to the Tree.
-            -->
+                 DISABLE TREE VIEW INHERITANCE TEMPORARILY
+                 (Causing Xpath Error - We will rely on the popup form for now)
+            
             <xpath expr="//field[@name='order_line']/tree" position="inside">
                 <field name="panel_width" optional="hide"/>
                 <field name="panel_height" optional="hide"/>
                 <field name="panel_material" optional="hide"/>
             </xpath>
+            -->
             
             <!-- 
-                 Form View: Target the sheet directly and append the group.
+                 Form View: Target the sheet directly.
             -->
             <xpath expr="//field[@name='order_line']/form//sheet" position="inside">
                  <group string="Panel Configuration">
