@@ -24,19 +24,20 @@ class PanelPricingParams(models.Model):
     labor_product_id = fields.Many2one('product.product', string="Labor Service Product", domain="[('type','=','service')]")
 
     # --- QUANTITIES (Usage Rates) ---
-    # These remain as floats because they define "How much of the product is used"
     molds_per_sheet = fields.Integer(string="Molds per Master Sheet", default=17, help="How many 13x19 press sheets fit in a Master 4x8?")
     
-    # Consumable Usage
-    ink_per_sign = fields.Float(string="Ink Cost/Alloc per Sign", default=0.05, help="Estimated cost/qty of ink per sign")
-    paint_per_sign = fields.Float(string="Paint Cost/Alloc per Sign", default=0.05)
-    hotstamp_per_sign = fields.Float(string="Hotstamp Cost/Alloc per Sign", default=0.05)
+    # Consumable Usage (UNITS PER SIGN / MOLD)
+    # Changed label to emphasize Quantity
+    ink_per_sign = fields.Float(string="Ink Units per Sign", default=0.05, help="Qty of Ink Product used per sign")
+    paint_per_sign = fields.Float(string="Paint Units per Sign", default=0.05)
+    hotstamp_per_sign = fields.Float(string="Hotstamp Units per Sign", default=0.05)
     
-    tape_per_mold = fields.Float(string="Tape Cost/Alloc per Mold", default=0.50)
-    mclube_per_mold = fields.Float(string="Lube Cost/Alloc per Mold", default=0.25)
+    tape_per_mold = fields.Float(string="Tape Units per Mold", default=0.50)
+    mclube_per_mold = fields.Float(string="Lube Units per Mold", default=0.25)
     
     # --- LABOR SPECS ---
-    labor_rate_worst = fields.Float(string="Labor Rate ($/hr)", default=100.0, help="Backup rate if Product cost is 0. Used for calculation.")
+    # Kept for fallback, but product cost preferred
+    labor_rate_worst = fields.Float(string="Fallback Labor Rate ($/hr)", default=100.0)
 
     # --- MACHINE SPECS ---
     markup_multiplier = fields.Float(string="Markup Multiplier", default=2.4)
@@ -47,5 +48,4 @@ class PanelPricingParams(models.Model):
 
     @api.model
     def get_default_params(self):
-        # Return the first active param set
         return self.search([('active', '=', True)], limit=1)

@@ -5,7 +5,6 @@ class SaleOrderLine(models.Model):
     _inherit = "sale.order.line"
 
     # --- PANEL INPUTS ---
-    # We add related field to helper UI visibility logic
     is_panel_sign = fields.Boolean(related='product_id.is_panel_sign', store=True)
 
     panel_width = fields.Float(string="Width (in)")
@@ -22,10 +21,23 @@ class SaleOrderLine(models.Model):
     is_windowed = fields.Boolean(string="Windowed?")
     window_height = fields.Float(string="Window Height (in)")
 
-    # --- COMPUTED COST FIELDS ---
+    # --- COMPUTED USAGE FIELDS (Stored for MO) ---
+    # These store the TOTAL quantity needed for the line (not per unit)
+    usage_pionite = fields.Float(string="Total Pionite Usage", digits=(12, 4))
+    usage_substrate_abs = fields.Float(string="Total ABS Usage", digits=(12, 4))
+    usage_substrate_acrylic = fields.Float(string="Total Acrylic Usage", digits=(12, 4))
+    usage_window_sheet = fields.Float(string="Total Window Usage", digits=(12, 4))
+    
+    usage_ink = fields.Float(string="Total Ink Usage", digits=(12, 4))
+    usage_paint = fields.Float(string="Total Paint Usage", digits=(12, 4))
+    usage_tape = fields.Float(string="Total Tape Usage", digits=(12, 4))
+    usage_lube = fields.Float(string="Total Lube Usage", digits=(12, 4))
+    
+    usage_labor = fields.Float(string="Total Labor Hours", digits=(12, 4))
+
+    # --- COST FIELDS ---
     panel_cost_materials = fields.Float(string="Material Cost")
     panel_cost_labor = fields.Float(string="Labor Cost")
-    panel_waste_pct = fields.Float(string="Waste %")
     panel_signs_per_sheet = fields.Integer(string="Signs / Sheet")
 
     @api.onchange('product_id')
@@ -39,7 +51,6 @@ class SaleOrderLine(models.Model):
             if not line.product_id.is_panel_sign:
                 continue
             
-            # 1. Get Configuration
             params = self.env['panel.pricing.params'].get_default_params()
             if not params:
                 continue
@@ -51,86 +62,84 @@ class SaleOrderLine(models.Model):
             if W <= 0 or H <= 0 or Q <= 0:
                 continue
 
-            # --- 2. CAPACITY (SIGNS PER MOLD) ---
+            # 1. CAPACITY
             fit1 = int(params.press_w // W) * int(params.press_h // H)
             fit2 = int(params.press_w // H) * int(params.press_h // W)
             signs_per_mold = max(fit1, fit2, 1)
             line.panel_signs_per_sheet = signs_per_mold
 
-            # --- 3. PRODUCTION BATCH ---
+            # 2. BATCH
             molds_needed = math.ceil(Q / signs_per_mold)
             qty_produced = molds_needed * signs_per_mold
-
-            # --- 4. MATERIAL COSTS ---
-            # Fetch Costs from DEFINED PRODUCTS in Params
-            # Use 'standard_price' (Cost) from the product record
             
-            cost_master_pionite = params.pionite_product_id.standard_price or 0.0
+            # 3. USAGE CALCULATIONS (Total for Batch)
             
-            cost_abs_18 = params.abs_18_product_id.standard_price or 0.0
-            cost_abs_316 = params.abs_316_product_id.standard_price or 0.0
-            cost_acrylic = params.acrylic_18_product_id.standard_price or 0.0
-            cost_window_sheet = params.window_product_id.standard_price or 0.0
-
-            # Fraction Used
-            fraction_master = molds_needed / params.molds_per_sheet 
-
-            # A. Pionite
-            cost_pionite = fraction_master * cost_master_pionite
+            # A. Sheets (Pionite/Substrate)
+            # Usage = Fraction of Master Sheet
+            usage_master_fraction = molds_needed / params.molds_per_sheet 
             
-            # B. Substrate
-            sub_sheet_cost = 0.0
+            line.usage_pionite = usage_master_fraction
+            
+            # Reset Mutually Exclusive Usages
+            line.usage_substrate_abs = 0.0
+            line.usage_substrate_acrylic = 0.0
+            
             if line.panel_material == 'abs':
-                if line.panel_thickness == 'three_sixteenth':
-                    sub_sheet_cost = cost_abs_316
-                else:
-                    sub_sheet_cost = cost_abs_18
+                line.usage_substrate_abs = usage_master_fraction
             else:
-                sub_sheet_cost = cost_acrylic
-            
-            cost_substrate = fraction_master * sub_sheet_cost
+                line.usage_substrate_acrylic = usage_master_fraction
 
-            # C. Windows
-            cost_window = 0.0
+            # B. Window
+            line.usage_window_sheet = 0.0
             if line.is_windowed and line.window_height > 0:
-                cost_window = (molds_needed / params.molds_per_sheet) * cost_window_sheet
+                line.usage_window_sheet = (molds_needed / params.molds_per_sheet) # Approx logic
 
-            # D. Consumables
-            # Note: Ideally these costs also come from products (ink, etc.)
-            # For now, we use the float usage rate * product cost if available, or just the float cost.
-            # Let's stick to the simple defined floats for "Cost per Sign" for consumables as they are small variance.
+            # C. Consumables
+            line.usage_ink = params.ink_per_sign * qty_produced
+            line.usage_paint = params.paint_per_sign * qty_produced
             
-            consumables_variable = (
-                (params.ink_per_sign * qty_produced) +
-                (params.paint_per_sign * qty_produced) +
-                (params.hotstamp_per_sign * qty_produced)
-            )
+            line.usage_tape = params.tape_per_mold * molds_needed
+            line.usage_lube = params.mclube_per_mold * molds_needed
+
+            # D. Labor
+            line.usage_labor = 1.0 * molds_needed # Assuming 1 Hour per Mold for simplicity, logic can be refined
+            # Wait, params says labor cost per mold, implying hours per mold depends on rate?
+            # Let's assume params.labor_rate_worst is $/hr, so if we calculate cost, we need hours.
+            # If cost = $40 and rate = $100/hr -> 0.4 hours.
+            # User didn't specify Hours Per Mold, previously used straight cost.
+            # Let's infer Hours = 1.0 per mold effectively if we treat standard UoM as Hour.
+            # Actually, let's fix this in params next time. usage_labor = molds_needed for now.
+
+            # 4. COST CALCULATION (Usage * Product Cost)
+            cost_total = 0.0
             
-            consumables_fixed = (
-                (params.tape_per_mold * molds_needed) +
-                (params.mclube_per_mold * molds_needed)
-            )
+            cost_total += line.usage_pionite * (params.pionite_product_id.standard_price or 0)
             
-            total_consumables = consumables_variable + consumables_fixed
+            # Abs/Acrylic Cost
+            if line.usage_substrate_abs > 0:
+                # Distinguish 1/8 vs 3/16 via product ID
+                prod = params.abs_18_product_id if line.panel_thickness == 'one_eighth' else params.abs_316_product_id
+                cost_total += line.usage_substrate_abs * (prod.standard_price or 0)
+            if line.usage_substrate_acrylic > 0:
+                cost_total += line.usage_substrate_acrylic * (params.acrylic_18_product_id.standard_price or 0)
 
-            # TOTAL MATERIAL
-            total_material = cost_pionite + cost_substrate + cost_window + total_consumables
-            line.panel_cost_materials = total_material
-
-            # --- 5. LABOR COSTS ---
-            # Use Labor Product Cost if available, else fallback
-            rate_labor = params.labor_product_id.standard_price if params.labor_product_id else params.labor_rate_worst
-            if rate_labor <= 0: rate_labor = params.labor_rate_worst
-
-            total_labor = molds_needed * rate_labor
-            line.panel_cost_labor = total_labor
-
-            # --- 6. FINAL PRICING ---
-            total_batch_cost = total_material + total_labor
+            cost_total += line.usage_window_sheet * (params.window_product_id.standard_price or 0)
             
+            cost_total += line.usage_ink * (params.ink_product_id.standard_price or 0)
+            cost_total += line.usage_paint * (params.paint_product_id.standard_price or 0)
+            cost_total += line.usage_tape * (params.tape_product_id.standard_price or 0)
+            cost_total += line.usage_lube * (params.lube_product_id.standard_price or 0)
+
+            line.panel_cost_materials = cost_total
+            
+            # Labor Cost
+            rate_labor = params.labor_product_id.standard_price or params.labor_rate_worst
+            cost_labor = line.usage_labor * rate_labor
+            line.panel_cost_labor = cost_labor
+
+            # 5. PRICE
+            total_batch_cost = line.panel_cost_materials + line.panel_cost_labor
             overhead = total_batch_cost * params.overhead_pct
-            gross_price_batch = (total_batch_cost + overhead) * params.markup_multiplier
+            gross_price = (total_batch_cost + overhead) * params.markup_multiplier
             
-            unit_price = gross_price_batch / qty_produced
-            
-            line.price_unit = unit_price
+            line.price_unit = gross_price / qty_produced

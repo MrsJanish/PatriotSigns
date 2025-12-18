@@ -6,12 +6,17 @@
             <field name="name">Panel Sign Materials</field>
         </record>
 
-        <!-- SHEETS -->
+        <!-- 
+            SHEETS 
+            UoM: Units (Each)
+        -->
         <record id="product_pionite_sheet" model="product.product">
             <field name="name">Pionite Sheet (4x8)</field>
             <field name="default_code">MAT-PIO-001</field>
-            <field name="type">consu</field> <!-- Changed to Consumable to fix Odoo 19 error -->
-            <field name="standard_price">211.30</field> <!-- Cost -->
+            <field name="type">consu</field>
+            <field name="standard_price">211.30</field>
+            <field name="uom_id" ref="uom.product_uom_unit"/>
+            <field name="uom_po_id" ref="uom.product_uom_unit"/>
             <field name="categ_id" ref="product_category_panel_materials"/>
         </record>
 
@@ -20,6 +25,8 @@
             <field name="default_code">MAT-ABS-0125</field>
             <field name="type">consu</field>
             <field name="standard_price">30.00</field>
+            <field name="uom_id" ref="uom.product_uom_unit"/>
+            <field name="uom_po_id" ref="uom.product_uom_unit"/>
             <field name="categ_id" ref="product_category_panel_materials"/>
         </record>
 
@@ -28,6 +35,8 @@
             <field name="default_code">MAT-ABS-0187</field>
             <field name="type">consu</field>
             <field name="standard_price">45.00</field>
+            <field name="uom_id" ref="uom.product_uom_unit"/>
+            <field name="uom_po_id" ref="uom.product_uom_unit"/>
             <field name="categ_id" ref="product_category_panel_materials"/>
         </record>
 
@@ -36,6 +45,8 @@
             <field name="default_code">MAT-ACR-0125</field>
             <field name="type">consu</field>
             <field name="standard_price">100.00</field>
+            <field name="uom_id" ref="uom.product_uom_unit"/>
+            <field name="uom_po_id" ref="uom.product_uom_unit"/>
             <field name="categ_id" ref="product_category_panel_materials"/>
         </record>
         
@@ -44,16 +55,24 @@
             <field name="default_code">MAT-WIN-001</field>
             <field name="type">consu</field>
             <field name="standard_price">50.00</field>
+            <field name="uom_id" ref="uom.product_uom_unit"/>
+            <field name="uom_po_id" ref="uom.product_uom_unit"/>
             <field name="categ_id" ref="product_category_panel_materials"/>
         </record>
 
-        <!-- CONSUMABLES -->
+        <!-- 
+            CONSUMABLES 
+            UoM: Units (Generic "Jar" or "Tube" or "Roll" for now, as defined by Cost Per Unit)
+            Ideally these would be Liters or Oz, but UOM ID dependency can be tricky if not installed.
+            We default to Unit.
+        -->
         <record id="product_ink_generic" model="product.product">
             <field name="name">Screen Ink (Generic)</field>
             <field name="default_code">CON-INK-001</field>
             <field name="type">consu</field>
-            <field name="standard_price">0.05</field> <!-- Per Unit (e.g. per oz or per sign alloc) -->
+            <field name="standard_price">0.05</field> 
             <field name="uom_id" ref="uom.product_uom_unit"/>
+            <field name="uom_po_id" ref="uom.product_uom_unit"/>
             <field name="categ_id" ref="product_category_panel_materials"/>
         </record>
         
@@ -62,6 +81,8 @@
             <field name="default_code">CON-PNT-001</field>
             <field name="type">consu</field>
             <field name="standard_price">0.05</field>
+            <field name="uom_id" ref="uom.product_uom_unit"/>
+            <field name="uom_po_id" ref="uom.product_uom_unit"/>
             <field name="categ_id" ref="product_category_panel_materials"/>
         </record>
         
@@ -70,6 +91,8 @@
             <field name="default_code">CON-TAP-001</field>
             <field name="type">consu</field>
             <field name="standard_price">0.05</field>
+            <field name="uom_id" ref="uom.product_uom_unit"/>
+            <field name="uom_po_id" ref="uom.product_uom_unit"/>
             <field name="categ_id" ref="product_category_panel_materials"/>
         </record>
 
@@ -78,15 +101,20 @@
             <field name="default_code">CON-LUB-001</field>
             <field name="type">consu</field>
             <field name="standard_price">0.05</field>
+            <field name="uom_id" ref="uom.product_uom_unit"/>
+            <field name="uom_po_id" ref="uom.product_uom_unit"/>
             <field name="categ_id" ref="product_category_panel_materials"/>
         </record>
 
-        <!-- LABOR SERVICE -->
+        <!-- 
+            LABOR SERVICE 
+            UoM: Hour
+        -->
         <record id="product_service_labor_production" model="product.product">
             <field name="name">Production Labor</field>
             <field name="default_code">SVC-LAB-PROD</field>
             <field name="type">service</field>
-            <field name="standard_price">100.00</field> <!-- Cost Rate -->
+            <field name="standard_price">100.00</field> <!-- Cost/Hour -->
             <field name="list_price">150.00</field>
             <field name="uom_id" ref="uom.product_uom_hour"/>
             <field name="uom_po_id" ref="uom.product_uom_hour"/>
