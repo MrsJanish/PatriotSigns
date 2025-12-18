@@ -36,12 +36,15 @@
                 Let's use 'position="inside"' on the FORM tag itself.
             -->
             <!-- 
-                 RE-ENABLING COLUMNS: target 'list' instead of 'tree' for Odoo 19
+                 RE-ENABLING COLUMNS: target 'list' instead of 'tree' (Odoo 19)
+                 Position: after='name' (Description) for better visibility
             -->
-            <xpath expr="//field[@name='order_line']/list" position="inside">
+            <xpath expr="//field[@name='order_line']/list/field[@name='name']" position="after">
                 <field name="panel_width" optional="show"/>
                 <field name="panel_height" optional="show"/>
                 <field name="panel_material" optional="show"/>
+                <field name="is_windowed" optional="show"/>
+                <field name="window_height" optional="show" invisible="not is_windowed"/>
             </xpath>
             <xpath expr="//field[@name='order_line']/form" position="inside">
                  <group string="Panel Configuration">

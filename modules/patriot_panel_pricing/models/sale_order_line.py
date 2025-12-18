@@ -1,4 +1,5 @@
 from odoo import models, fields, api
+import math
 
 class SaleOrderLine(models.Model):
     _inherit = "sale.order.line"
@@ -18,7 +19,7 @@ class SaleOrderLine(models.Model):
     is_windowed = fields.Boolean(string="Windowed?")
     window_height = fields.Float(string="Window Height (in)")
 
-    # --- COMPUTED COST FIELDS (Visible for analysis) ---
+    # --- COMPUTED COST FIELDS ---
     panel_cost_materials = fields.Float(string="Material Cost")
     panel_cost_labor = fields.Float(string="Labor Cost")
     panel_waste_pct = fields.Float(string="Waste %")
@@ -40,26 +41,37 @@ class SaleOrderLine(models.Model):
             if not params:
                 continue
 
-            # 2. Extract specific values from params (caching/optimizing helps, but simple read fine for now)
-            # Geometry
-            W, H = line.panel_width, line.panel_height
-            if W <= 0 or H <= 0 or line.product_uom_qty <= 0:
+            W = line.panel_width
+            H = line.panel_height
+            Q = line.product_uom_qty
+            
+            if W <= 0 or H <= 0 or Q <= 0:
                 continue
 
-            # --- LOGIC PORTED FROM REFERENCE ---
-            # Press fit logic
+            # --- 2. CAPACITY (SIGNS PER MOLD) ---
+            # How many signs fit 6x6 on 13x19 press sheet?
             fit1 = int(params.press_w // W) * int(params.press_h // H)
             fit2 = int(params.press_w // H) * int(params.press_h // W)
             signs_per_mold = max(fit1, fit2, 1)
             
-            molds_needed = -(-line.product_uom_qty // signs_per_mold) # Ceiling div
-            
-            signs_per_sheet = signs_per_mold * params.molds_per_sheet
-            line.panel_signs_per_sheet = signs_per_sheet
-            
-            sheets_needed = -(-line.product_uom_qty // signs_per_sheet) # Ceiling div
+            line.panel_signs_per_sheet = signs_per_mold # Display capacity
 
-            # Material Cost Selection
+            # --- 3. PRODUCTION BATCH ---
+            # If Q=3 and Capacity=4, we produce 1 Mold (4 signs).
+            molds_needed = math.ceil(Q / signs_per_mold)
+            
+            # Total signs produced (Stock)
+            qty_produced = molds_needed * signs_per_mold
+
+            # --- 4. MATERIAL COSTS ---
+            # We charge for the FRACTION of the Master Sheets used.
+            # Master Sheet holds 17 Molds (default).
+            fraction_master_sheet = molds_needed / params.molds_per_sheet 
+
+            # A. Pionite
+            cost_pionite = fraction_master_sheet * params.pionite_sheet_cost
+            
+            # B. Substrate (ABS/Acrylic)
             sub_sheet_cost = 0.0
             if line.panel_material == 'abs':
                 if line.panel_thickness == 'three_sixteenth':
@@ -68,49 +80,61 @@ class SaleOrderLine(models.Model):
                     sub_sheet_cost = params.abs_18_sheet_cost
             else:
                 sub_sheet_cost = params.acrylic_18_sheet_cost
-
-            # Calculate Totals
-            pionite_total = sheets_needed * params.pionite_sheet_cost
-            sub_total = sheets_needed * sub_sheet_cost
             
-            # Window Logic
-            window_total = 0.0
-            if line.is_windowed and line.window_height > 0:
-                 # Simplified window logic for robustness
-                 window_total = sheets_needed * params.window_sheet_cost
+            cost_substrate = fraction_master_sheet * sub_sheet_cost
 
-            # Consumables
-            consumables = (
-                (params.ink_per_sign * line.product_uom_qty) +
-                (params.paint_per_sign * line.product_uom_qty) +
-                (params.hotstamp_per_sign * line.product_uom_qty) +
+            # C. Windows
+            cost_window = 0.0
+            if line.is_windowed and line.window_height > 0:
+                # Window logic uses smaller sheets (24x48).
+                # Calculate simple yield: Area of window vs Area of sheet
+                # Or use reference fractional logic if parameters exist.
+                # Simplification: Assume window sheet yields roughly half a master per sq/inch or similar
+                # Using explicit sheet logic from params:
+                # signs_per_win_sheet = fit_windows...
+                # For robustness, let's treat it as a fraction of the Window Sheet cost based on area usage * safety factor
+                cost_window = (molds_needed / params.molds_per_sheet) * params.window_sheet_cost # Rough approximation of 1:1 ratio with master usage scaling
+
+            # D. Consumables (Per Produced Sign)
+            # Ink + Paint + Hotstamp are per SIGN produced
+            consumables_variable = (
+                (params.ink_per_sign * qty_produced) +
+                (params.paint_per_sign * qty_produced) +
+                (params.hotstamp_per_sign * qty_produced)
+            )
+            
+            # Tape + Lube are per MOLD
+            consumables_fixed = (
                 (params.tape_per_mold * molds_needed) +
                 (params.mclube_per_mold * molds_needed)
             )
-
-            material_cost = pionite_total + sub_total + window_total + consumables
             
-            # Labor (Using Worst Case for safety as default)
-            labor_cost = params.labor_rate_worst * molds_needed
+            total_consumables = consumables_variable + consumables_fixed
 
-            total_cost = material_cost + labor_cost
+            # TOTAL MATERIAL
+            total_material = cost_pionite + cost_substrate + cost_window + total_consumables
+            line.panel_cost_materials = total_material
+
+            # --- 5. LABOR COSTS ---
+            # Labor is per Mold
+            total_labor = molds_needed * params.labor_rate_worst
+            line.panel_cost_labor = total_labor
+
+            # --- 6. FINAL PRICING ---
+            total_batch_cost = total_material + total_labor
             
             # Overhead
-            overhead = total_cost * params.overhead_pct
+            overhead = total_batch_cost * params.overhead_pct
             
-            # Final Price
-            final_price = (total_cost + overhead) * params.markup_multiplier
+            # Gross Price for the Batch
+            gross_price_batch = (total_batch_cost + overhead) * params.markup_multiplier
             
-            unit_price = final_price / line.product_uom_qty if line.product_uom_qty else 0.0
-
-            # Write values
+            # PRICE PER UNIT
+            # Based on CAPACITY (Generated Stock), not Qty ordered
+            # If we make 4, and you order 1, the price is (BatchCost / 4).
+            # If you order 4, the price is (BatchCost / 4).
+            # This ensures price stability.
+            
+            unit_price = gross_price_batch / qty_produced
+            
             line.price_unit = unit_price
-            line.panel_cost_materials = material_cost
-            line.panel_cost_labor = labor_cost
-            
-            # Waste Calculation (Simple Area)
-            sheet_area = params.pionite_w * params.pionite_h
-            used_area = W * H * line.product_uom_qty
-            total_area = sheets_needed * sheet_area
-            if total_area > 0:
-                line.panel_waste_pct = (1.0 - (used_area / total_area)) * 100
