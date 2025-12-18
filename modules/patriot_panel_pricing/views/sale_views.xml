@@ -6,21 +6,19 @@
         <field name="inherit_id" ref="sale.view_order_form"/>
         <field name="arch" type="xml">
             <!-- 
-                 Attempt 3: Target 'product_uom_qty' (Quantity). 
-                 This field is essential and always present.
+                 Attempt 4: Failsafe.
+                 Instead of looking for a neighbor field, just append to the Tree.
             -->
-            <xpath expr="//field[@name='order_line']/tree//field[@name='product_uom_qty']" position="before">
-                <field name="panel_width" optional="show"/>
-                <field name="panel_height" optional="show"/>
-                <field name="panel_material" optional="show"/>
+            <xpath expr="//field[@name='order_line']/tree" position="inside">
+                <field name="panel_width" optional="hide"/>
+                <field name="panel_height" optional="hide"/>
+                <field name="panel_material" optional="hide"/>
             </xpath>
             
             <!-- 
-                 Form View: Target the 'group' inside the form directly. 
-                 Most forms have a specific group structure, but 'inside' the sheet is safer.
-                 We will try to put it in the first group found in the sheet.
+                 Form View: Target the sheet directly and append the group.
             -->
-            <xpath expr="//field[@name='order_line']/form//sheet//group[1]" position="inside">
+            <xpath expr="//field[@name='order_line']/form//sheet" position="inside">
                  <group string="Panel Configuration">
                     <group>
                         <field name="panel_width"/>
