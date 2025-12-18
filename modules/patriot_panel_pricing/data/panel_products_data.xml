@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+        <!-- CATEGORY -->
+        <record id="product_category_panel_materials" model="product.category">
+            <field name="name">Panel Sign Materials</field>
+        </record>
+
+        <!-- SHEETS -->
+        <record id="product_pionite_sheet" model="product.product">
+            <field name="name">Pionite Sheet (4x8)</field>
+            <field name="default_code">MAT-PIO-001</field>
+            <field name="type">product</field> <!-- Storable -->
+            <field name="standard_price">211.30</field> <!-- Cost -->
+            <field name="categ_id" ref="product_category_panel_materials"/>
+        </record>
+
+        <record id="product_abs_18_sheet" model="product.product">
+            <field name="name">ABS Sheet 1/8 (4x8)</field>
+            <field name="default_code">MAT-ABS-0125</field>
+            <field name="type">product</field>
+            <field name="standard_price">30.00</field>
+            <field name="categ_id" ref="product_category_panel_materials"/>
+        </record>
+
+        <record id="product_abs_316_sheet" model="product.product">
+            <field name="name">ABS Sheet 3/16 (4x8)</field>
+            <field name="default_code">MAT-ABS-0187</field>
+            <field name="type">product</field>
+            <field name="standard_price">45.00</field>
+            <field name="categ_id" ref="product_category_panel_materials"/>
+        </record>
+
+        <record id="product_acrylic_18_sheet" model="product.product">
+            <field name="name">Acrylic Sheet 1/8 (4x8)</field>
+            <field name="default_code">MAT-ACR-0125</field>
+            <field name="type">product</field>
+            <field name="standard_price">100.00</field>
+            <field name="categ_id" ref="product_category_panel_materials"/>
+        </record>
+        
+        <record id="product_window_lens_sheet" model="product.product">
+            <field name="name">Window Lens Sheet</field>
+            <field name="default_code">MAT-WIN-001</field>
+            <field name="type">product</field>
+            <field name="standard_price">50.00</field>
+            <field name="categ_id" ref="product_category_panel_materials"/>
+        </record>
+
+        <!-- CONSUMABLES -->
+        <record id="product_ink_generic" model="product.product">
+            <field name="name">Screen Ink (Generic)</field>
+            <field name="default_code">CON-INK-001</field>
+            <field name="type">consu</field>
+            <field name="standard_price">0.05</field> <!-- Per Unit (e.g. per oz or per sign alloc) -->
+            <field name="uom_id" ref="uom.product_uom_unit"/>
+            <field name="categ_id" ref="product_category_panel_materials"/>
+        </record>
+        
+        <record id="product_paint_generic" model="product.product">
+            <field name="name">Paint (Generic)</field>
+            <field name="default_code">CON-PNT-001</field>
+            <field name="type">consu</field>
+            <field name="standard_price">0.05</field>
+            <field name="categ_id" ref="product_category_panel_materials"/>
+        </record>
+        
+        <record id="product_tape_generic" model="product.product">
+            <field name="name">Mounting Tape</field>
+            <field name="default_code">CON-TAP-001</field>
+            <field name="type">consu</field>
+            <field name="standard_price">0.05</field>
+            <field name="categ_id" ref="product_category_panel_materials"/>
+        </record>
+
+         <record id="product_lube_generic" model="product.product">
+            <field name="name">Mold Release / Lube</field>
+            <field name="default_code">CON-LUB-001</field>
+            <field name="type">consu</field>
+            <field name="standard_price">0.05</field>
+            <field name="categ_id" ref="product_category_panel_materials"/>
+        </record>
+
+        <!-- LABOR SERVICE -->
+        <record id="product_service_labor_production" model="product.product">
+            <field name="name">Production Labor</field>
+            <field name="default_code">SVC-LAB-PROD</field>
+            <field name="type">service</field>
+            <field name="standard_price">100.00</field> <!-- Cost Rate -->
+            <field name="list_price">150.00</field>
+            <field name="uom_id" ref="uom.product_uom_hour"/>
+            <field name="uom_po_id" ref="uom.product_uom_hour"/>
+        </record>
+        
+    </data>
+</odoo>
