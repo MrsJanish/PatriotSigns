@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <menuitem id="menu_panel_pricing_root"
+              name="Panel Pricing"
+              parent="sale.menu_sale_config"
+              action="action_panel_pricing_config"
+              sequence="100"/>
+</odoo>

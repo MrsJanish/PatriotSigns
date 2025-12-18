@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_order_form_inherit_panel" model="ir.ui.view">
+        <field name="name">sale.order.form.inherit.panel</field>
+        <field name="model">sale.order</field>
+        <field name="inherit_id" ref="sale.view_order_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='order_line']/tree//field[@name='name']" position="after">
+                <!-- Using optional='show' to make them visible but hideable -->
+                <field name="panel_width" optional="hide"/>
+                <field name="panel_height" optional="hide"/>
+                <field name="panel_material" optional="hide"/>
+            </xpath>
+            
+            <xpath expr="//field[@name='order_line']/form//field[@name='name']" position="after">
+                <!-- Inside the Form View of the Line -->
+                <field name="is_panel_sign" invisible="1" /> <!-- Requires related field logic or just rely on domain -->
+                <group string="Panel Configuration">
+                    <group>
+                        <field name="panel_width"/>
+                        <field name="panel_height"/>
+                        <field name="panel_material"/>
+                        <field name="panel_thickness"/>
+                    </group>
+                    <group>
+                         <field name="is_windowed"/>
+                         <field name="window_height" invisible="not is_windowed"/>
+                    </group>
+                </group>
+                <group string="Cost Analysis" groups="base.group_no_one">
+                    <field name="panel_cost_materials"/>
+                    <field name="panel_cost_labor"/>
+                    <field name="panel_waste_pct" widget="percentage"/>
+                    <field name="panel_signs_per_sheet"/>
+                </group>
+            </xpath>
+        </field>
+    </record>
+</odoo>
