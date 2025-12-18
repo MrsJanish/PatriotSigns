@@ -5,17 +5,26 @@
         <field name="model">sale.order</field>
         <field name="inherit_id" ref="sale.view_order_form"/>
         <field name="arch" type="xml">
-            <xpath expr="//field[@name='order_line']/tree//field[@name='name']" position="after">
-                <!-- Using optional='show' to make them visible but hideable -->
+            <!-- 1. Tree View Injection: Use 'product_id' as anchor, it is standard -->
+            <xpath expr="//field[@name='order_line']/tree/field[@name='product_id']" position="after">
                 <field name="panel_width" optional="hide"/>
                 <field name="panel_height" optional="hide"/>
                 <field name="panel_material" optional="hide"/>
             </xpath>
             
-            <xpath expr="//field[@name='order_line']/form//field[@name='name']" position="after">
-                <!-- Inside the Form View of the Line -->
-                <field name="is_panel_sign" invisible="1" /> <!-- Requires related field logic or just rely on domain -->
-                <group string="Panel Configuration">
+            <!-- 2. Form View Injection: Use 'product_id' as anchor here too for safety -->
+            <!-- Note: The 'form' inside order_line might not be explicitly defined in the parent view. 
+                 It's better to verify if we can target it. 
+                 If the parent view doesn't have a <form> inside <field name="order_line">, this xpath fails.
+                 Standard Odoo usually has it. But if it fails, we should targets //field[@name='order_line'] and add <form> inheritance or 
+                 inherit the specific view 'sale.view_order_line_form' if it exists. 
+                 
+                 However, usually 'sale.view_order_form' has the inline form. 
+                 Let's try targeting 'product_id' inside the form too. 
+                 If that fails, I'll recommend the user to use 'product_uom'.
+            -->
+            <xpath expr="//field[@name='order_line']/form//field[@name='product_id']" position="after">
+                 <group string="Panel Configuration">
                     <group>
                         <field name="panel_width"/>
                         <field name="panel_height"/>
