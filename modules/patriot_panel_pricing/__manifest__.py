@@ -10,7 +10,7 @@
     """,
     'category': 'Sales',
     'author': 'Patriot Signs',
-    'depends': ['sale', 'product', 'mrp'],
+    'depends': ['sale', 'product', 'mrp', 'purchase'],
     'data': [
         'security/ir.model.access.csv',
         'data/panel_data.xml',

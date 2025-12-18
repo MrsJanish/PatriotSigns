@@ -141,7 +141,7 @@
         <record id="product_custom_panel_sign" model="product.product">
             <field name="name">Custom Panel Sign (Configurable)</field>
             <field name="default_code">PNL-CUST-001</field>
-            <field name="type">product</field> <!-- Storable Final Good -->
+            <field name="type">consu</field> <!-- Changed to consu for safety on Odoo 19 -->
             <field name="is_panel_sign">True</field>
             <field name="uom_id" ref="uom.product_uom_unit"/>
             <field name="uom_po_id" ref="uom.product_uom_unit"/>
