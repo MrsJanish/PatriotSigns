@@ -38,13 +38,16 @@
             <!-- 
                  RE-ENABLING COLUMNS: target 'list' instead of 'tree' (Odoo 19)
                  Position: after='name' (Description) for better visibility
+                 UI CLEANUP: Only show if 'is_panel_sign' is set. 
+                 Note: 'column_invisible' is for hiding the whole column. 'invisible' hides the widget.
             -->
             <xpath expr="//field[@name='order_line']/list/field[@name='name']" position="after">
-                <field name="panel_width" optional="show"/>
-                <field name="panel_height" optional="show"/>
-                <field name="panel_material" optional="show"/>
-                <field name="is_windowed" optional="show"/>
-                <field name="window_height" optional="show" invisible="not is_windowed"/>
+                <field name="is_panel_sign" column_invisible="True" />
+                <field name="panel_width" optional="show" invisible="not is_panel_sign"/>
+                <field name="panel_height" optional="show" invisible="not is_panel_sign"/>
+                <field name="panel_material" optional="show" invisible="not is_panel_sign"/>
+                <field name="is_windowed" optional="show" invisible="not is_panel_sign"/>
+                <field name="window_height" optional="show" invisible="not is_panel_sign"/>
             </xpath>
             <xpath expr="//field[@name='order_line']/form" position="inside">
                  <group string="Panel Configuration">
