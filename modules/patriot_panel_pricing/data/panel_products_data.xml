@@ -119,6 +119,121 @@
             <field name="uom_id" ref="uom.product_uom_hour"/>
             <field name="uom_po_id" ref="uom.product_uom_hour"/>
         </record>
+
+        <!-- ======================================================== -->
+        <!-- SELLABLE PRODUCT: CUSTOM PANEL SIGN                      -->
+        <!-- ======================================================== -->
+        <!-- 
+           This is the "Template" product that users will sell.
+           It is configured with MTO + Manufacture Routes.
+           
+           Note: We need Route IDs. "Manufacture" is usually found via XML ID lookup 
+           but might vary. Safest is to rely on 'mrp' data being loaded.
+           For robustness, we set the routes via Python or assume standard IDs.
+           'mrp.route_warehouse0_manufacture' -> Manufacture
+           'stock.route_warehouse0_mto'      -> Replenish on Order
+           
+           However, in a data file, we might not know the warehouse ID (warehouse0).
+           Better strategy: Just create the product, user confirms routes?
+           OR: Try to find the generic "Manufacture" route.
+           Let's set `route_ids` if we can.
+        -->
+        <record id="product_custom_panel_sign" model="product.product">
+            <field name="name">Custom Panel Sign (Configurable)</field>
+            <field name="default_code">PNL-CUST-001</field>
+            <field name="type">product</field> <!-- Storable Final Good -->
+            <field name="is_panel_sign">True</field>
+            <field name="uom_id" ref="uom.product_uom_unit"/>
+            <field name="uom_po_id" ref="uom.product_uom_unit"/>
+            <!-- 
+                 Routes: We can't easily hardcode warehouse specific routes in generic data.
+                 We will leave routes blank but adding a "Tip" in description?
+                 Actually, usually modules use a post_init_hook to set routes.
+                 Let's keep it simple: User checks the "MTO" and "Manuf" box.
+                 Wait, we can create a Master Bill of Materials even if routes aren't set yet.
+            -->
+        </record>
+
+        <!-- ======================================================== -->
+        <!-- BASE BOM: THE TEMPLATE                                   -->
+        <!-- ======================================================== -->
+        <record id="mrp_bom_panel_sign" model="mrp.bom">
+            <field name="product_tmpl_id" ref="product_custom_panel_sign_product_template"/>
+            <field name="product_qty">1.0</field>
+            <field name="type">normal</field> <!-- Manufacture this product -->
+            <field name="code">BOM-PNL-001</field>
+        </record>
+
+        <!-- BOM COMPONENTS (ALL ZERO QTY VIA DEFAULT OR EXPLICIT 0.0) -->
+        <!-- Pionite -->
+        <record id="bom_line_pionite" model="mrp.bom.line">
+            <field name="bom_id" ref="mrp_bom_panel_sign"/>
+            <field name="product_id" ref="product_pionite_sheet"/>
+            <field name="product_qty">0.0</field>
+        </record>
+
+        <!-- ABS 1/8 -->
+        <record id="bom_line_abs18" model="mrp.bom.line">
+            <field name="bom_id" ref="mrp_bom_panel_sign"/>
+            <field name="product_id" ref="product_abs_18_sheet"/>
+            <field name="product_qty">0.0</field>
+        </record>
+
+        <!-- ABS 3/16 -->
+        <record id="bom_line_abs316" model="mrp.bom.line">
+            <field name="bom_id" ref="mrp_bom_panel_sign"/>
+            <field name="product_id" ref="product_abs_316_sheet"/>
+            <field name="product_qty">0.0</field>
+        </record>
+
+        <!-- Acrylic -->
+        <record id="bom_line_acrylic" model="mrp.bom.line">
+            <field name="bom_id" ref="mrp_bom_panel_sign"/>
+            <field name="product_id" ref="product_acrylic_18_sheet"/>
+            <field name="product_qty">0.0</field>
+        </record>
+
+        <!-- Window -->
+        <record id="bom_line_window" model="mrp.bom.line">
+            <field name="bom_id" ref="mrp_bom_panel_sign"/>
+            <field name="product_id" ref="product_window_lens_sheet"/>
+            <field name="product_qty">0.0</field>
+        </record>
+
+        <!-- Ink -->
+        <record id="bom_line_ink" model="mrp.bom.line">
+            <field name="bom_id" ref="mrp_bom_panel_sign"/>
+            <field name="product_id" ref="product_ink_generic"/>
+            <field name="product_qty">0.0</field>
+        </record>
+
+        <!-- Paint -->
+        <record id="bom_line_paint" model="mrp.bom.line">
+            <field name="bom_id" ref="mrp_bom_panel_sign"/>
+            <field name="product_id" ref="product_paint_generic"/>
+            <field name="product_qty">0.0</field>
+        </record>
+
+        <!-- Tape -->
+        <record id="bom_line_tape" model="mrp.bom.line">
+            <field name="bom_id" ref="mrp_bom_panel_sign"/>
+            <field name="product_id" ref="product_tape_generic"/>
+            <field name="product_qty">0.0</field>
+        </record>
+
+        <!-- Lube -->
+        <record id="bom_line_lube" model="mrp.bom.line">
+            <field name="bom_id" ref="mrp_bom_panel_sign"/>
+            <field name="product_id" ref="product_lube_generic"/>
+            <field name="product_qty">0.0</field>
+        </record>
+        
+        <!-- Labor -->
+        <record id="bom_line_labor" model="mrp.bom.line">
+            <field name="bom_id" ref="mrp_bom_panel_sign"/>
+            <field name="product_id" ref="product_service_labor_production"/>
+            <field name="product_qty">0.0</field>
+        </record>
         
     </data>
 </odoo>
