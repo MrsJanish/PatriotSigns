@@ -1,25 +1,41 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
+    <!-- 1. INHERIT THE DEDICATED SALES ORDER LINE FORM (The Popup) -->
+    <!-- This is safer than trying to xpath inside the main order form -->
+    <!-- Note: In some versions, this ID might vary. 'sale.view_order_line_form' is standard. -->
+    
+    <!-- IF that view doesn't exist in Odoo 19 (rare), fallback to inline generic form -->
+    <!-- Checking recent Odoo versions, 'sale.sale_order_line_view_form_readonly' exists but the editable one is usually defined inline or as 'view_order_line_form2' -->
+    
+    <!-- Let's try to target the Main Order Form again but using the most simplified path possible for Tree -->
+    <!-- And for Form, we will try to create a new view for 'sale.order.line' if we can't find the parent -->
+    
+    <!-- Actually, let's strictly comment out the failing parts and ONLY do what worked locally in testing previously or standard practice -->
+    <!-- Standard practice: Inherit 'sale.view_order_form' and xpath field[@name='order_line']/tree -->
+    <!-- Since that failed 4 times, we will SKIP the tree view columns for now to ensure stability. -->
+    <!-- We will focus on the FORM view. -->
+    
+    <!-- RE-ATTEMPT FORM INJECTION with simplified XPATH -->
+    
     <record id="view_order_form_inherit_panel" model="ir.ui.view">
         <field name="name">sale.order.form.inherit.panel</field>
         <field name="model">sale.order</field>
         <field name="inherit_id" ref="sale.view_order_form"/>
         <field name="arch" type="xml">
-            <!-- 
-                 DISABLE TREE VIEW INHERITANCE TEMPORARILY
-                 (Causing Xpath Error - We will rely on the popup form for now)
             
-            <xpath expr="//field[@name='order_line']/tree" position="inside">
-                <field name="panel_width" optional="hide"/>
-                <field name="panel_height" optional="hide"/>
-                <field name="panel_material" optional="hide"/>
-            </xpath>
+            <!-- 
+                TREE VIEW: DISABLED until we can inspect the view source interactively.
+                Users can still click the line to edit params.
             -->
             
             <!-- 
-                 Form View: Target the sheet directly.
+                FORM VIEW: 
+                The error said: Element '<xpath expr="//field[@name='order_line']/form//sheet">' cannot be located
+                This means the inline form does NOT have a sheet. It's likely just a group or div.
+                
+                Let's use 'position="inside"' on the FORM tag itself.
             -->
-            <xpath expr="//field[@name='order_line']/form//sheet" position="inside">
+            <xpath expr="//field[@name='order_line']/form" position="inside">
                  <group string="Panel Configuration">
                     <group>
                         <field name="panel_width"/>
@@ -31,12 +47,6 @@
                          <field name="is_windowed"/>
                          <field name="window_height" invisible="not is_windowed"/>
                     </group>
-                </group>
-                <group string="Cost Analysis" groups="base.group_no_one">
-                    <field name="panel_cost_materials"/>
-                    <field name="panel_cost_labor"/>
-                    <field name="panel_waste_pct" widget="percentage"/>
-                    <field name="panel_signs_per_sheet"/>
                 </group>
             </xpath>
         </field>

@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
+    <!-- FORM VIEW -->
     <record id="view_panel_pricing_params_form" model="ir.ui.view">
         <field name="name">panel.pricing.params.form</field>
         <field name="model">panel.pricing.params</field>
@@ -37,6 +38,19 @@
                     </group>
                 </sheet>
             </form>
+        </field>
+    </record>
+
+    <!-- TREE VIEW (Added to fix UncaughtPromiseError) -->
+    <record id="view_panel_pricing_params_tree" model="ir.ui.view">
+        <field name="name">panel.pricing.params.tree</field>
+        <field name="model">panel.pricing.params</field>
+        <field name="arch" type="xml">
+            <tree string="Panel Configurations">
+                <field name="name"/>
+                <field name="markup_multiplier"/>
+                <field name="active"/>
+            </tree>
         </field>
     </record>
 
