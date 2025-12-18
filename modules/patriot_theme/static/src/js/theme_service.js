@@ -1,7 +1,7 @@
 /** @odoo-module **/
 
 import { registry } from "@web/core/registry";
-import { Component, onWillStart, useState } from "@odoo/owl";
+import { Component, onWillStart, useState, xml } from "@odoo/owl";
 import { useService } from "@web/core/utils/hooks";
 import { AuroraCanvas } from "./aurora_canvas";
 
