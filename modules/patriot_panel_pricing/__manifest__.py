@@ -15,7 +15,7 @@
         'security/ir.model.access.csv',
         'data/panel_data.xml',
         'views/panel_params_view.xml',
-        'views/sale_views.xml',
+        # 'views/sale_views.xml',
         'views/product_views.xml',
         'views/menus.xml',
     ],
