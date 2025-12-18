@@ -10,7 +10,7 @@
         <record id="product_pionite_sheet" model="product.product">
             <field name="name">Pionite Sheet (4x8)</field>
             <field name="default_code">MAT-PIO-001</field>
-            <field name="type">product</field> <!-- Storable -->
+            <field name="type">consu</field> <!-- Changed to Consumable to fix Odoo 19 error -->
             <field name="standard_price">211.30</field> <!-- Cost -->
             <field name="categ_id" ref="product_category_panel_materials"/>
         </record>
@@ -18,7 +18,7 @@
         <record id="product_abs_18_sheet" model="product.product">
             <field name="name">ABS Sheet 1/8 (4x8)</field>
             <field name="default_code">MAT-ABS-0125</field>
-            <field name="type">product</field>
+            <field name="type">consu</field>
             <field name="standard_price">30.00</field>
             <field name="categ_id" ref="product_category_panel_materials"/>
         </record>
@@ -26,7 +26,7 @@
         <record id="product_abs_316_sheet" model="product.product">
             <field name="name">ABS Sheet 3/16 (4x8)</field>
             <field name="default_code">MAT-ABS-0187</field>
-            <field name="type">product</field>
+            <field name="type">consu</field>
             <field name="standard_price">45.00</field>
             <field name="categ_id" ref="product_category_panel_materials"/>
         </record>
@@ -34,7 +34,7 @@
         <record id="product_acrylic_18_sheet" model="product.product">
             <field name="name">Acrylic Sheet 1/8 (4x8)</field>
             <field name="default_code">MAT-ACR-0125</field>
-            <field name="type">product</field>
+            <field name="type">consu</field>
             <field name="standard_price">100.00</field>
             <field name="categ_id" ref="product_category_panel_materials"/>
         </record>
@@ -42,7 +42,7 @@
         <record id="product_window_lens_sheet" model="product.product">
             <field name="name">Window Lens Sheet</field>
             <field name="default_code">MAT-WIN-001</field>
-            <field name="type">product</field>
+            <field name="type">consu</field>
             <field name="standard_price">50.00</field>
             <field name="categ_id" ref="product_category_panel_materials"/>
         </record>
