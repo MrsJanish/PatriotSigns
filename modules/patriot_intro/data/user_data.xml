@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+        <!-- Update the default Admin user to Tiffany -->
+        <record id="base.user_admin" model="res.users">
+            <field name="name">Tiffany Janish</field>
+            <field name="login">tiffany@omegasignsco.com</field>
+            <field name="email">tiffany@omegasignsco.com</field>
+        </record>
+        
+        <!-- Also update the partner associated with the user -->
+        <record id="base.partner_admin" model="res.partner">
+            <field name="name">Tiffany Janish</field>
+            <field name="email">tiffany@omegasignsco.com</field>
+        </record>
+    </data>
+</odoo>

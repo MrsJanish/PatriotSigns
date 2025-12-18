@@ -11,6 +11,7 @@
     'depends': ['base', 'web'],
     'data': [
         'data/company_data.xml',
+        'data/user_data.xml',
         'views/menus.xml',
     ],
     'assets': {
