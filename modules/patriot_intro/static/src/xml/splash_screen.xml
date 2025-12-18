@@ -2,9 +2,10 @@
 <templates xml:space="preserve">
     <t t-name="patriot_intro.SplashScreen">
         <div class="o_patriot_splash">
-            <!-- Decorative Shapes -->
-            <div class="shape shape-1"></div>
-            <div class="shape shape-2"></div>
+            <!-- Aurora Borealis Layers -->
+            <div class="aurora-layer layer-1"></div>
+            <div class="aurora-layer layer-2"></div>
+            <div class="aurora-layer layer-3"></div>
             
             <!-- Main Content Card -->
             <div class="o_patriot_card">

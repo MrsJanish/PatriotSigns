@@ -1,106 +1,171 @@
-/* Main Container */
+/* Base Background */
 .o_patriot_splash {
     width: 100%;
     height: 100vh;
-    background: linear-gradient(-45deg, #ee7752, #e73c7e, #23a6d5, #23d5ab);
-    background-size: 400% 400%;
-    animation: gradientBG 15s ease infinite;
+    background-color: #0f172a;
+    /* Deep Slate / Dark Gray */
+    position: relative;
+    overflow: hidden;
     display: flex;
     justify-content: center;
     align-items: center;
-    overflow: hidden;
-    position: relative;
     font-family: 'Montserrat', sans-serif;
-    color: white;
+    color: #e2e8f0;
+    /* Light Gray Text */
 }
 
-/* Moving Background Animation */
-@keyframes gradientBG {
-    0% { background-position: 0% 50%; }
-    50% { background-position: 100% 50%; }
-    100% { background-position: 0% 50%; }
+/* Aurora Layers Common */
+.aurora-layer {
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    filter: blur(80px);
+    /* The glowing diffusion */
+    opacity: 0.6;
+    animation-iteration-count: infinite;
+    animation-timing-function: ease-in-out;
 }
 
-/* Glass Card */
+/* Layer 1: Cyan/Teal dominant, slow undulation */
+.layer-1 {
+    background: radial-gradient(ellipse at center, rgba(34, 211, 238, 0.4) 0%, rgba(15, 23, 42, 0) 70%);
+    animation: aurora-wave-1 15s infinite alternate;
+    z-index: 1;
+}
+
+/* Layer 2: Cool Gray/Blueish, offsetting wave */
+.layer-2 {
+    background: radial-gradient(ellipse at center, rgba(148, 163, 184, 0.3) 0%, rgba(15, 23, 42, 0) 70%);
+    animation: aurora-wave-2 20s infinite alternate-reverse;
+    top: -30%;
+    left: -30%;
+    z-index: 2;
+}
+
+/* Layer 3: Deep Slate Accent, creating shadows/depth */
+.layer-3 {
+    background: radial-gradient(ellipse at center, rgba(6, 182, 212, 0.2) 0%, rgba(15, 23, 42, 0) 60%);
+    animation: aurora-wave-3 12s infinite alternate;
+    top: 0%;
+    left: 0%;
+    z-index: 3;
+}
+
+/* Keyframes attempting "Sine Wave Inspired" organic motion */
+@keyframes aurora-wave-1 {
+    0% {
+        transform: translate(0, 0) scale(1) skewX(0deg);
+    }
+
+    33% {
+        transform: translate(5%, 2%) scale(1.1) skewX(5deg);
+    }
+
+    66% {
+        transform: translate(-3%, 5%) scale(0.9) skewX(-2deg);
+    }
+
+    100% {
+        transform: translate(2%, -3%) scale(1.05) skewX(3deg);
+    }
+}
+
+@keyframes aurora-wave-2 {
+    0% {
+        transform: translate(0, 0) rotate(0deg);
+    }
+
+    50% {
+        transform: translate(-5%, -5%) rotate(5deg);
+    }
+
+    100% {
+        transform: translate(5%, 5%) rotate(-5deg);
+    }
+}
+
+@keyframes aurora-wave-3 {
+    0% {
+        transform: translate(0, 0) scaleY(1);
+        opacity: 0.4;
+    }
+
+    50% {
+        transform: translate(10%, 0) scaleY(1.2);
+        opacity: 0.7;
+    }
+
+    100% {
+        transform: translate(-5%, 0) scaleY(0.9);
+        opacity: 0.4;
+    }
+}
+
+/* Glass Card - Darker Theme */
 .o_patriot_card {
-    background: rgba(255, 255, 255, 0.1);
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
-    border: 1px solid rgba(255, 255, 255, 0.2);
+    background: rgba(15, 23, 42, 0.4);
+    /* Darker glass */
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid rgba(148, 163, 184, 0.1);
     border-radius: 20px;
     padding: 3rem 4rem;
-    box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.4);
     text-align: center;
     opacity: 0;
     transform: translateY(30px);
     animation: fadeUp 1s ease-out forwards;
     animation-delay: 0.5s;
     max-width: 600px;
+    z-index: 10;
 }
 
-/* Heading */
+/* Headings */
 .o_patriot_title {
     font-size: 3.5rem;
     margin-bottom: 0.5rem;
     font-weight: 700;
-    text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+    color: #f1f5f9;
+    /* Slate 100 */
+    text-shadow: 0 0 20px rgba(34, 211, 238, 0.3);
+    /* Cyan Glow */
     letter-spacing: 2px;
 }
 
-/* Subheading */
 .o_patriot_subtitle {
     font-size: 1.2rem;
     margin-bottom: 2rem;
     font-weight: 300;
-    opacity: 0.9;
+    color: #cbd5e1;
+    /* Slate 300 */
 }
 
-/* Action Button */
+/* Button - Cyan Glow */
 .o_patriot_btn {
     padding: 1rem 2.5rem;
     font-size: 1.1rem;
-    background: white;
-    color: #e73c7e;
-    border: none;
+    background: rgba(34, 211, 238, 0.1);
+    /* Transparent Cyan */
+    color: #22d3ee;
+    /* Cyan TEXT */
+    border: 1px solid #22d3ee;
     border-radius: 50px;
     cursor: pointer;
     font-weight: 600;
     transition: all 0.3s ease;
     text-transform: uppercase;
     letter-spacing: 1px;
-    box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+    box-shadow: 0 0 10px rgba(34, 211, 238, 0.1);
 }
 
 .o_patriot_btn:hover {
-    transform: translateY(-3px) scale(1.05);
-    box-shadow: 0 6px 20px rgba(0,0,0,0.3);
-    background: #fff;
-    color: #23a6d5;
-}
-
-/* Floating Shapes (Optional Decoration) */
-.shape {
-    position: absolute;
-    border-radius: 50%;
-    background: rgba(255, 255, 255, 0.1);
-    animation: float 6s infinite ease-in-out;
-    z-index: 0;
-}
-
-.shape-1 {
-    width: 200px;
-    height: 200px;
-    top: -50px;
-    left: -50px;
-    animation-delay: 0s;
-}
-
-.shape-2 {
-    width: 300px;
-    height: 300px;
-    bottom: -100px;
-    right: -50px;
-    animation-delay: 2s;
+    background: #22d3ee;
+    color: #0f172a;
+    /* Dark text on hover */
+    box-shadow: 0 0 25px rgba(34, 211, 238, 0.6);
+    transform: translateY(-2px);
 }
 
 @keyframes fadeUp {
@@ -108,10 +173,4 @@
         opacity: 1;
         transform: translateY(0);
     }
-}
-
-@keyframes float {
-    0% { transform: translateY(0px); }
-    50% { transform: translateY(-20px); }
-    100% { transform: translateY(0px); }
 }
