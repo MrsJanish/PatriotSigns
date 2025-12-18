@@ -1,0 +1,12 @@
+# Odoo
+*.py[cod]
+__pycache__/
+.venv
+.env
+*.log
+*.pot
+*.po
+
+# System
+.DS_Store
+Thumbs.db

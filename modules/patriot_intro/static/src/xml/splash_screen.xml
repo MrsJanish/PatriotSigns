@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+    <t t-name="patriot_intro.SplashScreen">
+        <div class="o_patriot_splash">
+            <!-- Decorative Shapes -->
+            <div class="shape shape-1"></div>
+            <div class="shape shape-2"></div>
+            
+            <!-- Main Content Card -->
+            <div class="o_patriot_card">
+                <h1 class="o_patriot_title">Patriot Signs</h1>
+                <p class="o_patriot_subtitle">Forging the Future of Signage</p>
+                
+                <button class="o_patriot_btn" t-on-click="onExploreClick">
+                    Enter System
+                </button>
+            </div>
+        </div>
+    </t>
+</templates>
