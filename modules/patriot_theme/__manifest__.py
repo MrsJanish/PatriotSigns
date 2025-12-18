@@ -13,15 +13,15 @@
     'author': 'Patriot Signs',
     'depends': ['web'],
     'data': [
-        'views/res_users_preferences.xml',
+        # 'views/res_users_preferences.xml',
     ],
     'assets': {
         'web.assets_backend': [
             'patriot_theme/static/src/css/backend_theme.css',
-            'patriot_theme/static/src/css/aurora_theme.css',
-            'patriot_theme/static/src/js/aurora_canvas.js',
-            'patriot_theme/static/src/xml/aurora_canvas.xml',
-            'patriot_theme/static/src/js/theme_service.js',
+            # 'patriot_theme/static/src/css/aurora_theme.css',
+            # 'patriot_theme/static/src/js/aurora_canvas.js',
+            # 'patriot_theme/static/src/xml/aurora_canvas.xml',
+            # 'patriot_theme/static/src/js/theme_service.js',
         ],
     },
     'installable': True,
