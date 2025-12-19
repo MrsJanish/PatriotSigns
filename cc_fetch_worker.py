@@ -110,7 +110,7 @@ def fetch_documents(page, context, project_id, download_dir):
     print(f"Navigating to {project_url}")
     page.goto(project_url, timeout=120000)
     
-    # Wait for page - use domcontentloaded instead of networkidle (CC has constant network activity)
+    # Wait for page - use domcontentloaded instead of networkidle
     try:
         page.wait_for_load_state("domcontentloaded", timeout=60000)
     except Exception as e:
@@ -120,39 +120,100 @@ def fetch_documents(page, context, project_id, download_dir):
     print("Waiting for React content to load...")
     time.sleep(15)
     
-    # Click "View/Download Documents" button
-    docs_btn = page.locator("button:has-text('View/Download Documents')")
-    if docs_btn.is_visible():
+    # Selectors for the "Documents" tab or button
+    doc_tab_selectors = [
+        "button:has-text('View/Download Documents')",
+        "a:has-text('View/Download Documents')",
+        "button:has-text('Documents')",
+        "a:has-text('Documents')",
+        "#tab-documents",
+        "[aria-label='Documents']",
+        "li:has-text('Documents')"
+    ]
+    
+    docs_btn = None
+    for selector in doc_tab_selectors:
+        try:
+            print(f"Checking for documents tab: {selector}")
+            btn = page.locator(selector).first
+            if btn.is_visible(timeout=2000):
+                docs_btn = btn
+                print(f"Found documents button: {selector}")
+                break
+        except:
+            continue
+            
+    if docs_btn:
         print("Opening documents tab...")
         
         # This opens a new tab
-        with context.expect_page() as new_page_info:
-            docs_btn.click()
-        
-        docs_page = new_page_info.value
-        docs_page.wait_for_load_state("networkidle", timeout=60000)
-        time.sleep(10)
-        
-        # Click Select All
-        select_all = docs_page.locator("button:has-text('Select All')")
-        if select_all.is_visible():
-            select_all.click()
-            time.sleep(2)
-        
-        # Click Download All
-        download_btn = docs_page.locator("button:has-text('Download All')")
-        if download_btn.is_visible():
-            print("Downloading all documents...")
-            with docs_page.expect_download(timeout=300000) as download_info:
-                download_btn.click()
+        try:
+            with context.expect_page() as new_page_info:
+                docs_btn.click()
             
-            download = download_info.value
-            download_path = os.path.join(download_dir, "documents.zip")
-            download.save_as(download_path)
-            print(f"Downloaded to {download_path}")
-            return download_path
-    
-    print("No documents button found")
+            docs_page = new_page_info.value
+            docs_page.wait_for_load_state("domcontentloaded", timeout=60000)
+            print("Documents tab opened")
+            time.sleep(10)
+            
+            # Click Select All
+            select_all = docs_page.locator("button:has-text('Select All')")
+            if select_all.is_visible(timeout=5000):
+                select_all.click()
+                print("Clicked Select All")
+                time.sleep(2)
+            
+            # Look for download button - prioritize "Download All"
+            download_selectors = [
+                "button:has-text('Download All')",
+                "a:has-text('Download All')",
+                "button:has-text('Download')",
+                "a:has-text('Download')",
+                "button:has-text('download')",
+                "[data-action='download']",
+                "button[title*='Download']"
+            ]
+            
+            download_btn = None
+            for selector in download_selectors:
+                try:
+                    btn = docs_page.locator(selector).first
+                    if btn.is_visible(timeout=2000):
+                        download_btn = btn
+                        print(f"Found Download button: {selector}")
+                        break
+                except:
+                    continue
+            
+            if download_btn:
+                print("Downloading all documents...")
+                with docs_page.expect_download(timeout=300000) as download_info:
+                    download_btn.click()
+                
+                download = download_info.value
+                download_path = os.path.join(download_dir, "documents.zip")
+                download.save_as(download_path)
+                print(f"Downloaded to {download_path}")
+                return download_path
+            else:
+                print("No download button found on documents page")
+                docs_page.screenshot(path="debug_docs_page_no_dl.png")
+                
+        except Exception as e:
+            print(f"Error handling documents tab: {e}")
+            page.screenshot(path="debug_docs_error.png")
+            
+    else:
+        print("No documents button found on project page")
+        page.screenshot(path="debug_project_page.png")
+        print("Saved debug screenshot: debug_project_page.png")
+        # Log body text to see what's on page
+        try:
+            text = page.locator("body").inner_text()
+            print(f"Page text (first 500 chars): {text[:500]}")
+        except:
+            pass
+            
     return None
 
 
