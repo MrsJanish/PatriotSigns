@@ -105,6 +105,10 @@ def fetch_documents(page, context, project_id, download_dir):
     """Navigate to project and download documents"""
     print(f"Fetching documents for project {project_id}...")
     
+    # Wait on dashboard/search page first to avoid "Uh oh" error
+    print("Waiting for dashboard to settle...")
+    time.sleep(10)
+    
     # Navigate to project
     project_url = f"https://app.constructconnect.com/project/{project_id}"
     print(f"Navigating to {project_url}")
