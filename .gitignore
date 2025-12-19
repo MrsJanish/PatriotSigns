@@ -13,3 +13,15 @@ Thumbs.db
 
 # Local test files with credentials
 test_cc_api.py
+test_doc_download.py
+
+# CC Worker local files (contain credentials/sessions)
+cc_worker.py
+cc_auth.json
+cc_downloads/
+test_downloads/
+
+# Debug files (may contain scraped HTML with API keys)
+debug_*.png
+debug_*.html
+*.eml
