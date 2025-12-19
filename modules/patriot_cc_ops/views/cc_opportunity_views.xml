@@ -126,20 +126,6 @@
         <field name="arch" type="xml">
             <search string="Search Opportunities">
                 <field name="name"/>
-                <field name="city"/>
-                <field name="state_id"/>
-                <field name="project_number"/>
-                <field name="gc_name"/>
-                <field name="owner_name"/>
-                <field name="architect_name"/>
-                <filter string="New" name="filter_new" domain="[('state', '=', 'new')]"/>
-                <filter string="Ready" name="filter_ready" domain="[('state', '=', 'ready')]"/>
-                <filter string="Bidding" name="filter_bidding" domain="[('state', '=', 'bidding')]"/>
-                <group expand="0" string="Group By">
-                    <filter string="Status" name="group_state" context="{'group_by': 'state'}"/>
-                    <filter string="City" name="group_city" context="{'group_by': 'city'}"/>
-                    <filter string="Bid Date" name="group_bid_date" context="{'group_by': 'bid_date'}"/>
-                </group>
             </search>
         </field>
     </record>
