@@ -107,9 +107,18 @@ def fetch_documents(page, context, project_id, download_dir):
     
     # Navigate to project
     project_url = f"https://app.constructconnect.com/project/{project_id}"
-    page.goto(project_url, timeout=60000)
-    page.wait_for_load_state("networkidle", timeout=30000)
-    time.sleep(5)
+    print(f"Navigating to {project_url}")
+    page.goto(project_url, timeout=120000)
+    
+    # Wait for page - use domcontentloaded instead of networkidle (CC has constant network activity)
+    try:
+        page.wait_for_load_state("domcontentloaded", timeout=60000)
+    except Exception as e:
+        print(f"Load state wait: {e}")
+    
+    # Give React time to render
+    print("Waiting for React content to load...")
+    time.sleep(15)
     
     # Click "View/Download Documents" button
     docs_btn = page.locator("button:has-text('View/Download Documents')")
