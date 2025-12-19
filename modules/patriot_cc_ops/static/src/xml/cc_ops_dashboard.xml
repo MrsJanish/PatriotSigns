@@ -2,59 +2,76 @@
 <templates xml:space="preserve">
 
     <t t-name="patriot_cc_ops.Dashboard">
-        <div class="o_cc_dashboard p-4">
-            <div class="d-flex justify-content-between align-items-center mb-4">
-                <h1 class="h2 mb-0">
-                    <span class="fw-bold">Construct</span>Connect Dashboard
-                </h1>
-            </div>
+        <div t-attf-class="o_cc_dashboard #{themeClass}">
+            <!-- Aurora Canvas -->
+            <canvas t-if="state.theme === 'aurora'" id="ccAuroraCanvas" class="cc-aurora-canvas"/>
             
-            <t t-if="state.loading">
-                <div class="text-center p-5">
-                    <div class="spinner-border text-primary" role="status">
-                        <span class="visually-hidden">Loading...</span>
-                    </div>
-                    <p class="mt-2">Loading projects...</p>
-                </div>
+            <!-- Splash Gradients -->
+            <t t-if="state.theme === 'splash'">
+                <div class="cc-gradient cc-grad-1"/>
+                <div class="cc-gradient cc-grad-2"/>
+                <div class="cc-gradient cc-grad-3"/>
             </t>
             
-            <t t-if="!state.loading and state.projects.length === 0">
-                <div class="text-center p-5">
+            <!-- Theme Toggle -->
+            <button class="cc-theme-btn" t-on-click="toggleTheme">
+                <t t-if="state.theme === 'aurora'">☀️ Light</t>
+                <t t-else="">🌌 Aurora</t>
+            </button>
+            
+            <!-- Main Container -->
+            <div class="cc-container">
+                <!-- Header -->
+                <div class="cc-header">
+                    <h1><span>Construct</span>Connect</h1>
+                    <input type="text" class="cc-search" placeholder="Search projects..." 
+                           t-att-value="state.searchQuery" t-on-input="onSearch"/>
+                </div>
+                
+                <!-- Loading -->
+                <div t-if="state.loading" class="cc-loading">
+                    <div class="cc-spinner"/>
+                </div>
+                
+                <!-- Empty -->
+                <div t-if="!state.loading and filteredProjects.length === 0" class="cc-empty">
                     <h3>No Projects Found</h3>
-                    <p class="text-muted">Forward ITB emails from ConstructConnect to start tracking projects.</p>
+                    <p>Forward ITB emails from ConstructConnect to start tracking.</p>
                 </div>
-            </t>
-            
-            <t t-if="!state.loading and state.projects.length > 0">
-                <div class="row g-3">
-                    <t t-foreach="state.projects" t-as="project" t-key="project.id">
-                        <div class="col-12 col-md-6 col-lg-4">
-                            <div class="card h-100 shadow-sm" style="cursor: pointer;" 
-                                 t-on-click="() => this.openProject(project.id)">
-                                <div class="card-body">
-                                    <h5 class="card-title text-truncate" t-esc="project.name"/>
-                                    <p class="card-text text-muted mb-2">
-                                        <i class="fa fa-map-marker me-1"/>
-                                        <t t-esc="project.city || 'No location'"/>
-                                        <t t-if="project.state_id">, <t t-esc="project.state_id"/></t>
-                                    </p>
-                                    <p class="card-text mb-2">
-                                        <i class="fa fa-calendar me-1"/>
-                                        <t t-esc="project.bid_date || 'No date'"/>
-                                    </p>
-                                    <span class="badge" 
-                                          t-att-class="project.state === 'ready' ? 'bg-success' : project.state === 'new' ? 'bg-warning' : 'bg-secondary'">
-                                        <t t-esc="project.state || 'new'"/>
-                                    </span>
-                                    <span class="badge bg-info ms-1">
-                                        <t t-esc="project.document_count || 0"/> docs
+                
+                <!-- Projects -->
+                <div t-if="!state.loading and filteredProjects.length > 0" class="cc-grid">
+                    <t t-foreach="filteredProjects" t-as="p" t-key="p.id">
+                        <div t-attf-class="cc-card #{isExpanded(p.id) ? 'expanded' : ''}"
+                             t-on-click="() => this.toggleExpand(p.id)">
+                            <!-- Header -->
+                            <div class="cc-card-head">
+                                <h4 t-esc="p.name"/>
+                                <div class="cc-meta">
+                                    <span>📍 <t t-esc="p.city || '—'"/></span>
+                                    <span>📅 <t t-esc="formatDate(p.bid_date)"/></span>
+                                    <span class="cc-badge" t-att-data-state="p.state">
+                                        <t t-esc="p.state || 'new'"/>
                                     </span>
                                 </div>
+                            </div>
+                            <!-- Expanded -->
+                            <div class="cc-card-body">
+                                <div class="cc-details">
+                                    <div><label>Project #</label><span t-esc="p.project_number || '—'"/></div>
+                                    <div><label>Est. Value</label><span t-esc="formatCurrency(p.estimated_value)"/></div>
+                                    <div><label>GC</label><span t-esc="p.gc_name || '—'"/></div>
+                                    <div><label>Owner</label><span t-esc="p.owner_name || '—'"/></div>
+                                    <div><label>Documents</label><span><t t-esc="p.document_count || 0"/> files</span></div>
+                                </div>
+                                <button class="cc-btn" t-on-click.stop="() => this.openProject(p.id)">
+                                    Open Project →
+                                </button>
                             </div>
                         </div>
                     </t>
                 </div>
-            </t>
+            </div>
         </div>
     </t>
 
