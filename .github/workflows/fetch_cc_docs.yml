@@ -27,7 +27,7 @@ jobs:
       
       - name: Install dependencies
         run: |
-          pip install playwright python-dotenv xmlrpc-client
+          pip install playwright python-dotenv requests
           playwright install chromium
       
       - name: Fetch documents from ConstructConnect
