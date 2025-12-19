@@ -85,8 +85,8 @@ def login_to_cc(page, context):
             if "login.io" not in current_url and "login" not in current_url.split("/")[-1]:
                 print("Login successful - redirected!")
                 return True
-            if "error" in current_url.lower() or "invalid" in page.content().lower():
-                print("Login error detected")
+            if "error" in current_url.lower():
+                print("Login error detected in URL")
                 break
     
     # Final check
