@@ -35,8 +35,14 @@ class CCAPI(models.AbstractModel):
     @api.model
     def _get_session(self):
         """
-        Creates an authenticated requests.Session for iSqFt/ConstructConnect.
-        Uses cookie-based session auth (like a browser).
+        Creates an authenticated requests.Session for ConstructConnect.
+        iSqFt redirects to app.constructconnect.com for auth.
+        
+        The login flow is:
+        1. Go to /enteremail - enter email
+        2. Redirects to password page
+        3. Submit password
+        4. Get session cookies
         """
         email, password = self._get_credentials()
         if not email or not password:
@@ -50,45 +56,72 @@ class CCAPI(models.AbstractModel):
             'Accept-Language': 'en-US,en;q=0.9',
         })
 
-        _logger.info("Attempting iSqFt login...")
+        _logger.info("Attempting ConstructConnect login...")
         
         try:
-            # Step 1: Get login page (for cookies/tokens)
-            login_page = session.get("https://app.isqft.com/Account/Login", timeout=15)
-            _logger.info(f"Login page status: {login_page.status_code}")
+            # Step 1: Start at the access URL to set initial cookies
+            start_url = "https://app.constructconnect.com/enteremail"
+            resp = session.get(start_url, timeout=15)
+            _logger.info(f"Enter email page status: {resp.status_code}")
 
-            # Step 2: Form-based login
-            form_data = {
-                'Email': email,
-                'Password': password,
-                'RememberMe': 'true'
+            # Step 2: Submit email (find the form and post)
+            email_form_url = "https://app.constructconnect.com/enteremail"
+            email_data = {
+                'email': email,
+                'Email': email,  # Try both cases
             }
-            resp = session.post(
-                "https://app.isqft.com/Account/Login",
-                data=form_data,
-                timeout=30,
-                allow_redirects=True
-            )
-            _logger.info(f"Login POST status: {resp.status_code}, URL: {resp.url}")
+            resp = session.post(email_form_url, data=email_data, timeout=15, allow_redirects=True)
+            _logger.info(f"Email submit status: {resp.status_code}, URL: {resp.url}")
 
-            # Check if we're logged in (not on login page)
-            if 'login' not in resp.url.lower() and resp.status_code == 200:
-                _logger.info("iSqFt Login successful!")
-                return session
-            else:
-                _logger.error("iSqFt Login failed - still on login page")
-                return None
+            # Step 3: Submit password
+            # The redirect should take us to a password page
+            password_data = {
+                'password': password,
+                'Password': password,
+                'email': email,
+                'Email': email,
+            }
+            # Try common login endpoints
+            login_urls = [
+                "https://app.constructconnect.com/login",
+                "https://app.constructconnect.com/Account/Login",
+                "https://auth.constructconnect.com/login",
+                resp.url,  # Current page might be the login form
+            ]
+            
+            for login_url in login_urls:
+                try:
+                    resp = session.post(login_url, data=password_data, timeout=15, allow_redirects=True)
+                    _logger.info(f"Login attempt to {login_url}: {resp.status_code}, URL: {resp.url}")
+                    
+                    # Check if we're logged in (not on a login page)
+                    if 'login' not in resp.url.lower() and 'enteremail' not in resp.url.lower():
+                        _logger.info("ConstructConnect Login successful!")
+                        return session
+                except Exception as e:
+                    _logger.debug(f"Login attempt failed for {login_url}: {e}")
+                    continue
+
+            _logger.error("All ConstructConnect login attempts failed")
+            return None
 
         except Exception as e:
-            _logger.error(f"iSqFt Session creation failed: {e}")
+            _logger.error(f"ConstructConnect Session creation failed: {e}")
             return None
 
 
+
     @api.model
-    def fetch_project(self, url_or_id):
+    def fetch_project(self, url_or_id, access_code=None):
         """
-        Fetches project details from ConstructConnect.
+        Fetches project details from ConstructConnect/iSqFt.
         Returns a dict of project data.
+        
+        The access URL pattern is:
+        https://app.isqft.com/services/Access/GetUserQANAccess?sourceType=2&Id={access_code}&ProjectID={project_id}
+        
+        This redirects to:
+        https://app.constructconnect.com/projects/{project_id}
         """
         session = self._get_session()
         if not session:
@@ -96,24 +129,67 @@ class CCAPI(models.AbstractModel):
 
         # Extract project ID from URL if needed
         project_id = url_or_id
-        if 'constructconnect.com' in str(url_or_id):
-            match = re.search(r'/projects/(\d+)', url_or_id)
+        if 'isqft.com' in str(url_or_id) or 'constructconnect.com' in str(url_or_id):
+            match = re.search(r'ProjectID[=:](\d+)', url_or_id, re.IGNORECASE)
             if match:
                 project_id = match.group(1)
-
-        # API endpoint (needs verification)
-        api_url = f"https://app.constructconnect.com/api/projects/{project_id}"
-        
-        try:
-            resp = session.get(api_url, timeout=30)
-            if resp.status_code == 200:
-                return resp.json()
             else:
-                _logger.warning(f"CC Project fetch failed: {resp.status_code}")
-                return None
-        except Exception as e:
-            _logger.error(f"CC Fetch error: {e}")
-            return None
+                match = re.search(r'/projects/(\d+)', url_or_id)
+                if match:
+                    project_id = match.group(1)
+
+        _logger.info(f"Fetching project {project_id}...")
+
+        # Try to access the project page
+        project_urls = [
+            f"https://app.constructconnect.com/projects/{project_id}",
+            f"https://app.constructconnect.com/api/projects/{project_id}",
+            url_or_id,  # Try original URL
+        ]
+        
+        for url in project_urls:
+            try:
+                _logger.info(f"Trying: {url}")
+                resp = session.get(url, timeout=30, allow_redirects=True)
+                _logger.info(f"Response: {resp.status_code}, URL: {resp.url}")
+                
+                if resp.status_code == 200:
+                    content_type = resp.headers.get('Content-Type', '')
+                    
+                    # If JSON, parse it
+                    if 'json' in content_type:
+                        return resp.json()
+                    
+                    # If HTML, try to extract data
+                    html = resp.text
+                    data = self._parse_project_html(html)
+                    if data:
+                        return data
+                        
+            except Exception as e:
+                _logger.debug(f"Fetch error for {url}: {e}")
+                continue
+
+        _logger.warning(f"Could not fetch project {project_id}")
+        return None
+
+    @api.model
+    def _parse_project_html(self, html):
+        """
+        Extracts project data from HTML page.
+        """
+        data = {}
+        
+        # Try to find project name
+        title_match = re.search(r'<title>([^<]+)</title>', html, re.IGNORECASE)
+        if title_match:
+            data['name'] = title_match.group(1).strip()
+        
+        # Look for common data patterns in the HTML
+        # This will need refinement based on actual page structure
+        
+        return data if data else None
+
 
     @api.model
     def download_documents(self, opportunity):
