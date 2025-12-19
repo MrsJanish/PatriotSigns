@@ -1,14 +1,27 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
+    <!-- CLIENT ACTION for Dashboard -->
+    <record id="cc_ops_dashboard_action" model="ir.actions.client">
+        <field name="name">CC Dashboard</field>
+        <field name="tag">cc_ops_dashboard</field>
+    </record>
+
     <!-- ROOT MENU -->
     <menuitem id="cc_ops_menu_root"
         name="CC Opportunities"
         web_icon="patriot_cc_ops,static/description/icon.png"
         sequence="50"/>
 
-    <!-- MAIN MENU -->
+    <!-- DASHBOARD (New - Beautiful Custom View) -->
+    <menuitem id="cc_ops_menu_dashboard"
+        name="Dashboard"
+        parent="cc_ops_menu_root"
+        action="cc_ops_dashboard_action"
+        sequence="5"/>
+
+    <!-- OPPORTUNITIES LIST (Standard Odoo View) -->
     <menuitem id="cc_ops_menu_opportunities"
-        name="Opportunities"
+        name="All Opportunities"
         parent="cc_ops_menu_root"
         action="cc_opportunity_action"
         sequence="10"/>

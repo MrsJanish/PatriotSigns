@@ -1,0 +1,185 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+
+    <!-- CC Ops Dashboard Template -->
+    <t t-name="patriot_cc_ops.Dashboard">
+        <div t-attf-class="o_cc_ops_app #{themeClass}">
+            
+            <!-- Aurora Canvas (only for aurora theme) -->
+            <canvas t-if="state.theme === 'aurora'" id="cc_aurora_canvas" class="cc_aurora_canvas"/>
+            
+            <!-- Splash Aurora Layers (only for splash theme) -->
+            <t t-if="state.theme === 'splash'">
+                <div class="cc_aurora_layer cc_layer_1"/>
+                <div class="cc_aurora_layer cc_layer_2"/>
+                <div class="cc_aurora_layer cc_layer_3"/>
+            </t>
+            
+            <!-- Theme Toggle Button -->
+            <button class="cc_theme_toggle" t-on-click="toggleTheme">
+                <t t-esc="themeButtonText"/>
+            </button>
+            
+            <!-- Main Container (glass effect on aurora) -->
+            <div t-attf-class="cc_main_container">
+            
+                <!-- Header -->
+                <div class="cc_header">
+                    <h1 class="cc_title">
+                        <span>Construct</span>Connect
+                    </h1>
+                    <div class="cc_search_container">
+                        <input type="text" 
+                               class="cc_search_input" 
+                               placeholder="Search projects, contacts, locations..."
+                               t-att-value="state.searchQuery"
+                               t-on-input="onSearchInput"/>
+                    </div>
+                </div>
+                
+                <!-- Loading State -->
+                <div t-if="state.loading" class="cc_loading">
+                    <div class="cc_spinner"/>
+                </div>
+                
+                <!-- Empty State -->
+                <div t-if="!state.loading and filteredProjects.length === 0" class="cc_empty_state">
+                    <div>📋</div>
+                    <h3>No Projects Found</h3>
+                    <p t-if="state.searchQuery">Try adjusting your search terms</p>
+                    <p t-else="">Forward ITB emails from ConstructConnect to start tracking</p>
+                </div>
+                
+                <!-- Projects Grid -->
+                <div t-if="!state.loading and filteredProjects.length > 0" class="cc_projects_grid">
+                    <t t-foreach="filteredProjects" t-as="project" t-key="project.id">
+                        <div t-attf-class="cc_project_card #{isExpanded(project.id) ? 'expanded' : ''}"
+                             t-on-click="() => this.toggleProject(project.id)">
+                            
+                            <!-- Card Header (Always visible) -->
+                            <div class="cc_card_header">
+                                <h3 class="cc_project_name" t-esc="project.name"/>
+                                <div class="cc_project_meta">
+                                    <div class="cc_meta_item">
+                                        <span>📍</span>
+                                        <span t-esc="formatLocation(project)"/>
+                                    </div>
+                                    <div class="cc_meta_item">
+                                        <span>📅</span>
+                                        <span t-esc="formatDate(project.bid_date)"/>
+                                    </div>
+                                    <div class="cc_meta_item">
+                                        <span>📄</span>
+                                        <span><t t-esc="project.document_count || 0"/> docs</span>
+                                    </div>
+                                    <span t-attf-class="#{getStatusClass(project.state)}">
+                                        <t t-esc="getStatusLabel(project.state)"/>
+                                    </span>
+                                    <div class="cc_expand_icon">
+                                        ▼
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Card Body (Expanded) -->
+                            <div class="cc_card_body">
+                                <!-- Details Grid -->
+                                <div class="cc_details_section">
+                                    <div class="cc_detail_item">
+                                        <span class="cc_detail_label">Project #</span>
+                                        <span t-attf-class="cc_detail_value #{!project.project_number ? 'empty' : ''}">
+                                            <t t-esc="project.project_number || '—'"/>
+                                        </span>
+                                    </div>
+                                    <div class="cc_detail_item">
+                                        <span class="cc_detail_label">Bid Due</span>
+                                        <span class="cc_detail_value">
+                                            <t t-esc="formatDate(project.bid_date)"/>
+                                            <t t-if="project.bid_time"> @ <t t-esc="project.bid_time"/></t>
+                                        </span>
+                                    </div>
+                                    <div class="cc_detail_item">
+                                        <span class="cc_detail_label">Address</span>
+                                        <span t-attf-class="cc_detail_value #{!project.street ? 'empty' : ''}">
+                                            <t t-esc="project.street || '—'"/>
+                                        </span>
+                                    </div>
+                                    <div class="cc_detail_item">
+                                        <span class="cc_detail_label">City, State ZIP</span>
+                                        <span class="cc_detail_value">
+                                            <t t-esc="project.city || ''"/>
+                                            <t t-if="project.state_id">, <t t-esc="project.state_id"/></t>
+                                            <t t-if="project.zip_code"> <t t-esc="project.zip_code"/></t>
+                                            <t t-if="!project.city and !project.state_id">—</t>
+                                        </span>
+                                    </div>
+                                    <div class="cc_detail_item">
+                                        <span class="cc_detail_label">Est. Value</span>
+                                        <span t-attf-class="cc_detail_value #{!project.estimated_value ? 'empty' : ''}">
+                                            <t t-esc="formatCurrency(project.estimated_value)"/>
+                                        </span>
+                                    </div>
+                                    <div class="cc_detail_item">
+                                        <span class="cc_detail_label">Project Type</span>
+                                        <span t-attf-class="cc_detail_value #{!project.project_type ? 'empty' : ''}">
+                                            <t t-esc="project.project_type || '—'"/>
+                                        </span>
+                                    </div>
+                                    <div class="cc_detail_item">
+                                        <span class="cc_detail_label">General Contractor</span>
+                                        <span t-attf-class="cc_detail_value #{!project.gc_name ? 'empty' : ''}">
+                                            <t t-esc="project.gc_name || '—'"/>
+                                        </span>
+                                    </div>
+                                    <div class="cc_detail_item">
+                                        <span class="cc_detail_label">Owner</span>
+                                        <span t-attf-class="cc_detail_value #{!project.owner_name ? 'empty' : ''}">
+                                            <t t-esc="project.owner_name || '—'"/>
+                                        </span>
+                                    </div>
+                                    <div class="cc_detail_item">
+                                        <span class="cc_detail_label">Contact / Architect</span>
+                                        <span t-attf-class="cc_detail_value #{!project.architect_name ? 'empty' : ''}">
+                                            <t t-esc="project.architect_name || '—'"/>
+                                        </span>
+                                    </div>
+                                </div>
+                                
+                                <!-- Documents Section -->
+                                <div class="cc_documents_section">
+                                    <div class="cc_section_title">
+                                        📁 Construction Documents
+                                        <span style="margin-left: auto;">
+                                            <t t-esc="project.document_count || 0"/> files
+                                        </span>
+                                    </div>
+                                    
+                                    <!-- Action Buttons -->
+                                    <div style="display: flex; gap: 0.75rem; flex-wrap: wrap;">
+                                        <button t-if="project.document_count > 0" 
+                                                class="cc_download_all_btn"
+                                                t-on-click="(ev) => this.viewDocuments(project.id, ev)">
+                                            📄 View Documents
+                                        </button>
+                                        <button t-if="project.cc_source_url"
+                                                class="cc_download_all_btn"
+                                                style="background: #4facfe;"
+                                                t-on-click="(ev) => this.fetchData(project.id, ev)">
+                                            🔄 Fetch/Refresh Data
+                                        </button>
+                                        <button class="cc_download_all_btn"
+                                                style="background: #64748b;"
+                                                t-on-click="(ev) => this.openForm(project.id, ev)">
+                                            ✏️ Edit Details
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </t>
+                </div>
+            </div>
+        </div>
+    </t>
+
+</templates>

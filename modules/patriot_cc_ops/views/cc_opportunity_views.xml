@@ -124,16 +124,24 @@
         <field name="model">cc.opportunity</field>
         <field name="arch" type="xml">
             <search string="Search Opportunities">
-                <field name="name"/>
+                <field name="name" string="Project Name"/>
                 <field name="city"/>
+                <field name="state_id" string="State"/>
                 <field name="project_number"/>
+                <field name="gc_name" string="General Contractor"/>
+                <field name="owner_name" string="Owner"/>
+                <field name="architect_name" string="Contact/Architect"/>
+                <separator/>
                 <filter string="New" name="filter_new" domain="[('state', '=', 'new')]"/>
                 <filter string="Ready" name="filter_ready" domain="[('state', '=', 'ready')]"/>
                 <filter string="Bidding" name="filter_bidding" domain="[('state', '=', 'bidding')]"/>
+                <separator/>
                 <group expand="0" string="Group By">
                     <filter string="Status" name="group_state" context="{'group_by': 'state'}"/>
                     <filter string="City" name="group_city" context="{'group_by': 'city'}"/>
+                    <filter string="State" name="group_state_id" context="{'group_by': 'state_id'}"/>
                     <filter string="Bid Date" name="group_bid_date" context="{'group_by': 'bid_date'}"/>
+                    <filter string="General Contractor" name="group_gc" context="{'group_by': 'gc_name'}"/>
                 </group>
             </search>
         </field>
