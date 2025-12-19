@@ -74,6 +74,11 @@ def login_to_cc(page, context):
             login_btn = page.locator("#login-btn, button[type='submit'], button:has-text('Sign In'), button:has-text('Log In')").first
             login_btn.click()
             print("Login button clicked, waiting for redirect...")
+            
+            # Take screenshot for debugging
+            time.sleep(3)
+            page.screenshot(path="debug_after_login_click.png")
+            print("Saved debug screenshot: debug_after_login_click.png")
         except Exception as e:
             print(f"Login button: {e}")
         

@@ -40,3 +40,14 @@ jobs:
           ODOO_PASSWORD: ${{ secrets.ODOO_PASSWORD }}
         run: |
           python cc_fetch_worker.py ${{ github.event.inputs.project_id }} ${{ github.event.inputs.opportunity_id }}
+        continue-on-error: true
+      
+      - name: Upload debug screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: debug-screenshots
+          path: |
+            *.png
+            *.html
+          if-no-files-found: ignore
