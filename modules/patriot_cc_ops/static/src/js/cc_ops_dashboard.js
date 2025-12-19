@@ -6,7 +6,7 @@ import { useService } from "@web/core/utils/hooks";
 
 class CCOpsDashboard extends Component {
     static template = "patriot_cc_ops.Dashboard";
-    static props = {};
+    static props = ["*"];
 
     setup() {
         this.orm = useService("orm");
