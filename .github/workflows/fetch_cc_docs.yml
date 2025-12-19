@@ -1,0 +1,42 @@
+name: Fetch CC Documents
+
+on:
+  workflow_dispatch:
+    inputs:
+      project_id:
+        description: 'CC Project ID to fetch'
+        required: true
+        type: string
+      opportunity_id:
+        description: 'Odoo Opportunity ID'
+        required: true
+        type: string
+
+jobs:
+  fetch-documents:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      
+      - name: Install dependencies
+        run: |
+          pip install playwright python-dotenv xmlrpc-client
+          playwright install chromium
+      
+      - name: Fetch documents from ConstructConnect
+        env:
+          CC_EMAIL: ${{ secrets.CC_EMAIL }}
+          CC_PASSWORD: ${{ secrets.CC_PASSWORD }}
+          ODOO_URL: ${{ secrets.ODOO_URL }}
+          ODOO_DB: ${{ secrets.ODOO_DB }}
+          ODOO_USER: ${{ secrets.ODOO_USER }}
+          ODOO_PASSWORD: ${{ secrets.ODOO_PASSWORD }}
+        run: |
+          python cc_fetch_worker.py ${{ github.event.inputs.project_id }} ${{ github.event.inputs.opportunity_id }}

@@ -162,7 +162,62 @@ class CCOpportunity(models.Model):
         
         _logger.info(f"Created CC Opportunity from email: {record.name}")
         
+        # Auto-trigger GitHub Action if we have a CC Project ID
+        if record.cc_project_id:
+            record.trigger_github_fetch()
+        
         return record
+
+    def trigger_github_fetch(self):
+        """
+        Triggers GitHub Actions workflow to fetch documents.
+        """
+        self.ensure_one()
+        if not self.cc_project_id:
+            _logger.warning("No CC Project ID, cannot trigger fetch")
+            return
+        
+        import requests
+        
+        # Get GitHub token from config
+        github_token = self.env['ir.config_parameter'].sudo().get_param('cc_ops.github_token', '')
+        if not github_token:
+            _logger.warning("GitHub token not configured. Go to Settings > Technical > Parameters > System Parameters and add 'cc_ops.github_token'")
+            self.message_post(body="GitHub token not configured. Cannot auto-fetch documents.")
+            return
+        
+        # Trigger GitHub Actions workflow
+        repo = "MrsJanish/PatriotSigns"
+        workflow = "fetch_cc_docs.yml"
+        url = f"https://api.github.com/repos/{repo}/actions/workflows/{workflow}/dispatches"
+        
+        headers = {
+            "Authorization": f"token {github_token}",
+            "Accept": "application/vnd.github.v3+json",
+        }
+        
+        data = {
+            "ref": "master",
+            "inputs": {
+                "project_id": str(self.cc_project_id),
+                "opportunity_id": str(self.id),
+            }
+        }
+        
+        try:
+            self.state = 'fetching'
+            response = requests.post(url, headers=headers, json=data, timeout=30)
+            if response.status_code == 204:
+                _logger.info(f"GitHub Action triggered for project {self.cc_project_id}")
+                self.message_post(body="Document fetch started via GitHub Actions...")
+            else:
+                _logger.error(f"GitHub API error: {response.status_code} - {response.text}")
+                self.message_post(body=f"Failed to trigger document fetch: {response.status_code}")
+                self.state = 'new'
+        except Exception as e:
+            _logger.error(f"Error triggering GitHub Action: {e}")
+            self.message_post(body=f"Error triggering fetch: {e}")
+            self.state = 'new'
 
 
     def action_fetch_cc_data(self):

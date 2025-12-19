@@ -10,5 +10,9 @@
             <field name="key">cc_ops.password</field>
             <field name="value"></field>
         </record>
+        <record id="cc_ops_github_token" model="ir.config_parameter">
+            <field name="key">cc_ops.github_token</field>
+            <field name="value"></field>
+        </record>
     </data>
 </odoo>
