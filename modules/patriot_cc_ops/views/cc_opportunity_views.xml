@@ -92,6 +92,7 @@
                 <field name="name"/>
                 <field name="bid_date"/>
                 <field name="city"/>
+                <field name="state_id"/>
                 <field name="state"/>
                 <field name="document_count"/>
                 <templates>
