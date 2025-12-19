@@ -1,0 +1,45 @@
+/* CC Opportunities Styling */
+/* Uses the Patriot Starter App aesthetic */
+
+.o_cc_ops_kanban .o_kanban_record {
+    border-radius: 12px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.o_cc_ops_kanban .o_kanban_record:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.12);
+}
+
+/* Form styling */
+.o_form_view .oe_title h1 {
+    font-weight: 700;
+    color: #1a365d;
+}
+
+/* Document badge */
+.badge.bg-info {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+}
+
+/* Status badges */
+.o_field_badge[data-value="new"] {
+    background-color: #fbbf24 !important;
+}
+
+.o_field_badge[data-value="ready"] {
+    background-color: #34d399 !important;
+}
+
+.o_field_badge[data-value="bidding"] {
+    background-color: #60a5fa !important;
+}
+
+.o_field_badge[data-value="won"] {
+    background-color: #10b981 !important;
+}
+
+.o_field_badge[data-value="lost"] {
+    background-color: #ef4444 !important;
+}

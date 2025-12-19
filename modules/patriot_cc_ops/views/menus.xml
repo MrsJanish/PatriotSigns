@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- ROOT MENU -->
+    <menuitem id="cc_ops_menu_root"
+        name="CC Opportunities"
+        web_icon="patriot_cc_ops,static/description/icon.png"
+        sequence="50"/>
+
+    <!-- MAIN MENU -->
+    <menuitem id="cc_ops_menu_opportunities"
+        name="Opportunities"
+        parent="cc_ops_menu_root"
+        action="cc_opportunity_action"
+        sequence="10"/>
+</odoo>
