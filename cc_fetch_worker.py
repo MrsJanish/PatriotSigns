@@ -24,30 +24,76 @@ ODOO_PASSWORD = os.environ.get("ODOO_PASSWORD")
 
 
 def login_to_cc(page, context):
-    """Login to ConstructConnect"""
+    """Login to ConstructConnect with improved SSO handling"""
     print("Navigating to ConstructConnect...")
     page.goto("https://app.constructconnect.com/")
+    page.wait_for_load_state("networkidle", timeout=30000)
     time.sleep(3)
     
     # Enter email on first page
-    email_input = page.locator("input#email")
-    if email_input.is_visible():
-        email_input.fill(CC_EMAIL)
-        page.locator("input#submitButton").click()
-        time.sleep(3)
+    try:
+        email_input = page.locator("input#email")
+        email_input.wait_for(timeout=10000)
+        if email_input.is_visible():
+            print(f"Entering email: {CC_EMAIL}")
+            email_input.fill(CC_EMAIL)
+            submit_btn = page.locator("input#submitButton, button[type='submit']").first
+            submit_btn.click()
+            time.sleep(5)
+    except Exception as e:
+        print(f"Email page handling: {e}")
+    
+    # Wait to land on SSO page
+    page.wait_for_load_state("networkidle", timeout=30000)
+    print(f"Current URL: {page.url}")
     
     # Handle login.io SSO page
-    if "login.io.constructconnect.com" in page.url:
+    if "login.io" in page.url or "constructconnect.com/login" in page.url:
         print("On SSO page, filling credentials...")
-        page.locator("#email-input").fill(CC_EMAIL)
-        page.locator("#password-input").fill(CC_PASSWORD)
-        page.locator("#login-btn").click()
-        time.sleep(5)
+        
+        # Wait for and fill email field
+        try:
+            email_field = page.locator("#email-input, input[name='email'], input[type='email']").first
+            email_field.wait_for(timeout=10000)
+            email_field.fill(CC_EMAIL)
+            print("Email filled")
+        except Exception as e:
+            print(f"Email field: {e}")
+        
+        # Wait for and fill password field
+        try:
+            pw_field = page.locator("#password-input, input[name='password'], input[type='password']").first
+            pw_field.wait_for(timeout=10000)
+            pw_field.fill(CC_PASSWORD)
+            print("Password filled")
+        except Exception as e:
+            print(f"Password field: {e}")
+        
+        # Click login button
+        try:
+            login_btn = page.locator("#login-btn, button[type='submit'], button:has-text('Sign In'), button:has-text('Log In')").first
+            login_btn.click()
+            print("Login button clicked, waiting for redirect...")
+        except Exception as e:
+            print(f"Login button: {e}")
+        
+        # Wait for navigation away from login page
+        for i in range(30):
+            time.sleep(2)
+            current_url = page.url
+            print(f"  Checking URL ({i+1}/30): {current_url[:60]}...")
+            if "login.io" not in current_url and "login" not in current_url.split("/")[-1]:
+                print("Login successful - redirected!")
+                return True
+            if "error" in current_url.lower() or "invalid" in page.content().lower():
+                print("Login error detected")
+                break
     
-    # Wait for redirect
+    # Final check
     page.wait_for_load_state("networkidle", timeout=30000)
-    print(f"Login complete, URL: {page.url}")
-    return "login" not in page.url.lower()
+    final_url = page.url
+    print(f"Final URL: {final_url}")
+    return "app.constructconnect.com" in final_url and "login" not in final_url
 
 
 def fetch_documents(page, context, project_id, download_dir):
