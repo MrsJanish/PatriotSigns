@@ -25,7 +25,7 @@
         <field name="arch" type="xml">
             <form string="CC Opportunity">
                 <header>
-                    <button name="action_fetch_cc_data" type="object" string="🔄 Fetch/Refresh Data" class="btn-primary" invisible="not cc_source_url"/>
+                    <button name="trigger_github_fetch" type="object" string="🔄 Fetch Documents (GitHub)" class="btn-primary" invisible="not cc_project_id"/>
                     <button name="action_view_documents" type="object" string="📄 View Documents" class="btn-secondary" invisible="document_count == 0"/>
                     <field name="state" widget="statusbar" statusbar_visible="new,ready,bidding,won,lost"/>
                 </header>
