@@ -35,7 +35,7 @@ class CCAPI(models.AbstractModel):
     @api.model
     def _get_session(self):
         """
-        Creates an authenticated requests.Session for ConstructConnect.
+        Creates an authenticated requests.Session for iSqFt/ConstructConnect.
         Uses cookie-based session auth (like a browser).
         """
         email, password = self._get_credentials()
@@ -45,43 +45,44 @@ class CCAPI(models.AbstractModel):
 
         session = requests.Session()
         session.headers.update({
-            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
-            'Accept': 'application/json, text/html, */*',
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+            'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
+            'Accept-Language': 'en-US,en;q=0.9',
         })
 
-        # Attempt Login
-        # NOTE: The login endpoint and payload structure may need to be reverse-engineered
-        # from the actual ConstructConnect website.
-        login_url = "https://app.constructconnect.com/api/auth/login"  # Placeholder; needs verification
+        _logger.info("Attempting iSqFt login...")
         
         try:
-            # First, get any CSRF tokens if needed (common pattern)
-            session.get("https://app.constructconnect.com/login")
-            
-            # Submit login
-            login_payload = {
-                'email': email,
-                'password': password,
+            # Step 1: Get login page (for cookies/tokens)
+            login_page = session.get("https://app.isqft.com/Account/Login", timeout=15)
+            _logger.info(f"Login page status: {login_page.status_code}")
+
+            # Step 2: Form-based login
+            form_data = {
+                'Email': email,
+                'Password': password,
+                'RememberMe': 'true'
             }
-            resp = session.post(login_url, json=login_payload, timeout=30)
-            
-            if resp.status_code == 200 and 'token' in resp.text.lower():
-                _logger.info("CC Login successful.")
-                # Some APIs return a token to use in headers
-                try:
-                    data = resp.json()
-                    if 'accessToken' in data:
-                        session.headers['Authorization'] = f"Bearer {data['accessToken']}"
-                except:
-                    pass  # Cookie-based session, no token needed
+            resp = session.post(
+                "https://app.isqft.com/Account/Login",
+                data=form_data,
+                timeout=30,
+                allow_redirects=True
+            )
+            _logger.info(f"Login POST status: {resp.status_code}, URL: {resp.url}")
+
+            # Check if we're logged in (not on login page)
+            if 'login' not in resp.url.lower() and resp.status_code == 200:
+                _logger.info("iSqFt Login successful!")
                 return session
             else:
-                _logger.error(f"CC Login failed: {resp.status_code} - {resp.text[:200]}")
+                _logger.error("iSqFt Login failed - still on login page")
                 return None
-                
+
         except Exception as e:
-            _logger.error(f"CC Session creation failed: {e}")
+            _logger.error(f"iSqFt Session creation failed: {e}")
             return None
+
 
     @api.model
     def fetch_project(self, url_or_id):

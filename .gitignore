@@ -10,3 +10,6 @@ __pycache__/
 # System
 .DS_Store
 Thumbs.db
+
+# Local test files with credentials
+test_cc_api.py

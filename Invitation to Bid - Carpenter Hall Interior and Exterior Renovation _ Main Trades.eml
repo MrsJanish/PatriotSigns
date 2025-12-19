@@ -1,0 +1,548 @@
+Received: from SA1PR13MB6727.namprd13.prod.outlook.com (2603:10b6:806:3dd::15)
+ by BY1PR13MB6597.namprd13.prod.outlook.com with HTTPS; Wed, 17 Dec 2025
+ 23:12:30 +0000
+Received: from SJ0PR03CA0233.namprd03.prod.outlook.com (2603:10b6:a03:39f::28)
+ by SA1PR13MB6727.namprd13.prod.outlook.com (2603:10b6:806:3dd::15) with
+ Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.9412.13; Wed, 17 Dec
+ 2025 23:12:27 +0000
+Received: from MWH0EPF000A6733.namprd04.prod.outlook.com
+ (2603:10b6:a03:39f:cafe::9) by SJ0PR03CA0233.outlook.office365.com
+ (2603:10b6:a03:39f::28) with Microsoft SMTP Server (version=TLS1_3,
+ cipher=TLS_AES_256_GCM_SHA384) id 15.20.9434.7 via Frontend Transport; Wed,
+ 17 Dec 2025 23:12:17 +0000
+Authentication-Results: spf=pass (sender IP is 149.72.142.33)
+ smtp.mailfrom=em1332.isqftmail.com; dkim=pass (signature was verified)
+ header.d=isqftmail.com;dmarc=pass action=none
+ header.from=isqftmail.com;compauth=pass reason=100
+Received-SPF: Pass (protection.outlook.com: domain of em1332.isqftmail.com
+ designates 149.72.142.33 as permitted sender)
+ receiver=protection.outlook.com; client-ip=149.72.142.33;
+ helo=o61.ptr1471.isqftmail.com; pr=C
+Received: from o61.ptr1471.isqftmail.com (149.72.142.33) by
+ MWH0EPF000A6733.mail.protection.outlook.com (10.167.249.25) with Microsoft
+ SMTP Server (version=TLS1_3, cipher=TLS_AES_256_GCM_SHA384) id 15.20.9434.6
+ via Frontend Transport; Wed, 17 Dec 2025 23:12:26 +0000
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=isqftmail.com;
+	h=content-transfer-encoding:content-type:date:from:mime-version:subject:
+	reply-to:to:cc:content-type:date:from:subject:to;
+	s=S3; bh=+CabW8rpirp8CFQAl6UTaZr++uhmrVdrzbzyUHLVplc=;
+	b=hZ44pIQ9UXTCMPaDCKEIjD3jORt/LT0hQpUXxzMSMK1vcpAhKQqbNXbiTtMvP6G3lj5I
+	ZOaVzvcNDB3+x4XlIDiX0PDjcJVKd3/5KuOB9Qo+75WnnooZOeKbEUl7YMfBAWGU1MmF27
+	UHFZcYRPxML0kS48y2C+D0X5aJbb5wFEh1xSlkA7ktlvlzlfdgCzkjSoU5uRH0vK58BvoY
+	/Kh1vrsBvKYFv6Lo3uO29i+DdMIWRfRlCvE/4tKVEE3tVWTWQpA7fj1DkRYQ8xXK981wHC
+	5P3G3iKYdJw+K2sWFp+bD1ki7c6h0uY214BQZD0+mFCdYGZK89FgZSx2wyAgggaA==
+Received: by recvd-78b965c8d8-rv4js with SMTP id recvd-78b965c8d8-rv4js-1-694338D9-3E
+	2025-12-17 23:12:25.506605268 +0000 UTC m=+2447.058612747
+Received: from MTUzNzM0MjU (unknown)
+	by geopod-ismtpd-4 (SG) with HTTP
+	id z2xfHMIoQqiividn71-HDg
+	Wed, 17 Dec 2025 23:12:25.496 +0000 (UTC)
+Content-Transfer-Encoding: quoted-printable
+Content-Type: text/html; charset=iso-8859-1
+Date: Wed, 17 Dec 2025 23:12:25 +0000 (UTC)
+From: Timberlake Construction <Transmittals@isqftmail.com>
+Message-ID: <z2xfHMIoQqiividn71-HDg@geopod-ismtpd-4>
+Subject: Invitation to Bid - Carpenter Hall Interior and Exterior Renovation :
+ Main Trades
+Reply-To: Timberlake Construction
+	<fa09018e-abe9-449f-92b5-df461f71749c@isqftmail.com>
+X-SG-EID: =?us-ascii?Q?u001=2E4DFXYi4dH5Hvq4UK5MJ+LpIBI3mFy9nD5igJbRkngcG7eyjRk0r8ybjAU?=
+ =?us-ascii?Q?mCnoF5r1W81sdiCaVlY7wQh5QAGvAYfAc8wFgzg?=
+ =?us-ascii?Q?C3=2FDl95TI2I4TpfEgyTPUSN7XbIgNxvoNZzzH3A?=
+ =?us-ascii?Q?xy0MfLOrxu0sA0yEx13nmDHkFbq8cr+IzWCDlnr?=
+ =?us-ascii?Q?Bd8eSGbGOXsf3A5J45C5BK0WGTZzQ8gOb5RmN0=2F?=
+ =?us-ascii?Q?BHVTlf=2FBBZpGBbymRwIOSS+s0RKOTCO5vGL91fz?=
+ =?us-ascii?Q?VoUxGxWXIwqX9Jn+4CjXgRCI4w=3D=3D?=
+X-SG-ID: =?us-ascii?Q?u001=2ESdBcvi+Evd=2FbQef8eZF3BrD0RFVytUp1w8Jqcc9PxaC405tC23YvNRpCc?=
+ =?us-ascii?Q?RAfO+0Rt1b0W2eBVINfnDTawuAW=2Fg=3D=3D?=
+To: Janish Tiffany <tiffany@omegalaserdesign.com>
+X-Entity-ID: u001.PjN39y9CU6gYObBpmT8bBA==
+Return-Path: bounces+15373425-6006-tiffany=omegalaserdesign.com@em1332.isqftmail.com
+X-MS-Exchange-Organization-ExpirationStartTime: 17 Dec 2025 23:12:26.8439
+ (UTC)
+X-MS-Exchange-Organization-ExpirationStartTimeReason: OriginalSubmit
+X-MS-Exchange-Organization-ExpirationInterval: 1:00:00:00.0000000
+X-MS-Exchange-Organization-ExpirationIntervalReason: OriginalSubmit
+X-MS-Exchange-Organization-Network-Message-Id: a1eb4879-e7eb-48f8-71bc-08de3dc1be92
+X-EOPAttributedMessage: 0
+X-EOPTenantAttributedMessage: aaa8eccf-140a-4f86-a672-8b525238f509:0
+X-MS-Exchange-Organization-MessageDirectionality: Incoming
+X-MS-PublicTrafficType: Email
+X-MS-TrafficTypeDiagnostic: MWH0EPF000A6733:EE_|SA1PR13MB6727:EE_|BY1PR13MB6597:EE_
+X-MS-Exchange-Organization-AuthSource: MWH0EPF000A6733.namprd04.prod.outlook.com
+X-MS-Exchange-Organization-AuthAs: Anonymous
+X-MS-Office365-Filtering-Correlation-Id: a1eb4879-e7eb-48f8-71bc-08de3dc1be92
+X-MS-Exchange-Organization-SCL: -1
+X-Microsoft-Antispam: BCL:2;ARA:13230040|4022899009|1032899013|5062899012|13102899012|2092899012|3072899012|3092899012|69100299015|12012899012|29132699027|8096899003|2066899003|7053199007|13003099007;
+X-Forefront-Antispam-Report: CIP:149.72.142.33;CTRY:US;LANG:en;SCL:-1;SRV:;IPV:NLI;SFV:SFE;H:o61.ptr1471.isqftmail.com;PTR:o61.ptr1471.isqftmail.com;CAT:NONE;SFS:(13230040)(4022899009)(1032899013)(5062899012)(13102899012)(2092899012)(3072899012)(3092899012)(69100299015)(12012899012)(29132699027)(8096899003)(2066899003)(7053199007)(13003099007);DIR:INB;
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 17 Dec 2025 23:12:26.3766
+ (UTC)
+X-MS-Exchange-CrossTenant-Network-Message-Id: a1eb4879-e7eb-48f8-71bc-08de3dc1be92
+X-MS-Exchange-CrossTenant-Id: aaa8eccf-140a-4f86-a672-8b525238f509
+X-MS-Exchange-CrossTenant-AuthSource: MWH0EPF000A6733.namprd04.prod.outlook.com
+X-MS-Exchange-CrossTenant-AuthAs: Anonymous
+X-MS-Exchange-CrossTenant-FromEntityHeader: Internet
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: SA1PR13MB6727
+X-MS-Exchange-Transport-EndToEndLatency: 00:00:03.6882491
+X-MS-Exchange-Processed-By-BccFoldering: 15.20.9434.000
+X-Microsoft-Antispam-Mailbox-Delivery:
+	wl:1;pcwl:1;ucf:1;jmr:0;auth:0;dest:C;OFR:CustomRules;ENG:(910005)(944490095)(944506478)(944626604)(920097)(811242)(255002)(410001)(930201)(20251009114)(140003)(1310096);
+X-Microsoft-Antispam-Message-Info:
+	=?iso-8859-1?Q?A9EkUBEr6mexZGgZJTTblLPpDZYx4/nXmVOI/YARgcHp7bMz4udlTJXvvE?=
+ =?iso-8859-1?Q?teFFSC1/Zx+qisBnIslFApO7PjWMVg6ae+2VgasZP4FcZb8UlGCn9kIDig?=
+ =?iso-8859-1?Q?eqt0nNA//5cZN1LH+5TxobBLSz8wvAXn7QCldRj2kfZVDdIAeW3+0SSMzT?=
+ =?iso-8859-1?Q?GtLe5qYxbuQCt32hdjzm7kYDj5NXGLly2dPeKtv3kPh9G4Azz8CIEHaIMZ?=
+ =?iso-8859-1?Q?FoBRvXuHSQyll6bQNKHbka0LYqR5pqry+8+NhHR2ogerYAadScRfCL/rM5?=
+ =?iso-8859-1?Q?egtt6erwDwctbd5oCQuhuGIHRjbaCMdiZkllnnlL06ZXKe23fL3CqLxNUY?=
+ =?iso-8859-1?Q?HqTgZJpX2yo9jYHLIQFWiEzlHMEI/P1YP/r4MnxJC0C5YLQfaXl9lU7dm+?=
+ =?iso-8859-1?Q?S+FXxbYk5jKF0HOAdMbqas7Dq8n1u8nRtwKCX7nXbaofkB4WxDkzxDXC6F?=
+ =?iso-8859-1?Q?wiOcmLDGWwQVDnPOXPwMdP/yFN4XxDsB+CfEBMAyT5Yp4AtOPsBnBmgEma?=
+ =?iso-8859-1?Q?Z78B8rT82Vl071E0WvSGlRrtRkblG4AYGwANXLEq8o1oJV+lalMHOpkWqQ?=
+ =?iso-8859-1?Q?MbUYnpg5Q6RHUY5lmYIvjfVCuuK8p9uPLyDUwSR5CTMwX9As7vp79+0F5m?=
+ =?iso-8859-1?Q?6qmbuzkvh37i05xtYqivnbgxE1yVaZdieP4a1fIkGK3SloF5YEDdcNd7vK?=
+ =?iso-8859-1?Q?zFDsNUGs43mF6OI1DW6SZr4YRxBpWiGJWN7vy8pdxydczW+Vf5MxdKGm98?=
+ =?iso-8859-1?Q?ZOMbHPqpBcxZh85oVs5tjzKt0lTaAspDsEf4Ey4EqTPDc1WljD4iVNi99N?=
+ =?iso-8859-1?Q?6QiySF14Gmhwud+rYt0frSd+dEz2FLR8QP+rzPpspRbulCed334lkyWbYv?=
+ =?iso-8859-1?Q?3pn1JeOiWEA4kXBvDkQCNV4StCm3B3a8BshY3let/QffmWObu+gEd6jyrn?=
+ =?iso-8859-1?Q?dfCYL1MZqOe5DMgLfNR6UdYL0j+Zixlt2i0v2KNTZGLq2Vxc3QuNznu/02?=
+ =?iso-8859-1?Q?1VvlKt98FEXpfuBhqyt4hjsrMJc7JMoJ9VReiZgera7PNMK0fF1ylYWRQU?=
+ =?iso-8859-1?Q?Q9DVSN5PjVMC9a9jDykrRLGslwY27JwXXffV6IXp/3z5TBAikzNfMasEER?=
+ =?iso-8859-1?Q?kk+z3JMfvO3vzae4KpFIjNL5fqC98swqi5IhSINsk867fFei1ZWzZ5L7Ab?=
+ =?iso-8859-1?Q?85cc6htJA50Y4DvU1cZihRd1H9f62Y5fKbVHSSGUWkQYAMx6quvtgnfpwz?=
+ =?iso-8859-1?Q?jzEjf6nzGPGyf+TqzYoa5pZYmtIZbaPv0BP0pDpjlorPClDGRHyQnHQS+U?=
+ =?iso-8859-1?Q?HbWJFAdyUNy01aazbF7w8t8FYFa7YVLinKckHCf+GyugOKoZTgd/0/THXV?=
+ =?iso-8859-1?Q?V6pniSZMsSETxwq4mybHN47Suy2c5xHIsbZTREtrneIQaj48kW/bVeoVy7?=
+ =?iso-8859-1?Q?ZxleLmp6Ep/P4/BEona9DDS7E3JbasCTHTnqEd4sYOIsMZObiL4k4RYm5w?=
+ =?iso-8859-1?Q?DFeppm2ynQcoFjl/d3pLMNsxXOIeNC0yfTNf/Qk4zf+3523rffMioj59JF?=
+ =?iso-8859-1?Q?jKVgiFfZTLKBvIravrPkyZUXP9FOnNoMSXwgeQVJp9ZRvY1wOlecuWe01f?=
+ =?iso-8859-1?Q?3UBMJ6mcuRMh328NTEhY0SAV7UzFwT7W37K7cyw6hStD4U3hHEjEf3ul4+?=
+ =?iso-8859-1?Q?sPa9hN9Q5ay7CUtcFa8HJWDo0cOnIbeyjXmzulLZRdKOBx34lytNwgyu+O?=
+ =?iso-8859-1?Q?ec4CNRw6fYOt3c8/1cCG0g4XmRcDg7nSjbhIzAonSA30R0YppchWyPlIdO?=
+ =?iso-8859-1?Q?AtxeDAUUBh27x788YtpNqBb1QjYa35vOIZHz6FzCMLVwOPaawT5uVs0TA0?=
+ =?iso-8859-1?Q?GOGvrzERAM5//2SNFQk+RzqkjmINpBzHxRb3PJJNFdnLe2MsvAR4+kcbmv?=
+ =?iso-8859-1?Q?QxjplmnqG702gry/eS3vT36yiSYTBJKcsHIu6a8RvwPaODwCRBawEtpI3O?=
+ =?iso-8859-1?Q?oVkM+hBEm0RMEfJN7cbYBX/Zm0vd4F13mwLs7ON7MNtvD6W/O++/DYMVPZ?=
+ =?iso-8859-1?Q?I3LwdjoEZk1l81/FVI3JzbvY+VA35QMr2CKPWzkpGgs0yu8WtqHzw++/sc?=
+ =?iso-8859-1?Q?z1CSJJh6IJukc9EEnIuKaa8JJip46Th3l5Z+1wASO+Yom+cNvRzoEodyri?=
+ =?iso-8859-1?Q?46P9ymbYOWTmFFq89CobkngiPeflFd8rjHV8X3T1el4prZTa9uzoYs18Eq?=
+ =?iso-8859-1?Q?8SxpmhjQMUpBswlpaCxgw1p/TjxeSwDgZ+d40TNZT0Z+raXdvRGnAii90q?=
+ =?iso-8859-1?Q?PPWWyyTSn13Bnog0ePv5nOnmeLk5nMW9m4XZcWrFYCkHznLYsYGrAgf/lT?=
+ =?iso-8859-1?Q?SIaG1kVqF0CET+RZlOQwtAkWRcwt97vFJ+NCliERMGLl5swxQvi8u2Bcps?=
+ =?iso-8859-1?Q?79CG7pnyscC9wc4yVja86oJHJ7CiM4+et7ezK8TLR4j55b6nM8Lx4UPi7F?=
+ =?iso-8859-1?Q?whGlAcQVzLWOKgi4i8d4P8N2EtOZrK7+E+ZGuxZNTWWL3PvlZ2AfJPCMD9?=
+ =?iso-8859-1?Q?1HKKKRdUo06lIFYVMyow80JuC/eGKzlKu35e6z01mtHD3pDCuYoQQ0YULX?=
+ =?iso-8859-1?Q?P4T4Qe0eP+K2vKig+xklcd90RRqNjMeHo0TtmAPR1BptQd+QcTZWcG7K/7?=
+ =?iso-8859-1?Q?L6VOwRArOvYhn4ucXopd0irJqmQ0LMWxX4YB9RXq0lgAs44dU1tcxsHyp4?=
+ =?iso-8859-1?Q?kdNd85W2oklKEfJrtwJETNB1jX0pRq7MYmXg=3D=3D?=
+MIME-Version: 1.0
+
+<html>
+<head>
+<meta http-equiv=3D"Content-Type" content=3D"text/html; charset=3Diso-8859-=
+1"></head>
+<body><table width=3D"650" border=3D"0" cellpadding=3D"0" cellspacing=3D"0"=
+>                  <tr><td colspan=3D"3" width=3D"650" valign=3D"top" align=
+=3D"left">&nbsp;</td></tr>                  <tr>                           =
+       <td width=3D"20" valign=3D"top" align=3D"left">&nbsp;</td>          =
+                        <td width=3D"610" valign=3D"top" align=3D"left">   =
+                                               <table width=3D"610" border=
+=3D"0" cellpadding=3D"0" cellspacing=3D"0">                                =
+                                  <tr>                                     =
+                                             <td width=3D"330" valign=3D"to=
+p" align=3D"left">                                                         =
+                                         <h1 style=3D"font-family:Arial,Tah=
+oma,Verdana,sans-serif;font-size:32px;color:#000000;margin-bottom:10px;padd=
+ing:0;font-weight:bold;text-transform:uppercase;">Invitation to Bid</h1>   =
+                                                                        =20
+                                     <table width=3D"330" border=3D"0" cell=
+padding=3D"0" cellspacing=3D"0">                                           =
+                                                                           =
+            <tr>                                                           =
+                                                                           =
+            <td width=3D"80" valign=3D"top" align=3D"left"><p style=3D"font=
+-family:Arial,Tahoma,Verdana,sans-serif;font-size:12px;color:#656565;margin=
+:0;padding:0;font-weight:normal;">From:</p></td>                           =
+                                                                           =
+                                            <td width=3D"20" valign=3D"top"=
+ align=3D"left">&nbsp;</td>                                                =
+                                                                           =
+                       <td width=3D"230" valign=3D"top" align=3D"left"><p s=
+tyle=3D"font-family:Arial,Tahoma,Verdana,sans-serif;font-size:12px;color:#0=
+00000;margin:0;padding:0;font-weight:normal;">Timberlake Construction</p></=
+td>                                                                        =
+                                                          </tr>            =
+                                                                           =
+                                           <tr>                            =
+                                                                           =
+                                           <td width=3D"80" valign=3D"top" =
+align=3D"left"><p style=3D"font-family:Arial,Tahoma,Verdana,sans-serif;font=
+-size:12px;color:#656565;margin:0;padding:0;font-weight:normal;">Sent:</p><=
+/td>                                                                       =
+                                                                           =
+<td width=3D"20" valign=3D"top" align=3D"left">&nbsp;</td>                 =
+                                    =20
+                                                                           =
+                <td width=3D"230" valign=3D"top" align=3D"left"><p style=3D=
+"font-family:Arial,Tahoma,Verdana,sans-serif;font-size:12px;color:#000000;m=
+argin:0;padding:0;font-weight:normal;">Wednesday, December 17, 2025 6:12 PM=
+ ET</p></td>                                                               =
+                                                                   </tr>   =
+                                                                           =
+                                                    <tr>                   =
+                                                                           =
+                                                    <td width=3D"80" valign=
+=3D"top" align=3D"left"><p style=3D"font-family:Arial,Tahoma,Verdana,sans-s=
+erif;font-size:12px;color:#656565;margin:0;padding:0;font-weight:normal;">E=
+mail:</p></td>                                                             =
+                                     =20
+                                              <td width=3D"20" valign=3D"to=
+p" align=3D"left">&nbsp;</td>                                              =
+                                                                           =
+                         <td width=3D"230" valign=3D"top" align=3D"left"><p=
+ style=3D"font-family:Arial,Tahoma,Verdana,sans-serif;font-size:12px;color:=
+#000000;margin:0;padding:0;font-weight:normal;">scottb@timberlakeconstructi=
+on.com</p></td>                                                            =
+                                                                      </tr>=
+                                                                           =
+                                                       <tr>                =
+                                                                           =
+                                                       <td width=3D"80" val=
+ign=3D"top" align=3D"left"><p style=3D"font-family:Arial,Tahoma,Verdana,san=
+s-serif;font-size:12px;color:#656565;margin:0;padding:0;font-weight:normal;=
+">Phone:</p></td>                                                          =
+                                                                           =
+             <td width=3D"20" valign=3D"top" align=3D"left">&nbsp;</td>    =
+                                                                           =
+                                                                   <td widt=
+h=3D"230" valign=3D"top" align=3D"left"><p style=3D"font-family:Arial,Tahom=
+a,Verdana,sans-serif;font-size:12px;color:#000000;margin:0;padding:0;font-w=
+eight:normal;">(405) 840-2521</p></td>                                     =
+                                                                           =
+                  </tr>                                  <tr>              =
+                                                                           =
+                                                         <td width=3D"80" v=
+align=3D"top" align=3D"left"><p style=3D"font-family:Arial,Tahoma,Verdana,s=
+ans-serif;font-size:12px;color:#656565;margin:0;padding:0;font-weight:norma=
+l;">Fax:</p></td>                                                          =
+                                                                           =
+             <td width=3D"20" valign=3D"top" align=3D"left">&nbsp;</td>    =
+                                                                           =
+                                                                   <td widt=
+h=3D"230" valign=3D"top" align=3D"left"><p style=3D"font-family:Arial,Tahom=
+a,Verdana,sans-serif;font-size:12px;color:#000000;margin:0;padding:0;font-w=
+eight:normal;">(405) 840-5469</p></td>                                     =
+                                                                           =
+                  </tr>                                                    =
+                                                              </table>     =
+                             =20
+                                              </td>                        =
+                                                          <td width=3D"30" =
+valign=3D"top" align=3D"left">&nbsp;</td>                                  =
+                                                <td width=3D"250" valign=3D=
+"top" align=3D"right"><!-- GC LOGO --><img src=3D"https://app.isqft.com/ser=
+vices/document/getpublicdocument/528248" alt=3D"Timberlake Construction" wi=
+dth=3D"150"></td>                                                          =
+        </tr>                                                  </table>    =
+                              </td>                                  <td wi=
+dth=3D"20" valign=3D"top" align=3D"left">&nbsp;</td>                  </tr>=
+                  <tr><td colspan=3D"3" width=3D"650" valign=3D"top" align=
+=3D"left">&nbsp;</td></tr>  </table>  <p><table width=3D"650" border=3D"0" =
+cellpadding=3D"0" cellspacing=3D"0"><tr><td width=3D"20" valign=3D"top" ali=
+gn=3D"left">&nbsp;</td><td width=3D"610" valign=3D"top" align=3D"left"><tab=
+le width=3D"610" border=3D"0" cellpadding=3D"0" cellspacing=3D"0" style=3D"=
+background-color:#dfdfdf;border:1px solid #959595;"><tr><td width=3D"610" v=
+align=3D"top" align=3D"center" style=3D"padding-top:10px;padding-bottom:8px=
+;"><p style=3D"font-family:Arial,Tahoma,Verdana,sans-serif;font-size:12px;c=
+olor:#000000;margin-bottom:6px;padding:0;font-weight:normal;">Let us know y=
+our bid intention here:</p><a href=3D"https://app.isqft.com/services/go/Res=
+ponseLink/7NJR5GW4/6677742/1"><img src=3D"https://app.isqft.com/services/do=
+cument/getpublicdocument/106" width=3D"82" height=3D"22" alt=3D"Will Bid" b=
+order=3D"0"></a>&nbsp;&nbsp;&nbsp;&nbsp;<a href=3D"https://app.isqft.com/se=
+rvices/go/ResponseLink/7NJR5GW4/6677742/2"><img src=3D"https://app.isqft.co=
+m/services/document/getpublicdocument/103" width=3D"118" height=3D"22" alt=
+=3D"Under Review" border=3D"0"></a>&nbsp;&nbsp;&nbsp;&nbsp;<a href=3D"https=
+://app.isqft.com/services/go/ResponseLink/7NJR5GW4/6677742/3"><img src=3D"h=
+ttps://app.isqft.com/services/document/getpublicdocument/104" width=3D"95" =
+height=3D"22" alt=3D"Won't Bid" border=3D"0"></a></td></tr></table></td><td=
+ width=3D"20" valign=3D"top" align=3D"left">&nbsp;</td></tr><tr><td colspan=
+=3D"3" width=3D"650" valign=3D"top" align=3D"left">&nbsp;</td></tr></table>=
+</p>
+<table style=3D"width: 650px" border=3D"0" cellspacing=3D"0" cellpadding=3D=
+"0">
+<tbody>
+<tr>
+<td align=3D"left" valign=3D"top" width=3D"20">&nbsp;</td>
+<td align=3D"left" valign=3D"top" width=3D"610"><hr style=3D"border: 1px so=
+lid rgba(223, 223, 223, 1); margin-bottom: 26px">
+<table style=3D"width: 610px" border=3D"0" cellspacing=3D"0" cellpadding=3D=
+"0">
+<tbody>
+<tr>
+<td align=3D"left" valign=3D"top" width=3D"150">
+<p style=3D"font-family: Arial, Tahoma, Verdana, sans-serif; font-size: 14p=
+x; color: rgba(0, 0, 0, 1); margin: 0; padding: 0; font-weight: bold">Atten=
+tion:</p>
+</td>
+<td align=3D"left" valign=3D"top" width=3D"20">&nbsp;</td>
+<td align=3D"left" valign=3D"top" width=3D"440">
+<p style=3D"font-family: Arial, Tahoma, Verdana, sans-serif;
+font-size: 14px; color: rgba(0, 0, 0, 1); margin: 0; padding: 0; font-weigh=
+t: normal">Tiffany Janish - tiffany@omegalaserdesign.com</p>
+</td>
+</tr>
+<tr>
+<td align=3D"left" valign=3D"top" width=3D"150">
+<p style=3D"font-family: Arial, Tahoma, Verdana, sans-serif; font-size: 14p=
+x; color: rgba(0, 0, 0, 1); margin: 0; padding: 0; font-weight: bold">Compa=
+ny:</p>
+</td>
+<td align=3D"left" valign=3D"top" width=3D"20">&nbsp;</td>
+<td align=3D"left" valign=3D"top" width=3D"440">
+<p style=3D"font-family: Arial, Tahoma, Verdana, sans-serif; font-size: 14p=
+x; color: rgba(0, 0, 0, 1); margin: 0; padding: 0; font-weight: normal">Ome=
+ga Signs</p>
+</td>
+</tr>
+<tr>
+<td colspan=3D"3" align=3D"left" valign=3D"top" width=3D"610">&nbsp;</td>
+</tr>
+<tr>
+<td colspan=3D"3" align=3D"left" valign=3D"top" width=3D"610">
+<p style=3D"font-family: Arial, Tahoma, Verdana, sans-serif; font-size: 14p=
+x; color: rgba(0, 0, 0, 1); margin: 0; padding: 0; font-weight: bold">You h=
+ave been invited to bid:</p>
+</td>
+</tr>
+<tr>
+<td colspan=3D"3" align=3D"left" valign=3D"top" width=3D"610">
+<p style=3D"font-family: Arial, Tahoma, Verdana, sans-serif; font-size: 14p=
+x; color: rgba(0, 0, 0, 1); margin: 0; padding: 0; font-weight: normal">Car=
+penter Hall Interior and Exterior Renovation</p>
+</td>
+</tr>
+<tr>
+<td colspan=3D"3" align=3D"left" valign=3D"top" width=3D"610">&nbsp;</td>
+</tr>
+<tr>
+<td align=3D"left" valign=3D"top" width=3D"150">
+<p style=3D"font-family: Arial, Tahoma, Verdana, sans-serif; font-size: 14p=
+x; color: rgba(0, 0, 0, 1); margin: 0; padding: 0; font-weight: bold">Bid D=
+ue Date:</p>
+</td>
+<td align=3D"left" valign=3D"top" width=3D"20">&nbsp;</td>
+<td align=3D"left" valign=3D"top" width=3D"440">
+<p style=3D"font-family: Arial, Tahoma, Verdana, sans-serif; font-size: 14p=
+x; color: rgba(0, 0, 0, 1); margin: 0; padding: 0; font-weight: normal">Tue=
+sday, February 10, 2026 12:00 PM CT</p>
+</td>
+</tr>
+<tr>
+<td align=3D"left" valign=3D"top" width=3D"150">
+<p style=3D"font-family: Arial, Tahoma, Verdana, sans-serif; font-size: 14p=
+x; color: rgba(0, 0, 0, 1); margin: 0; padding: 0;
+font-weight: bold">Project Location:</p>
+</td>
+<td align=3D"left" valign=3D"top" width=3D"20">&nbsp;</td>
+<td align=3D"left" valign=3D"top" width=3D"440">
+<p style=3D"font-family: Arial, Tahoma, Verdana, sans-serif; font-size: 14p=
+x; color: rgba(0, 0, 0, 1); margin: 0; padding: 0; font-weight: normal">840=
+ Asp Ave, Norman, OK 73069</p>
+</td>
+</tr>
+<tr>
+<td align=3D"left" valign=3D"top" width=3D"150">
+<p style=3D"font-family: Arial, Tahoma, Verdana, sans-serif; font-size: 14p=
+x; color: rgba(0, 0, 0, 1); margin: 0; padding: 0; font-weight: bold">Proje=
+ct Start Date:</p>
+</td>
+<td align=3D"left" valign=3D"top" width=3D"20">&nbsp;</td>
+<td align=3D"left" valign=3D"top" width=3D"440">
+<p style=3D"font-family: Arial, Tahoma, Verdana, sans-serif; font-size: 14p=
+x; color: rgba(0, 0, 0, 1); margin: 0; padding: 0; font-weight: normal">Thu=
+, Mar 12, 2026</p>
+</td>
+</tr>
+<tr>
+<td align=3D"left" valign=3D"top" width=3D"150">
+<p style=3D"font-family: Arial, Tahoma, Verdana, sans-serif; font-size: 14p=
+x; color: rgba(0, 0, 0, 1); margin: 0;
+padding: 0; font-weight: bold">Contact:</p>
+</td>
+<td align=3D"left" valign=3D"top" width=3D"20">&nbsp;</td>
+<td align=3D"left" valign=3D"top" width=3D"440">
+<p style=3D"font-family: Arial, Tahoma, Verdana, sans-serif; font-size: 14p=
+x; color: rgba(0, 0, 0, 1); margin: 0; padding: 0; font-weight: normal">Sco=
+tt Berger</p>
+</td>
+</tr>
+<tr>
+<td colspan=3D"3" align=3D"left" valign=3D"top" width=3D"610">&nbsp;</td>
+</tr>
+<tr>
+<td colspan=3D"3" align=3D"left" valign=3D"top" width=3D"610">
+<p style=3D"font-family: Arial, Tahoma, Verdana, sans-serif; font-size: 14p=
+x; color: rgba(0, 0, 0, 1); margin: 0; padding: 0; font-weight: bold">Descr=
+iption:</p>
+</td>
+</tr>
+<tr>
+<td colspan=3D"3" align=3D"left" valign=3D"top" width=3D"610">
+<p style=3D"font-family: Arial, Tahoma, Verdana, sans-serif; font-size: 14p=
+x; color: rgba(0, 0, 0, 1); margin: 0; padding: 0; font-weight: normal"><p>=
+Renovation of an educational facility in Norman, Oklahoma. Completed plans =
+call for the renovation of a 21,202-square-foot, three-story above grade ed=
+ucational
+facility.<br><br>1.2 Project Scope <br>The renovation project will generall=
+y include, but is not limited to: <br>1. Structural and architectural inter=
+ior improvements <br>2. Exterior fa=E7ade restoration and weatherproofing <=
+br>3. Mechanical, electrical, and plumbing upgrades <br>4. Accessibility im=
+provements in compliance with ADA standards <br>5. Site and landscape work =
+directly related to the building renovation <br> <br>Question Deadline: 1/2=
+0/2026 at 12:00 pm</p></p>
+</td>
+</tr>
+<tr>
+<td colspan=3D"3" align=3D"left" valign=3D"top" width=3D"610">&nbsp;</td>
+</tr>
+<tr>
+<td colspan=3D"3" align=3D"left" valign=3D"top" width=3D"610">
+<p style=3D"font-family: Arial, Tahoma, Verdana, sans-serif; font-size: 14p=
+x; color: rgba(0, 0, 0, 1); margin: 0; padding: 0; font-weight: bold">Messa=
+ge to Bidders:</p>
+</td>
+</tr>
+<tr>
+<td colspan=3D"3" align=3D"left" valign=3D"top" width=3D"610">
+<p style=3D"font-family: Arial, Tahoma, Verdana, sans-serif; font-size: 14p=
+x; color: rgba(0, 0, 0, 1); margin: 0; padding: 0;
+font-weight: normal"></p>
+<p style=3D"font-family: Arial, Tahoma, Verdana, sans-serif; font-size: 14p=
+x; color: rgba(0, 0, 0, 1); margin: 0; padding: 0; font-weight: normal">Tha=
+nk you for bidding Timberlake Construction. We appreciate your business. Pl=
+ease email your bid proposal to: estimating@timberlakeconstruction.com</p>
+</td>
+</tr>
+</tbody>
+</table>
+</td>
+<td align=3D"left" valign=3D"top" width=3D"20">&nbsp;</td>
+</tr>
+<tr>
+<td colspan=3D"3" align=3D"left" valign=3D"top" width=3D"650">&nbsp;</td>
+</tr>
+</tbody>
+</table>
+<p> <table width=3D"650" border=3D"0" cellpadding=3D"0" cellspacing=3D"0">
+    <tr>
+        <td width=3D"20" valign=3D"top" align=3D"left">
+            &nbsp;
+        </td>
+        <td width=3D"610" valign=3D"top" align=3D"left">
+            <table width=3D"610" border=3D"0" cellpadding=3D"0" cellspacing=
+=3D"0" style=3D"background-color: #3a6ea5;">
+                <tr>
+                    <td width=3D"610" valign=3D"top" align=3D"center">
+                        <h3 style=3D"font-family: Arial,Tahoma,Verdana,sans=
+-serif; font-size: 24px; color: #FFFFFF;
+                            margin-bottom: 10px; margin-top: 20px; padding:=
+ 0; font-weight: normal;">
+                            <a style=3D"color: #FFFFFF;" href=3D"https://ap=
+p.isqft.com/services/Access/GetUserQANAccess?sourceType=3D2&amp;Id=3D7NJR5G=
+W4&amp;ProjectID=3D6677742">Click here to view the project</a></h3>
+                    </td>
+                </tr>
+                  <tr>
+                    <td align=3D"center" style=3D"padding-bottom: 10px; fon=
+t-family: Arial,Tahoma,Verdana,sans-serif;
+                        font-size: 12px; font-weight: normal; color: #FFFFF=
+F;">
+                        Access Number: 7NJR-5GW4
+                    </td>
+                </tr>
+            </table>
+        </td>
+        <td width=3D"20" valign=3D"top" align=3D"left">
+            &nbsp;
+        </td>
+    </tr>
+    <tr>
+        <td colspan=3D"3" width=3D"650" valign=3D"top" align=3D"left">
+            &nbsp;
+        </td>
+    </tr>
+</table>
+ <table width=3D"650" border=3D"0" cellpadding=3D"0" cellspacing=3D"0"><tr>=
+<td width=3D"20" valign=3D"top" align=3D"left">&nbsp;</td><td width=3D"610"=
+ valign=3D"top" align=3D"left"><table width=3D"610" border=3D"0" cellpaddin=
+g=3D"0" cellspacing=3D"0" style=3D"background-color:#dfdfdf;border:1px soli=
+d #959595;"><tr><td width=3D"610" valign=3D"top" align=3D"center" style=3D"=
+padding-top:10px;padding-bottom:8px;"><p style=3D"font-family:Arial,Tahoma,=
+Verdana,sans-serif;font-size:12px;color:#000000;margin-bottom:6px;padding:0=
+;font-weight:normal;">Let us know your bid intention here:</p><a href=3D"ht=
+tps://app.isqft.com/services/go/ResponseLink/7NJR5GW4/6677742/1"><img src=
+=3D"https://app.isqft.com/services/document/getpublicdocument/106" width=3D=
+"82" height=3D"22" alt=3D"Will Bid" border=3D"0"></a>&nbsp;&nbsp;&nbsp;&nbs=
+p;<a href=3D"https://app.isqft.com/services/go/ResponseLink/7NJR5GW4/667774=
+2/2"><img src=3D"https://app.isqft.com/services/document/getpublicdocument/=
+103" width=3D"118" height=3D"22" alt=3D"Under Review" border=3D"0"></a>&nbs=
+p;&nbsp;&nbsp;&nbsp;<a href=3D"https://app.isqft.com/services/go/ResponseLi=
+nk/7NJR5GW4/6677742/3"><img src=3D"https://app.isqft.com/services/document/=
+getpublicdocument/104" width=3D"95" height=3D"22" alt=3D"Won't Bid" border=
+=3D"0"></a></td></tr></table></td><td width=3D"20" valign=3D"top" align=3D"=
+left">&nbsp;</td></tr><tr><td colspan=3D"3" width=3D"650" valign=3D"top" al=
+ign=3D"left">&nbsp;</td></tr></table> </p><table width=3D"650" border=3D"0"=
+ cellpadding=3D"0" cellspacing=3D"0">
+                <tr><td colspan=3D"3" width=3D"650" valign=3D"top" align=3D=
+"left">&nbsp;</td></tr>
+                <tr>
+                                <td width=3D"20" valign=3D"top" align=3D"le=
+ft">&nbsp;</td>
+                                <td width=3D"610" valign=3D"top" align=3D"l=
+eft">
+                                                <p style=3D"font-family:Ari=
+al,Tahoma,Verdana,sans-serif;font-size:12px;color:#000000;margin:0;padding:=
+0;font-weight:normal;">For help, visit <a href=3D" http://www.isqft.com/sta=
+rt/pages/contact-support//" style=3D"color:#3a6ea5;"> http://www.isqft.com/=
+start/pages/contact-support/</a> or call us at (877) 4CC-TOOL (422-8665).</=
+p>
+                                </td>
+                                <td width=3D"20" valign=3D"top" align=3D"le=
+ft">&nbsp;</td>
+                </tr>
+</table>
+<table width=3D"650" border=3D"0" cellpadding=3D"0" cellspacing=3D"0">
+                <tr>
+                                <td width=3D"650" valign=3D"top"><img src=
+=3D"https://app.isqft.com/services/document/getpublicdocument/107" height=
+=3D"58" width=3D"650" alt=3D"iSqFt - Your Connection to Improved Profits" b=
+order=3D"0"></td>
+                </tr>
+</table>
+<table width=3D"650" border=3D"0" cellpadding=3D"0" cellspacing=3D"0"><tr><=
+td width=3D"650" valign=3D"top" align=3D"left">&nbsp;</td></tr><tr><td widt=
+h=3D"650" valign=3D"top" align=3D"left"><p style=3D"font-family:Arial,Tahom=
+a,Verdana,sans-serif;font-size:11px;color:#000000;margin:0;padding:0;font-w=
+eight:normal;">If you do not wish to receive further iSqFt messages, unsubs=
+cribe by <a href=3D"https://app.isqft.com/services/go/UI_Unsubscribe?p=3DAr=
+HR5g8pfoGkNCo4UAlgZNJxyzUn0qa3fHnr2t3cCEFP7lcesGUlHbjgcpatJSDmobY0ECTzIX6X1=
+4rxVhSIYZSIOpbgVqtWLCnH59OU11ls3Ofa%2fkp%2feJMGbEYBG%2baA6w%3d%3d&amp;z=3Df=
+a09018e-abe9-449f-92b5-df461f71749c" style=3D"color:#3a6ea5;">clicking here=
+</a> or by calling 1-888-768-4569. If you would like to change or edit your=
+ preferences for this or other iSqFt accounts, please visit the <strong>My =
+Profile</strong> page after logging in. To learn more about the use of pers=
+onal information by iSqFt, please read our <a href=3D"http://www.isqft.com/=
+home/privacy_policy.htm" style=3D"color:#3a6ea5;">Privacy
+Policy</a>.</p></td></tr><table>
+<img src=3D"https://app.isqft.com/services/mail/UI_TrackMessageRead?id=3Dfa=
+09018e-abe9-449f-92b5-df461f71749c.gif" width=3D"1" height=3D"1" alt=3D"iSq=
+Ft" style=3D"display:none"><img src=3D"https://u15373425.ct.sendgrid.net/wf=
+/open?upn=3Du001.1TrFn-2FKGd4DDMMuxkOEdQoB6MNAoLBzGLtIl8HcQspAY9lFca6v3kBty=
+3YZ-2FsItZvY1WY9YiF2JwCvnhwuCLqBhaZvD3ULWCQi-2BY3XMK0veUMUL1Y5axX0SHVAMaLOx=
+OWZbHyd-2Bk2qzGk4uyqtgevyx1bLLeiaIFrr-2F-2Bg1XC31k-2F9eVeD2jPOM8TfS5dCbDfrP=
+ci9O6ltfvT8uu0xPCW7pmy5rIym7F8Kl-2FrDl8QZ02str9qjA9qCSY2yLle0AWLGz8XbYInwYI=
+nSuGVlCGQYA-3D-3D" alt=3D"" width=3D"1" height=3D"1" border=3D"0" style=3D"=
+height:1px !important;width:1px !important;border-width:0 !important;margin=
+-top:0 !important;margin-bottom:0 !important;margin-right:0 !important;marg=
+in-left:0 !important;padding-top:0 !important;padding-bottom:0 !important;p=
+adding-right:0 !important;padding-left:0 !important;"></body></html>
