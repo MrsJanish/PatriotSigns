@@ -114,54 +114,28 @@ def fetch_documents(page, context, project_id, download_dir):
     print(f"Navigating to {project_url}")
     page.goto(project_url, timeout=120000)
     
-    # Check for "Uh oh" error and handle it
+    # Wait for initial load
     try:
         page.wait_for_load_state("domcontentloaded", timeout=60000)
-        time.sleep(5)
-        
-        body_text = page.locator("body").inner_text()
-        if "Uh oh, something happened" in body_text:
-            print("Detected 'Uh oh' error page. Trying recovery...")
-            
-            # Try 1: Click "Try Again"
-            try_again = page.locator("button:has-text('Try Again')")
-            if try_again.is_visible():
-                print("Clicking 'Try Again'...")
-                try_again.click()
-                time.sleep(10)
-            
-            # Recheck
-            body_text = page.locator("body").inner_text()
-            if "Uh oh, something happened" in body_text:
-                print("Direct navigation failed. Trying global search execution...")
-                
-                # Try 2: Go to dashboard and search
-                page.goto("https://app.constructconnect.com/dashboard", timeout=60000)
-                time.sleep(10)
-                
-                # Find search bar
-                search_input = page.locator("input[placeholder*='Search'], input[type='search'], [aria-label='Search']").first
-                if search_input.is_visible():
-                    print(f"Searching for project {project_id}...")
-                    search_input.fill(str(project_id))
-                    search_input.press("Enter")
-                    time.sleep(10)
-                    
-                    # Click first project result
-                    print("Clicking first result...")
-                    result_link = page.locator(f"a[href*='{project_id}'], div[role='row']:has-text('{project_id}')").first
-                    if result_link.is_visible():
-                        result_link.click()
-                        time.sleep(10)
-                    else:
-                        print("No search results found with Project ID")
     except Exception as e:
-        print(f"Navigation handling error: {e}")
+        print(f"Load state wait: {e}")
 
-    # Give React time to render
-    print("Waiting for React content to load...")
+    print("Waiting for Page/React content to load...")
     time.sleep(15)
     
+    # Check for "Uh oh" error immediately
+    retry_search = False
+    try:
+        body_text = page.locator("body").inner_text()
+        if "Uh oh, something happened" in body_text:
+            print("Detected 'Uh oh' error page. Will retry via Search...")
+            retry_search = True
+        elif "Try Again" in body_text:
+             print("Detected 'Try Again' text. Will retry via Search...")
+             retry_search = True
+    except:
+        pass
+
     # Selectors for the "Documents" tab or button
     doc_tab_selectors = [
         "button:has-text('View/Download Documents')",
@@ -174,16 +148,67 @@ def fetch_documents(page, context, project_id, download_dir):
     ]
     
     docs_btn = None
-    for selector in doc_tab_selectors:
+    if not retry_search:
+        for selector in doc_tab_selectors:
+            try:
+                print(f"Checking for documents tab: {selector}")
+                btn = page.locator(selector).first
+                if btn.is_visible(timeout=2000):
+                    docs_btn = btn
+                    print(f"Found documents button: {selector}")
+                    break
+            except:
+                continue
+    
+    # If no doc button found (or error page detected), try Global Search Fallback
+    if not docs_btn or retry_search:
+        print("Direct navigation failed or documents not found. Implementing Global Search Fallback...")
+        
         try:
-            print(f"Checking for documents tab: {selector}")
-            btn = page.locator(selector).first
-            if btn.is_visible(timeout=2000):
-                docs_btn = btn
-                print(f"Found documents button: {selector}")
-                break
-        except:
-            continue
+            # Go to dashboard
+            page.goto("https://app.constructconnect.com/dashboard", timeout=60000)
+            page.wait_for_load_state("domcontentloaded", timeout=60000)
+            time.sleep(10)
+            
+            # Find and use search bar
+            search_input = page.locator("input[placeholder*='Search'], input[type='search'], [aria-label='Search']").first
+            if search_input.is_visible():
+                print(f"Searching for project {project_id}...")
+                search_input.fill(str(project_id))
+                time.sleep(2)
+                search_input.press("Enter")
+                time.sleep(15)
+                
+                # Click first result
+                print("Clicking first result...")
+                # Try generic result row or link containing ID
+                result_link = page.locator(f"a[href*='{project_id}'], div[role='row']").first
+                if result_link.is_visible():
+                    print("Found a result row/link, clicking...")
+                    result_link.click()
+                    time.sleep(15)
+                    
+                    # Re-check for documents button
+                    for selector in doc_tab_selectors:
+                        try:
+                            print(f"Re-checking for documents tab: {selector}")
+                            btn = page.locator(selector).first
+                            if btn.is_visible(timeout=2000):
+                                docs_btn = btn
+                                print(f"Found documents button after search: {selector}")
+                                break
+                        except:
+                            continue
+                else:
+                    print("No search results found")
+            else:
+                print("Could not find global search bar")
+                
+        except Exception as e:
+            print(f"Global search fallback failed: {e}")
+            page.screenshot(path="debug_search_fallback_error.png")
+
+    if docs_btn:
             
     if docs_btn:
         print("Opening documents tab...")
