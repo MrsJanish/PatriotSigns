@@ -101,7 +101,7 @@ def login_to_cc(page, context):
     return "app.constructconnect.com" in final_url and "login" not in final_url
 
 
-def fetch_documents(page, context, project_id, download_dir):
+def fetch_documents(page, context, project_id, download_dir, source_url=None):
     """Navigate to project and download documents"""
     print(f"Fetching documents for project {project_id}...")
     
@@ -109,8 +109,12 @@ def fetch_documents(page, context, project_id, download_dir):
     print("Waiting for dashboard to settle...")
     time.sleep(10)
     
-    # Navigate to project
-    project_url = f"https://app.constructconnect.com/project/{project_id}"
+    # Navigate to project - use source_url if provided, otherwise construct
+    if source_url and source_url.startswith('http'):
+        project_url = source_url
+    else:
+        project_url = f"https://app.constructconnect.com/project/{project_id}"
+    
     print(f"Navigating to {project_url}")
     page.goto(project_url, timeout=120000)
     
@@ -332,13 +336,16 @@ def upload_to_odoo(opportunity_id, zip_path):
 
 def main():
     if len(sys.argv) < 3:
-        print("Usage: python cc_fetch_worker.py <project_id> <opportunity_id>")
+        print("Usage: python cc_fetch_worker.py <project_id> <opportunity_id> [source_url]")
         sys.exit(1)
     
     project_id = sys.argv[1]
     opportunity_id = sys.argv[2]
+    source_url = sys.argv[3] if len(sys.argv) > 3 else None
     
     print(f"Starting fetch for CC Project {project_id}, Odoo Opportunity {opportunity_id}")
+    if source_url:
+        print(f"Using source URL: {source_url}")
     
     with tempfile.TemporaryDirectory() as download_dir:
         with sync_playwright() as p:
@@ -352,7 +359,7 @@ def main():
                 sys.exit(1)
             
             # Fetch documents
-            zip_path = fetch_documents(page, context, project_id, download_dir)
+            zip_path = fetch_documents(page, context, project_id, download_dir, source_url)
             
             browser.close()
         

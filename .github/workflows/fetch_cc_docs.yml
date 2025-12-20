@@ -11,6 +11,10 @@ on:
         description: 'Odoo Opportunity ID'
         required: true
         type: string
+      source_url:
+        description: 'Full CC Source URL'
+        required: false
+        type: string
 
 jobs:
   fetch-documents:
@@ -39,7 +43,7 @@ jobs:
           ODOO_USER: ${{ secrets.ODOO_USER }}
           ODOO_PASSWORD: ${{ secrets.ODOO_PASSWORD }}
         run: |
-          python cc_fetch_worker.py ${{ github.event.inputs.project_id }} ${{ github.event.inputs.opportunity_id }}
+          python cc_fetch_worker.py "${{ github.event.inputs.project_id }}" "${{ github.event.inputs.opportunity_id }}" "${{ github.event.inputs.source_url }}"
         continue-on-error: true
       
       - name: Upload debug screenshots

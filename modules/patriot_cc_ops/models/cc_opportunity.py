@@ -201,6 +201,7 @@ class CCOpportunity(models.Model):
             "inputs": {
                 "project_id": str(self.cc_project_id),
                 "opportunity_id": str(self.id),
+                "source_url": self.cc_source_url or "",
             }
         }
         
