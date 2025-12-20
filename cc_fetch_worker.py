@@ -290,12 +290,29 @@ def upload_to_odoo(opportunity_id, zip_path):
     """Upload documents to Odoo"""
     print(f"Uploading documents to Odoo opportunity {opportunity_id}...")
     
+    # Debug: print connection info
+    print(f"ODOO_URL: {ODOO_URL}")
+    print(f"ODOO_DB: {ODOO_DB}")
+    print(f"ODOO_USER: {ODOO_USER}")
+    print(f"ODOO_PASSWORD set: {bool(ODOO_PASSWORD)}")
+    
+    if not all([ODOO_URL, ODOO_DB, ODOO_USER, ODOO_PASSWORD]):
+        print("ERROR: Missing Odoo connection settings")
+        return False
+    
     # Connect to Odoo
-    common = xmlrpc.client.ServerProxy(f"{ODOO_URL}/xmlrpc/2/common")
-    uid = common.authenticate(ODOO_DB, ODOO_USER, ODOO_PASSWORD, {})
+    try:
+        url = f"{ODOO_URL}/xmlrpc/2/common"
+        print(f"Connecting to {url} ...")
+        common = xmlrpc.client.ServerProxy(url)
+        uid = common.authenticate(ODOO_DB, ODOO_USER, ODOO_PASSWORD, {})
+        print(f"Authenticated successfully, uid={uid}")
+    except Exception as e:
+        print(f"Odoo connection error: {e}")
+        return False
     
     if not uid:
-        print("Failed to authenticate with Odoo")
+        print("Failed to authenticate with Odoo - check username/password")
         return False
     
     models = xmlrpc.client.ServerProxy(f"{ODOO_URL}/xmlrpc/2/object")
