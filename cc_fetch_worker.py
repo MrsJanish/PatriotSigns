@@ -114,12 +114,50 @@ def fetch_documents(page, context, project_id, download_dir):
     print(f"Navigating to {project_url}")
     page.goto(project_url, timeout=120000)
     
-    # Wait for page - use domcontentloaded instead of networkidle
+    # Check for "Uh oh" error and handle it
     try:
         page.wait_for_load_state("domcontentloaded", timeout=60000)
+        time.sleep(5)
+        
+        body_text = page.locator("body").inner_text()
+        if "Uh oh, something happened" in body_text:
+            print("Detected 'Uh oh' error page. Trying recovery...")
+            
+            # Try 1: Click "Try Again"
+            try_again = page.locator("button:has-text('Try Again')")
+            if try_again.is_visible():
+                print("Clicking 'Try Again'...")
+                try_again.click()
+                time.sleep(10)
+            
+            # Recheck
+            body_text = page.locator("body").inner_text()
+            if "Uh oh, something happened" in body_text:
+                print("Direct navigation failed. Trying global search execution...")
+                
+                # Try 2: Go to dashboard and search
+                page.goto("https://app.constructconnect.com/dashboard", timeout=60000)
+                time.sleep(10)
+                
+                # Find search bar
+                search_input = page.locator("input[placeholder*='Search'], input[type='search'], [aria-label='Search']").first
+                if search_input.is_visible():
+                    print(f"Searching for project {project_id}...")
+                    search_input.fill(str(project_id))
+                    search_input.press("Enter")
+                    time.sleep(10)
+                    
+                    # Click first project result
+                    print("Clicking first result...")
+                    result_link = page.locator(f"a[href*='{project_id}'], div[role='row']:has-text('{project_id}')").first
+                    if result_link.is_visible():
+                        result_link.click()
+                        time.sleep(10)
+                    else:
+                        print("No search results found with Project ID")
     except Exception as e:
-        print(f"Load state wait: {e}")
-    
+        print(f"Navigation handling error: {e}")
+
     # Give React time to render
     print("Waiting for React content to load...")
     time.sleep(15)
