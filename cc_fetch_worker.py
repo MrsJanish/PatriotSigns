@@ -209,8 +209,6 @@ def fetch_documents(page, context, project_id, download_dir):
             page.screenshot(path="debug_search_fallback_error.png")
 
     if docs_btn:
-            
-    if docs_btn:
         print("Opening documents tab...")
         
         # This opens a new tab
