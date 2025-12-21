@@ -734,15 +734,23 @@
 }
 
 .pdf-viewer-container .modal-dialog {
-    background: var(--glass-bg);
+    background: white;
     backdrop-filter: blur(20px);
     border: 1px solid var(--border-color);
     border-radius: 20px;
     padding: 1.5rem;
     min-width: 400px;
     max-width: 90vw;
-    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
     animation: pdfviewer-slideUp 0.3s ease;
+    pointer-events: auto;
+    color: #1e293b;
+}
+
+.pdf-viewer-container.aurora-theme .modal-dialog {
+    background: rgba(30, 30, 40, 0.95);
+    color: #ffffff;
+    border: 1px solid rgba(255, 255, 255, 0.2);
 }
 
 @keyframes pdfviewer-slideUp {

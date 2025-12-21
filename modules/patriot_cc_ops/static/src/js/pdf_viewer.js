@@ -355,35 +355,73 @@ export class PDFViewer extends Component {
 
     // ==================== Rendering ====================
 
-    async renderPage(pageNum, canvas = null, pdfDoc = null) {
+    async renderPage(pageNum, canvas = null, pdfDoc = null, retryCount = 0) {
         const doc = pdfDoc || this.state.pdfDoc;
-        if (!doc) return;
+        if (!doc) {
+            console.warn("No PDF document loaded");
+            return;
+        }
+
+        const canvasEl = canvas || this.canvasRef.el;
+
+        // If canvas not ready, retry up to 5 times
+        if (!canvasEl) {
+            if (retryCount < 5) {
+                console.log(`Canvas not ready, retry ${retryCount + 1}/5...`);
+                await new Promise(resolve => setTimeout(resolve, 100));
+                return this.renderPage(pageNum, canvas, pdfDoc, retryCount + 1);
+            } else {
+                console.error("Canvas never became available");
+                return;
+            }
+        }
 
         try {
             const page = await doc.getPage(pageNum);
 
-            const canvasEl = canvas || this.canvasRef.el;
-            if (!canvasEl) {
-                console.warn("Canvas not available, retrying...");
-                await new Promise(resolve => setTimeout(resolve, 100));
-                return this.renderPage(pageNum, canvas, pdfDoc);
+            // Get container width with sensible fallback
+            let containerWidth = 800; // Default minimum
+            if (this.contentAreaRef.el) {
+                const measured = this.contentAreaRef.el.clientWidth;
+                if (measured > 100) { // Only use if it's a reasonable value
+                    containerWidth = measured - 80; // Padding
+                }
             }
 
-            // Calculate scale to fit container width
-            const containerWidth = this.contentAreaRef.el?.clientWidth || 800;
+            // Calculate scale to fit
             const baseViewport = page.getViewport({ scale: 1.0 });
-            const fitScale = (containerWidth - 100) / baseViewport.width;
-            const scale = this.state.scale === 1.0 ? Math.min(fitScale, 2.0) : this.state.scale;
+            let scale;
+
+            if (this.state.scale === 1.0) {
+                // Auto-fit to width
+                scale = Math.min(containerWidth / baseViewport.width, 2.0);
+                scale = Math.max(scale, 0.5); // Minimum scale
+            } else {
+                scale = this.state.scale;
+            }
 
             const viewport = page.getViewport({ scale });
 
-            const context = canvasEl.getContext("2d");
-            canvasEl.height = viewport.height;
+            // Set canvas dimensions
             canvasEl.width = viewport.width;
+            canvasEl.height = viewport.height;
+
+            // Also set CSS dimensions to match
+            canvasEl.style.width = viewport.width + 'px';
+            canvasEl.style.height = viewport.height + 'px';
+
+            const context = canvasEl.getContext("2d");
+
+            // Clear canvas first
+            context.clearRect(0, 0, canvasEl.width, canvasEl.height);
 
             // Cancel any existing render
             if (this.renderTask) {
-                this.renderTask.cancel?.();
+                try {
+                    this.renderTask.cancel();
+                } catch (e) {
+                    // Ignore cancel errors
+                }
             }
 
             const renderContext = {
@@ -395,6 +433,7 @@ export class PDFViewer extends Component {
             await this.renderTask.promise;
 
             // Update scale display
+            this.state.scale = scale;
             this.state.zoomPercent = Math.round(scale * 100) + "%";
 
             // Render overlays
