@@ -491,6 +491,23 @@ export class PDFViewer extends Component {
 
     // ==================== Drag & Drop ====================
 
+    onAttachmentItemClick(ev) {
+        const id = parseInt(ev.currentTarget.dataset.attachmentId, 10);
+        const attachment = this.state.attachments.find(a => a.id === id);
+        if (attachment) {
+            this.openAttachment(attachment);
+        }
+    }
+
+    onAttachmentDragStart(ev) {
+        const id = parseInt(ev.currentTarget.dataset.attachmentId, 10);
+        const attachment = this.state.attachments.find(a => a.id === id);
+        if (attachment) {
+            ev.dataTransfer.setData("application/json", JSON.stringify(attachment));
+            ev.dataTransfer.effectAllowed = "copy";
+        }
+    }
+
     onDragStart(ev, attachment) {
         ev.dataTransfer.setData("application/json", JSON.stringify(attachment));
         ev.dataTransfer.effectAllowed = "copy";
@@ -663,6 +680,13 @@ export class PDFViewer extends Component {
 
     onCanvasMouseMove(ev) {
         if (!this.state.isDrawingLasso) return;
+
+        // Throttle to reduce jankiness (only capture every ~10ms)
+        const now = Date.now();
+        if (this._lastLassoTime && now - this._lastLassoTime < 10) {
+            return;
+        }
+        this._lastLassoTime = now;
 
         const canvas = this.canvasRef.el;
         const rect = canvas.getBoundingClientRect();
@@ -956,6 +980,52 @@ export class PDFViewer extends Component {
         this.state.pendingBookmark = null;
         this.state.lassoPoints = [];
         this.clearLassoCanvas();
+    }
+
+    // Event handlers for sign type buttons (from data attributes)
+    onGoToSignType(ev) {
+        const id = parseInt(ev.currentTarget.dataset.signTypeId, 10);
+        const signType = this.state.signTypes.find(s => s.id === id);
+        if (signType) {
+            this.goToSignType(signType);
+        }
+    }
+
+    onEditSignType(ev) {
+        const id = parseInt(ev.currentTarget.dataset.signTypeId, 10);
+        const signType = this.state.signTypes.find(s => s.id === id);
+        if (signType) {
+            this.editSignType(signType);
+        }
+    }
+
+    // Form input handlers
+    onFormNameInput(ev) {
+        this.state.signTypeForm.name = ev.target.value;
+    }
+
+    onFormDescriptionInput(ev) {
+        this.state.signTypeForm.description = ev.target.value;
+    }
+
+    onFormQuantityInput(ev) {
+        this.state.signTypeForm.quantity = parseInt(ev.target.value, 10) || 1;
+    }
+
+    onFormDimensionsInput(ev) {
+        this.state.signTypeForm.dimensions = ev.target.value;
+    }
+
+    onFormMaterialInput(ev) {
+        this.state.signTypeForm.material = ev.target.value;
+    }
+
+    onFormMountingInput(ev) {
+        this.state.signTypeForm.mounting = ev.target.value;
+    }
+
+    onFormNotesInput(ev) {
+        this.state.signTypeForm.notes = ev.target.value;
     }
 
     updateSignTypeForm(field, value) {

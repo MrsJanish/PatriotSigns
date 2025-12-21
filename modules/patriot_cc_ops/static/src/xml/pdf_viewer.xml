@@ -3,7 +3,7 @@
 
     <t t-name="patriot_cc_ops.PDFViewer" owl="1">
         <div class="pdf-viewer-container" t-ref="viewerContainer" 
-             t-attf-class="#{state.isFullscreen ? 'fullscreen' : ''} #{state.theme}">
+             t-attf-class="pdf-viewer-container #{state.isFullscreen ? 'fullscreen' : ''} #{state.theme}">
             
             <!-- Toolbar -->
             <div class="pdf-toolbar">
@@ -71,17 +71,6 @@
                            t-att-value="state.searchText"
                            t-on-input="onSearchInput"
                            t-on-keypress="onSearchKeypress"/>
-                    <t t-if="state.searchResults.length > 0">
-                        <span class="search-results-count">
-                            <t t-esc="state.currentSearchIndex + 1"/>/<t t-esc="state.searchResults.length"/>
-                        </span>
-                        <button class="btn btn-icon btn-glass" t-on-click="prevSearchResult" title="Previous Match">
-                            <i class="fa fa-arrow-up"/>
-                        </button>
-                        <button class="btn btn-icon btn-glass" t-on-click="nextSearchResult" title="Next Match">
-                            <i class="fa fa-arrow-down"/>
-                        </button>
-                    </t>
                 </div>
                 
                 <div class="toolbar-divider"/>
@@ -89,7 +78,7 @@
                 <!-- View controls -->
                 <div class="toolbar-section view-controls">
                     <button class="btn btn-glass" 
-                            t-attf-class="#{state.isSplitView ? 'btn-primary' : 'btn-glass'}"
+                            t-attf-class="btn #{state.isSplitView ? 'btn-primary' : 'btn-glass'}"
                             t-on-click="toggleSplitView" title="Split View">
                         <i class="fa fa-columns"/>
                     </button>
@@ -103,10 +92,10 @@
                 <!-- Bookmark/Lasso controls -->
                 <div class="toolbar-section bookmark-controls">
                     <button class="btn btn-bookmark" 
-                            t-attf-class="btn-bookmark #{state.isLassoMode ? 'active' : ''}"
+                            t-attf-class="btn btn-bookmark #{state.isLassoMode ? 'active' : ''}"
                             t-on-click="toggleLassoMode" title="Lasso Bookmark Tool">
                         <i class="fa fa-bookmark"/>
-                        <t t-if="state.isLassoMode">Drawing...</t>
+                        <t t-if="state.isLassoMode">Lasso Active</t>
                         <t t-else="">Lasso</t>
                     </button>
                     <button class="btn btn-primary" t-on-click="openAddSignTypeDialog" title="Add Sign Type">
@@ -124,30 +113,21 @@
                 </div>
                 
                 <!-- Error state -->
-                <div t-if="state.error" class="error-message">
+                <div t-elif="state.error" class="error-message">
                     <i class="fa fa-exclamation-triangle"/>
                     <p t-esc="state.error"/>
                     <button class="btn btn-glass" t-on-click="retry">Try Again</button>
                 </div>
                 
                 <!-- No document selected -->
-                <div t-if="!state.selectedAttachment and !state.isLoading and !state.isSplitView" class="no-document">
+                <div t-elif="!state.selectedAttachment and !state.isSplitView" class="no-document">
                     <i class="fa fa-file-pdf-o"/>
                     <p>Select a document to view</p>
                     <p class="text-muted">or drag one from the sidebar</p>
-                    <div class="file-list">
-                        <t t-foreach="state.filteredAttachments.slice(0, 5)" t-as="att" t-key="att.id">
-                            <div class="file-item" t-on-click="() => this.openAttachment(att)">
-                                <i class="fa fa-file-pdf-o"/>
-                                <span class="file-name" t-esc="att.name"/>
-                                <span class="file-size" t-esc="formatSize(att.file_size)"/>
-                            </div>
-                        </t>
-                    </div>
                 </div>
                 
                 <!-- Single View Mode -->
-                <div t-if="state.selectedAttachment and !state.isSplitView" class="pdf-canvas-container" t-ref="canvasContainer">
+                <div t-elif="state.selectedAttachment and !state.isSplitView" class="pdf-canvas-container" t-ref="canvasContainer">
                     <canvas t-ref="pdfCanvas" 
                             t-attf-class="pdf-canvas #{state.isLassoMode ? 'lasso-mode' : ''}"
                             t-on-mousedown="onCanvasMouseDown"
@@ -160,7 +140,7 @@
                 </div>
                 
                 <!-- Split View Mode -->
-                <div t-if="state.isSplitView" class="split-panels">
+                <div t-elif="state.isSplitView" class="split-panels">
                     <!-- Left Panel -->
                     <div class="split-panel left-panel">
                         <div class="panel-header">
@@ -185,7 +165,7 @@
                         </div>
                     </div>
                     
-                    <div class="panel-divider" t-on-mousedown="onDividerMouseDown"/>
+                    <div class="panel-divider"/>
                     
                     <!-- Right Panel -->
                     <div class="split-panel right-panel">
@@ -198,13 +178,7 @@
                         </div>
                         <div class="panel-content">
                             <div t-if="state.rightPanel.attachment" class="pdf-canvas-container">
-                                <canvas t-ref="rightCanvas" 
-                                        t-attf-class="pdf-canvas #{state.isLassoMode ? 'lasso-mode' : ''}"
-                                        t-on-mousedown="onCanvasMouseDown"
-                                        t-on-mousemove="onCanvasMouseMove"
-                                        t-on-mouseup="onCanvasMouseUp"/>
-                                <canvas t-ref="rightLassoCanvas" class="lasso-canvas"/>
-                                <canvas t-ref="rightBookmarkOverlay" class="bookmark-overlay"/>
+                                <canvas t-ref="rightCanvas" class="pdf-canvas"/>
                             </div>
                             <div t-else="" class="drop-zone"
                                  t-attf-class="drop-zone #{state.dragOverRight ? 'drag-over' : ''}"
@@ -231,9 +205,10 @@
                         <t t-foreach="state.filteredAttachments" t-as="att" t-key="att.id">
                             <div class="attachment-item" 
                                  t-attf-class="attachment-item #{state.selectedAttachment and state.selectedAttachment.id === att.id ? 'active' : ''}"
-                                 t-att-draggable="true"
-                                 t-on-click="() => this.openAttachment(att)"
-                                 t-on-dragstart="(ev) => this.onDragStart(ev, att)"
+                                 draggable="true"
+                                 t-att-data-attachment-id="att.id"
+                                 t-on-click="onAttachmentItemClick"
+                                 t-on-dragstart="onAttachmentDragStart"
                                  t-on-dragend="onDragEnd">
                                 <span class="drag-handle">
                                     <i class="fa fa-grip-vertical"/>
@@ -266,20 +241,20 @@
                             </div>
                         </t>
                         <t t-foreach="state.signTypes" t-as="signType" t-key="signType.id">
-                            <div class="sign-type-item">
+                            <div class="sign-type-item" t-att-data-sign-type-id="signType.id">
                                 <div class="type-color" t-attf-style="background: #{signType.color || '#3b82f6'}"/>
                                 <div class="type-info">
                                     <span class="type-name" t-esc="signType.name"/>
                                     <span class="type-meta">
                                         Qty: <t t-esc="signType.quantity"/> | 
-                                        <t t-esc="signType.bookmark_count"/> bookmark(s)
+                                        <t t-esc="signType.bookmark_count || 0"/> bookmark(s)
                                     </span>
                                 </div>
                                 <div class="type-actions">
-                                    <button class="btn-sm" t-on-click="() => this.goToSignType(signType)" title="Go to Bookmark">
+                                    <button class="btn-sm" t-att-data-sign-type-id="signType.id" t-on-click="onGoToSignType" title="Go to Bookmark">
                                         <i class="fa fa-bookmark"/>
                                     </button>
-                                    <button class="btn-sm" t-on-click="() => this.editSignType(signType)" title="Edit">
+                                    <button class="btn-sm" t-att-data-sign-type-id="signType.id" t-on-click="onEditSignType" title="Edit">
                                         <i class="fa fa-pencil"/>
                                     </button>
                                 </div>
@@ -300,48 +275,53 @@
                     <div class="modal-body">
                         <div class="form-group">
                             <label>Sign Type ID</label>
-                            <input type="text" t-att-value="state.signTypeForm.name" 
-                                   t-on-input="(ev) => this.updateSignTypeForm('name', ev.target.value)"
+                            <input type="text" 
+                                   t-att-value="state.signTypeForm.name" 
+                                   t-on-input="onFormNameInput"
                                    placeholder="e.g., SN-1, RID-1, ADA-1"/>
                         </div>
                         <div class="form-group">
                             <label>Description</label>
                             <textarea t-att-value="state.signTypeForm.description"
-                                      t-on-input="(ev) => this.updateSignTypeForm('description', ev.target.value)"
+                                      t-on-input="onFormDescriptionInput"
                                       placeholder="Full description of this sign type"/>
                         </div>
                         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
                             <div class="form-group">
                                 <label>Quantity</label>
-                                <input type="number" t-att-value="state.signTypeForm.quantity" 
-                                       t-on-input="(ev) => this.updateSignTypeForm('quantity', parseInt(ev.target.value))"
+                                <input type="number" 
+                                       t-att-value="state.signTypeForm.quantity" 
+                                       t-on-input="onFormQuantityInput"
                                        min="1"/>
                             </div>
                             <div class="form-group">
                                 <label>Dimensions</label>
-                                <input type="text" t-att-value="state.signTypeForm.dimensions"
-                                       t-on-input="(ev) => this.updateSignTypeForm('dimensions', ev.target.value)"
-                                       placeholder='e.g., 24" x 36"'/>
+                                <input type="text" 
+                                       t-att-value="state.signTypeForm.dimensions"
+                                       t-on-input="onFormDimensionsInput"
+                                       placeholder="e.g., 24 x 36"/>
                             </div>
                         </div>
                         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
                             <div class="form-group">
                                 <label>Material</label>
-                                <input type="text" t-att-value="state.signTypeForm.material"
-                                       t-on-input="(ev) => this.updateSignTypeForm('material', ev.target.value)"
+                                <input type="text" 
+                                       t-att-value="state.signTypeForm.material"
+                                       t-on-input="onFormMaterialInput"
                                        placeholder="e.g., Aluminum, Acrylic"/>
                             </div>
                             <div class="form-group">
                                 <label>Mounting</label>
-                                <input type="text" t-att-value="state.signTypeForm.mounting"
-                                       t-on-input="(ev) => this.updateSignTypeForm('mounting', ev.target.value)"
+                                <input type="text" 
+                                       t-att-value="state.signTypeForm.mounting"
+                                       t-on-input="onFormMountingInput"
                                        placeholder="e.g., Wall, Post"/>
                             </div>
                         </div>
                         <div class="form-group">
                             <label>Notes</label>
                             <textarea t-att-value="state.signTypeForm.notes"
-                                      t-on-input="(ev) => this.updateSignTypeForm('notes', ev.target.value)"
+                                      t-on-input="onFormNotesInput"
                                       placeholder="Additional notes..."/>
                         </div>
                     </div>
@@ -351,21 +331,6 @@
                             <i class="fa fa-check"/> Save
                         </button>
                     </div>
-                </div>
-            </div>
-            
-            <!-- Bookmark Context Menu -->
-            <div t-if="state.showBookmarkMenu" class="bookmark-context-menu"
-                 t-attf-style="position: fixed; top: #{state.bookmarkMenuY}px; left: #{state.bookmarkMenuX}px; z-index: 1000;">
-                <div class="context-menu" style="background: var(--glass-bg); backdrop-filter: blur(20px); border: 1px solid var(--border-color); border-radius: 12px; padding: 0.5rem; min-width: 150px;">
-                    <button class="context-item" t-on-click="editSelectedBookmark" 
-                            style="display: block; width: 100%; text-align: left; padding: 0.5rem 1rem; border: none; background: transparent; cursor: pointer; border-radius: 8px;">
-                        <i class="fa fa-pencil"/> Edit
-                    </button>
-                    <button class="context-item" t-on-click="deleteSelectedBookmark"
-                            style="display: block; width: 100%; text-align: left; padding: 0.5rem 1rem; border: none; background: transparent; cursor: pointer; border-radius: 8px; color: var(--danger);">
-                        <i class="fa fa-trash"/> Delete
-                    </button>
                 </div>
             </div>
         </div>
