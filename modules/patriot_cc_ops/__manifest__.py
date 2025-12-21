@@ -1,21 +1,25 @@
 {
     'name': 'Construct Connect Opportunities',
-    'version': '19.0.2.0.0',
-    'summary': 'Automate ITB ingestion from ConstructConnect with beautiful dashboard',
+    'version': '19.0.3.0.0',
+    'summary': 'Automate ITB ingestion from ConstructConnect with PDF viewer and sign schedule extraction',
     'description': """
         This module monitors incoming emails for ConstructConnect ITB notifications,
         fetches project details via API, and stores construction documents.
         
-        Features a beautiful glassmorphism dashboard with:
-        - Expandable project cards
-        - Two theme options (Splash & Aurora Borealis)
-        - Per-user theme preference persistence
-        - Search by project, contact, or location
-        - Integrated document viewer
+        Features:
+        - Glassmorphism dashboard with expandable project cards
+        - PDF viewer with drag-drop split view
+        - Lasso bookmark tool for sign identification
+        - Sign type management with bookmark navigation
+        - Excel sign schedule export
+        - Two theme options (Light & Aurora Borealis)
     """,
     'category': 'Sales/CRM',
     'author': 'Patriot Signs',
     'depends': ['mail', 'crm'],
+    'external_dependencies': {
+        'python': ['xlsxwriter'],
+    },
     'data': [
         'security/ir.model.access.csv',
         'views/cc_opportunity_views.xml',

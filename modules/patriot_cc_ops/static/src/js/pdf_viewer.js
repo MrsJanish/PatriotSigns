@@ -1,17 +1,20 @@
 /** @odoo-module **/
 
-import { Component, useState, useRef, onMounted, onWillUnmount } from "@odoo/owl";
+import { Component, useState, useRef, onMounted, onWillUnmount, onPatched } from "@odoo/owl";
 import { registry } from "@web/core/registry";
 import { useService } from "@web/core/utils/hooks";
 import { standardActionServiceProps } from "@web/webclient/actions/action_service";
 
 /**
- * PDF Viewer Component - Provides in-browser PDF viewing with:
- * - Split-view panels (legend + drawings)
- * - Zoom controls
- * - Page navigation
- * - Click-to-bookmark functionality
- * - Fullscreen mode
+ * PDF Viewer Component v2.0 - Complete Overhaul
+ * 
+ * Features:
+ * - Glassmorphism UI matching CC Ops Dashboard
+ * - Drag-drop split view panels
+ * - Lasso bookmark tool (polygon selection)
+ * - Sign type management
+ * - Text search within document
+ * - Proper PDF rendering with fit-to-width
  */
 export class PDFViewer extends Component {
     static template = "patriot_cc_ops.PDFViewer";
@@ -19,7 +22,6 @@ export class PDFViewer extends Component {
         ...standardActionServiceProps,
         attachmentId: { type: Number, optional: true },
         opportunityId: { type: Number, optional: true },
-        onBookmarkCreate: { type: Function, optional: true },
     };
 
     setup() {
@@ -27,12 +29,16 @@ export class PDFViewer extends Component {
         this.action = useService("action");
         this.notification = useService("notification");
 
-        // Get opportunityId from action params if passed
+        // Get params from action
         const actionParams = this.props.action?.params || {};
         this.opportunityId = actionParams.opportunityId || this.props.opportunityId;
-        this.attachmentId = actionParams.attachmentId || this.props.attachmentId;
+        this.initialAttachmentId = actionParams.attachmentId || this.props.attachmentId;
+        this.goToPage = actionParams.goToPage || null;
 
         this.state = useState({
+            // Theme
+            theme: "aurora-theme", // or "" for light
+
             // PDF state
             pdfDoc: null,
             currentPage: 1,
@@ -46,76 +52,124 @@ export class PDFViewer extends Component {
             isFullscreen: false,
             isSplitView: false,
 
-            // Panel states (for split view)
+            // Split view panels
             leftPanel: {
-                attachmentId: null,
+                attachment: null,
                 pdfDoc: null,
                 currentPage: 1,
                 totalPages: 0,
             },
             rightPanel: {
-                attachmentId: null,
+                attachment: null,
                 pdfDoc: null,
                 currentPage: 1,
                 totalPages: 0,
             },
+            dragOverLeft: false,
+            dragOverRight: false,
 
-            // Attachments list
+            // Attachments
             attachments: [],
             selectedAttachment: null,
-
-            // Filtering
             filterText: "",
             filteredAttachments: [],
 
-            // Bookmarks on current page
-            bookmarks: [],
+            // Search
+            searchText: "",
+            searchResults: [],
+            currentSearchIndex: 0,
 
-            // Bookmark creation mode
-            isBookmarkMode: false,
+            // Lasso/Bookmark
+            isLassoMode: false,
+            lassoPoints: [],
+            isDrawingLasso: false,
+            bookmarks: [],
+            showBookmarkMenu: false,
+            bookmarkMenuX: 0,
+            bookmarkMenuY: 0,
+            selectedBookmark: null,
+
+            // Sign Types
+            signTypes: [],
+            showSignTypeModal: false,
+            editingSignType: null,
+            signTypeForm: {
+                name: "",
+                description: "",
+                quantity: 1,
+                dimensions: "",
+                material: "",
+                mounting: "",
+                notes: "",
+            },
+
+            // Pending bookmark (lasso just completed, waiting for sign type assignment)
+            pendingBookmark: null,
         });
 
+        // Canvas refs
         this.canvasRef = useRef("pdfCanvas");
         this.containerRef = useRef("viewerContainer");
+        this.contentAreaRef = useRef("contentArea");
+        this.canvasContainerRef = useRef("canvasContainer");
+        this.lassoCanvasRef = useRef("lassoCanvas");
+        this.bookmarkOverlayRef = useRef("bookmarkOverlay");
         this.leftCanvasRef = useRef("leftCanvas");
         this.rightCanvasRef = useRef("rightCanvas");
 
-        // PDF.js library - loaded from CDN
+        // PDF.js library
         this.pdfjsLib = null;
+
+        // Render queue for smooth updates
+        this.renderTask = null;
 
         onMounted(async () => {
             await this.loadPDFJS();
             if (this.opportunityId) {
                 await this.loadAttachments();
+                await this.loadSignTypes();
+            }
+        });
+
+        onPatched(() => {
+            // Re-render bookmarks when state changes
+            if (this.state.pdfDoc && !this.state.isLoading) {
+                this.renderBookmarks();
             }
         });
 
         onWillUnmount(() => {
-            // Cleanup
+            if (this.renderTask) {
+                this.renderTask.cancel?.();
+            }
             if (this.state.pdfDoc) {
                 this.state.pdfDoc.destroy?.();
             }
         });
+
+        // Close context menu on click outside
+        document.addEventListener("click", this.handleDocumentClick.bind(this));
     }
 
+    handleDocumentClick(ev) {
+        if (this.state.showBookmarkMenu) {
+            this.state.showBookmarkMenu = false;
+        }
+    }
+
+    // ==================== PDF.js Loading ====================
+
     async loadPDFJS() {
-        // Load PDF.js from CDN if not already loaded
         if (window.pdfjsLib) {
             this.pdfjsLib = window.pdfjsLib;
-            console.log("PDF.js already loaded");
             return true;
         }
 
         try {
-            // Load PDF.js script
             await this.loadScript("https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js");
-
-            // Set worker
             window.pdfjsLib.GlobalWorkerOptions.workerSrc =
                 "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
-
             this.pdfjsLib = window.pdfjsLib;
-            console.log("PDF.js loaded successfully");
             return true;
         } catch (error) {
             console.error("Failed to load PDF.js:", error);
@@ -127,6 +181,11 @@ export class PDFViewer extends Component {
 
     loadScript(src) {
         return new Promise((resolve, reject) => {
+            const existing = document.querySelector(`script[src="${src}"]`);
+            if (existing) {
+                resolve();
+                return;
+            }
             const script = document.createElement("script");
             script.src = src;
             script.onload = resolve;
@@ -134,6 +193,8 @@ export class PDFViewer extends Component {
             document.head.appendChild(script);
         });
     }
+
+    // ==================== Data Loading ====================
 
     async loadAttachments() {
         try {
@@ -152,14 +213,20 @@ export class PDFViewer extends Component {
             this.state.filteredAttachments = result;
             this.state.isLoading = false;
 
-            // Auto-load first attachment if available
-            if (result.length > 0 && this.attachmentId) {
-                const target = result.find(a => a.id === this.attachmentId);
-                if (target) {
-                    this.openAttachment(target);
+            // Auto-load attachment if specified
+            if (result.length > 0) {
+                if (this.initialAttachmentId) {
+                    const target = result.find(a => a.id === this.initialAttachmentId);
+                    if (target) {
+                        await this.openAttachment(target);
+                        if (this.goToPage) {
+                            this.goToPageNumber(this.goToPage);
+                        }
+                        return;
+                    }
                 }
-            } else if (result.length > 0) {
-                this.openAttachment(result[0]);
+                // Otherwise load first
+                await this.openAttachment(result[0]);
             }
         } catch (error) {
             console.error("Failed to load attachments:", error);
@@ -167,6 +234,55 @@ export class PDFViewer extends Component {
             this.state.isLoading = false;
         }
     }
+
+    async loadSignTypes() {
+        try {
+            const result = await this.orm.searchRead(
+                "cc.sign.type",
+                [["opportunity_id", "=", this.opportunityId]],
+                ["id", "name", "quantity", "dimensions", "material", "mounting", "notes", "description", "bookmark_count"],
+                { order: "name asc" }
+            );
+
+            // Assign colors to sign types
+            const colors = ["#3b82f6", "#10b981", "#f59e0b", "#ef4444", "#8b5cf6", "#ec4899", "#06b6d4"];
+            this.state.signTypes = result.map((st, i) => ({
+                ...st,
+                color: colors[i % colors.length],
+            }));
+        } catch (error) {
+            console.log("No sign types found or model not ready");
+            this.state.signTypes = [];
+        }
+    }
+
+    async loadBookmarks(attachmentId) {
+        try {
+            const result = await this.orm.searchRead(
+                "cc.sign.bookmark",
+                [["attachment_id", "=", attachmentId]],
+                ["id", "page_number", "x_position", "y_position", "path_data", "highlight_color", "sign_type_id"]
+            );
+
+            this.state.bookmarks = result.map(b => ({
+                id: b.id,
+                pageNumber: b.page_number,
+                x: b.x_position,
+                y: b.y_position,
+                pathData: b.path_data ? JSON.parse(b.path_data) : null,
+                color: b.highlight_color || "#f59e0b",
+                signTypeId: b.sign_type_id?.[0],
+                signTypeName: b.sign_type_id?.[1],
+            }));
+
+            this.renderBookmarks();
+        } catch (error) {
+            console.log("No bookmarks found");
+            this.state.bookmarks = [];
+        }
+    }
+
+    // ==================== Attachment Handling ====================
 
     filterAttachments() {
         const filter = this.state.filterText.toLowerCase();
@@ -184,31 +300,17 @@ export class PDFViewer extends Component {
         this.filterAttachments();
     }
 
-    // Handler for dropdown attachment selection
     onAttachmentSelect(ev) {
         const attachmentId = parseInt(ev.target.value, 10);
         if (attachmentId) {
             const att = this.state.attachments.find(a => a.id === attachmentId);
-            if (att) {
-                this.openAttachment(att);
-            }
-        }
-    }
-
-    // Handler for sidebar attachment click
-    onSidebarAttachmentClick(ev) {
-        const attachmentId = parseInt(ev.currentTarget.dataset.id, 10);
-        if (attachmentId) {
-            const att = this.state.attachments.find(a => a.id === attachmentId);
-            if (att) {
-                this.openAttachment(att);
-            }
+            if (att) this.openAttachment(att);
         }
     }
 
     async openAttachment(attachment) {
         if (!this.pdfjsLib) {
-            console.error("PDF.js not loaded yet");
+            console.error("PDF.js not loaded");
             return;
         }
 
@@ -217,30 +319,31 @@ export class PDFViewer extends Component {
         this.state.error = null;
 
         try {
-            // Fetch PDF data
             const response = await this.orm.read("ir.attachment", [attachment.id], ["datas"]);
 
-            if (!response || !response[0] || !response[0].datas) {
+            if (!response?.[0]?.datas) {
                 throw new Error("No PDF data returned");
             }
 
-            // Decode base64
             const pdfData = atob(response[0].datas);
             const pdfArray = new Uint8Array(pdfData.split("").map(c => c.charCodeAt(0)));
 
-            // Load PDF
             const loadingTask = this.pdfjsLib.getDocument({ data: pdfArray });
             const pdfDoc = await loadingTask.promise;
+
+            // Cleanup old doc
+            if (this.state.pdfDoc) {
+                this.state.pdfDoc.destroy?.();
+            }
 
             this.state.pdfDoc = pdfDoc;
             this.state.totalPages = pdfDoc.numPages;
             this.state.currentPage = 1;
             this.state.isLoading = false;
 
-            // Render first page
+            // Wait for DOM then render
+            await new Promise(resolve => setTimeout(resolve, 50));
             await this.renderPage(1);
-
-            // Load bookmarks for this attachment
             await this.loadBookmarks(attachment.id);
 
         } catch (error) {
@@ -250,36 +353,63 @@ export class PDFViewer extends Component {
         }
     }
 
-    async renderPage(pageNum, canvas = null) {
-        if (!this.state.pdfDoc) return;
+    // ==================== Rendering ====================
+
+    async renderPage(pageNum, canvas = null, pdfDoc = null) {
+        const doc = pdfDoc || this.state.pdfDoc;
+        if (!doc) return;
 
         try {
-            const page = await this.state.pdfDoc.getPage(pageNum);
-            const viewport = page.getViewport({ scale: this.state.scale });
+            const page = await doc.getPage(pageNum);
 
             const canvasEl = canvas || this.canvasRef.el;
-            if (!canvasEl) return;
+            if (!canvasEl) {
+                console.warn("Canvas not available, retrying...");
+                await new Promise(resolve => setTimeout(resolve, 100));
+                return this.renderPage(pageNum, canvas, pdfDoc);
+            }
+
+            // Calculate scale to fit container width
+            const containerWidth = this.contentAreaRef.el?.clientWidth || 800;
+            const baseViewport = page.getViewport({ scale: 1.0 });
+            const fitScale = (containerWidth - 100) / baseViewport.width;
+            const scale = this.state.scale === 1.0 ? Math.min(fitScale, 2.0) : this.state.scale;
+
+            const viewport = page.getViewport({ scale });
 
             const context = canvasEl.getContext("2d");
             canvasEl.height = viewport.height;
             canvasEl.width = viewport.width;
+
+            // Cancel any existing render
+            if (this.renderTask) {
+                this.renderTask.cancel?.();
+            }
 
             const renderContext = {
                 canvasContext: context,
                 viewport: viewport
             };
 
-            await page.render(renderContext).promise;
+            this.renderTask = page.render(renderContext);
+            await this.renderTask.promise;
 
-            // Re-render bookmarks overlay
+            // Update scale display
+            this.state.zoomPercent = Math.round(scale * 100) + "%";
+
+            // Render overlays
             this.renderBookmarks();
+            this.setupLassoCanvas();
 
         } catch (error) {
-            console.error("Failed to render page:", error);
+            if (error.name !== "RenderingCancelledException") {
+                console.error("Failed to render page:", error);
+            }
         }
     }
 
-    // Page navigation
+    // ==================== Page Navigation ====================
+
     prevPage() {
         if (this.state.currentPage > 1) {
             this.state.currentPage--;
@@ -294,7 +424,7 @@ export class PDFViewer extends Component {
         }
     }
 
-    goToPage(pageNum) {
+    goToPageNumber(pageNum) {
         if (pageNum >= 1 && pageNum <= this.state.totalPages) {
             this.state.currentPage = pageNum;
             this.renderPage(this.state.currentPage);
@@ -304,11 +434,12 @@ export class PDFViewer extends Component {
     onPageInputChange(ev) {
         const page = parseInt(ev.target.value, 10);
         if (!isNaN(page)) {
-            this.goToPage(page);
+            this.goToPageNumber(page);
         }
     }
 
-    // Zoom controls
+    // ==================== Zoom ====================
+
     zoomIn() {
         this.state.scale = Math.min(this.state.scale + 0.25, 4.0);
         this.state.zoomPercent = Math.round(this.state.scale * 100) + "%";
@@ -321,13 +452,13 @@ export class PDFViewer extends Component {
         this.renderPage(this.state.currentPage);
     }
 
-    resetZoom() {
-        this.state.scale = 1.0;
-        this.state.zoomPercent = "100%";
+    fitToWidth() {
+        this.state.scale = 1.0; // Will auto-calculate in renderPage
         this.renderPage(this.state.currentPage);
     }
 
-    // Fullscreen
+    // ==================== View Controls ====================
+
     toggleFullscreen() {
         const container = this.containerRef.el;
         if (!document.fullscreenElement) {
@@ -339,98 +470,352 @@ export class PDFViewer extends Component {
         }
     }
 
-    // Split view
     toggleSplitView() {
         this.state.isSplitView = !this.state.isSplitView;
+        if (!this.state.isSplitView) {
+            // Cleanup split panels
+            this.state.leftPanel = { attachment: null, pdfDoc: null, currentPage: 1, totalPages: 0 };
+            this.state.rightPanel = { attachment: null, pdfDoc: null, currentPage: 1, totalPages: 0 };
+        }
     }
 
-    // Bookmark mode
-    toggleBookmarkMode() {
-        this.state.isBookmarkMode = !this.state.isBookmarkMode;
+    retry() {
+        this.state.error = null;
+        this.state.isLoading = true;
+        if (this.state.selectedAttachment) {
+            this.openAttachment(this.state.selectedAttachment);
+        } else {
+            this.loadAttachments();
+        }
     }
 
-    // Handle canvas click for bookmarking
-    onCanvasClick(ev) {
-        if (!this.state.isBookmarkMode) return;
+    // ==================== Drag & Drop ====================
 
-        const canvas = ev.target;
+    onDragStart(ev, attachment) {
+        ev.dataTransfer.setData("application/json", JSON.stringify(attachment));
+        ev.dataTransfer.effectAllowed = "copy";
+    }
+
+    onDragEnd(ev) {
+        this.state.dragOverLeft = false;
+        this.state.dragOverRight = false;
+    }
+
+    onDragOverLeft(ev) {
+        ev.preventDefault();
+        this.state.dragOverLeft = true;
+    }
+
+    onDragLeaveLeft(ev) {
+        this.state.dragOverLeft = false;
+    }
+
+    async onDropLeft(ev) {
+        ev.preventDefault();
+        this.state.dragOverLeft = false;
+
+        try {
+            const attachment = JSON.parse(ev.dataTransfer.getData("application/json"));
+            await this.loadPanelPDF("left", attachment);
+        } catch (e) {
+            console.error("Drop failed:", e);
+        }
+    }
+
+    onDragOverRight(ev) {
+        ev.preventDefault();
+        this.state.dragOverRight = true;
+    }
+
+    onDragLeaveRight(ev) {
+        this.state.dragOverRight = false;
+    }
+
+    async onDropRight(ev) {
+        ev.preventDefault();
+        this.state.dragOverRight = false;
+
+        try {
+            const attachment = JSON.parse(ev.dataTransfer.getData("application/json"));
+            await this.loadPanelPDF("right", attachment);
+        } catch (e) {
+            console.error("Drop failed:", e);
+        }
+    }
+
+    async loadPanelPDF(panel, attachment) {
+        const panelState = panel === "left" ? this.state.leftPanel : this.state.rightPanel;
+        const canvasRef = panel === "left" ? this.leftCanvasRef : this.rightCanvasRef;
+
+        try {
+            const response = await this.orm.read("ir.attachment", [attachment.id], ["datas"]);
+            const pdfData = atob(response[0].datas);
+            const pdfArray = new Uint8Array(pdfData.split("").map(c => c.charCodeAt(0)));
+
+            const loadingTask = this.pdfjsLib.getDocument({ data: pdfArray });
+            const pdfDoc = await loadingTask.promise;
+
+            panelState.attachment = attachment;
+            panelState.pdfDoc = pdfDoc;
+            panelState.totalPages = pdfDoc.numPages;
+            panelState.currentPage = 1;
+
+            // Wait for DOM
+            await new Promise(resolve => setTimeout(resolve, 50));
+            await this.renderPage(1, canvasRef.el, pdfDoc);
+
+        } catch (error) {
+            console.error("Failed to load panel PDF:", error);
+            this.notification.add("Failed to load document", { type: "danger" });
+        }
+    }
+
+    clearLeftPanel() {
+        if (this.state.leftPanel.pdfDoc) {
+            this.state.leftPanel.pdfDoc.destroy?.();
+        }
+        this.state.leftPanel = { attachment: null, pdfDoc: null, currentPage: 1, totalPages: 0 };
+    }
+
+    clearRightPanel() {
+        if (this.state.rightPanel.pdfDoc) {
+            this.state.rightPanel.pdfDoc.destroy?.();
+        }
+        this.state.rightPanel = { attachment: null, pdfDoc: null, currentPage: 1, totalPages: 0 };
+    }
+
+    onDividerMouseDown(ev) {
+        // TODO: Implement resizable divider
+    }
+
+    // ==================== Text Search ====================
+
+    onSearchInput(ev) {
+        this.state.searchText = ev.target.value;
+    }
+
+    onSearchKeypress(ev) {
+        if (ev.key === "Enter") {
+            this.performSearch();
+        }
+    }
+
+    async performSearch() {
+        // TODO: Implement PDF text search using pdf.js text layer
+        this.notification.add("Search coming soon!", { type: "info" });
+    }
+
+    prevSearchResult() {
+        if (this.state.currentSearchIndex > 0) {
+            this.state.currentSearchIndex--;
+        }
+    }
+
+    nextSearchResult() {
+        if (this.state.currentSearchIndex < this.state.searchResults.length - 1) {
+            this.state.currentSearchIndex++;
+        }
+    }
+
+    // ==================== Lasso Bookmarks ====================
+
+    toggleLassoMode() {
+        this.state.isLassoMode = !this.state.isLassoMode;
+        this.state.lassoPoints = [];
+        this.state.isDrawingLasso = false;
+        this.clearLassoCanvas();
+    }
+
+    setupLassoCanvas() {
+        const pdfCanvas = this.canvasRef.el;
+        const lassoCanvas = this.lassoCanvasRef.el;
+
+        if (pdfCanvas && lassoCanvas) {
+            lassoCanvas.width = pdfCanvas.width;
+            lassoCanvas.height = pdfCanvas.height;
+        }
+    }
+
+    clearLassoCanvas() {
+        const lassoCanvas = this.lassoCanvasRef.el;
+        if (lassoCanvas) {
+            const ctx = lassoCanvas.getContext("2d");
+            ctx.clearRect(0, 0, lassoCanvas.width, lassoCanvas.height);
+        }
+    }
+
+    onCanvasMouseDown(ev) {
+        if (!this.state.isLassoMode) {
+            // Check if clicking on a bookmark to select it
+            this.checkBookmarkClick(ev);
+            return;
+        }
+
+        const canvas = this.canvasRef.el;
         const rect = canvas.getBoundingClientRect();
         const x = (ev.clientX - rect.left) / rect.width;
         const y = (ev.clientY - rect.top) / rect.height;
 
-        // Trigger bookmark creation
-        if (this.props.onBookmarkCreate) {
-            this.props.onBookmarkCreate({
-                attachmentId: this.state.selectedAttachment.id,
-                pageNumber: this.state.currentPage,
-                xPosition: x,
-                yPosition: y,
-            });
-        } else {
-            // Default: open bookmark dialog
-            this.createBookmarkAt(x, y);
-        }
+        // Start drawing lasso
+        this.state.isDrawingLasso = true;
+        this.state.lassoPoints = [{ x, y }];
     }
 
-    async createBookmarkAt(x, y) {
-        // Will be handled by parent component or action
-        this.notification.add("Bookmark created! Assign it to a Sign Type.", {
-            type: "success",
-        });
+    onCanvasMouseMove(ev) {
+        if (!this.state.isDrawingLasso) return;
 
-        // Add temporary visual marker
-        this.state.bookmarks.push({
-            x, y,
-            pageNumber: this.state.currentPage,
-            color: "#FFFF00",
-            temp: true,
-        });
+        const canvas = this.canvasRef.el;
+        const rect = canvas.getBoundingClientRect();
+        const x = (ev.clientX - rect.left) / rect.width;
+        const y = (ev.clientY - rect.top) / rect.height;
+
+        this.state.lassoPoints.push({ x, y });
+        this.drawLasso();
+    }
+
+    onCanvasMouseUp(ev) {
+        // Don't complete on mouse up - wait for double click
+        // Just stop tracking mouse movement
+    }
+
+    onCanvasMouseLeave(ev) {
+        // Don't complete on leave - wait for double click
+    }
+
+    onCanvasDblClick(ev) {
+        if (!this.state.isLassoMode || this.state.lassoPoints.length < 3) {
+            return;
+        }
+
+        this.state.isDrawingLasso = false;
+        this.completeLasso();
+    }
+
+    checkBookmarkClick(ev) {
+        const canvas = this.canvasRef.el;
+        const rect = canvas.getBoundingClientRect();
+        const clickX = (ev.clientX - rect.left) / rect.width;
+        const clickY = (ev.clientY - rect.top) / rect.height;
+
+        // First check if clicking on a delete button
+        if (this.state.selectedBookmarkId) {
+            const selectedBookmark = this.state.bookmarks.find(b => b.id === this.state.selectedBookmarkId);
+            if (selectedBookmark && selectedBookmark._deleteBtnX !== undefined) {
+                const btnDist = Math.sqrt(
+                    Math.pow(clickX - selectedBookmark._deleteBtnX, 2) +
+                    Math.pow(clickY - selectedBookmark._deleteBtnY, 2)
+                );
+                if (btnDist < 0.02) { // ~2% of canvas = button radius
+                    this.deleteBookmarkById(this.state.selectedBookmarkId);
+                    return;
+                }
+            }
+        }
+
+        // Find if click is inside any bookmark
+        const pageBookmarks = this.state.bookmarks.filter(
+            b => b.pageNumber === this.state.currentPage
+        );
+
+        for (const bookmark of pageBookmarks) {
+            if (bookmark.pathData && bookmark.pathData.length > 0) {
+                // Check if point is inside polygon
+                if (this.isPointInPolygon(clickX, clickY, bookmark.pathData)) {
+                    // Toggle selection
+                    if (this.state.selectedBookmarkId === bookmark.id) {
+                        this.state.selectedBookmarkId = null;
+                    } else {
+                        this.state.selectedBookmarkId = bookmark.id;
+                    }
+                    this.renderBookmarks();
+                    return;
+                }
+            } else if (bookmark.x !== undefined && bookmark.y !== undefined) {
+                // Legacy point bookmark - check distance
+                const dist = Math.sqrt(Math.pow(clickX - bookmark.x, 2) + Math.pow(clickY - bookmark.y, 2));
+                if (dist < 0.03) { // ~3% of canvas size
+                    if (this.state.selectedBookmarkId === bookmark.id) {
+                        this.state.selectedBookmarkId = null;
+                    } else {
+                        this.state.selectedBookmarkId = bookmark.id;
+                    }
+                    this.renderBookmarks();
+                    return;
+                }
+            }
+        }
+
+        // Click outside bookmarks - deselect
+        this.state.selectedBookmarkId = null;
         this.renderBookmarks();
     }
 
-    async loadBookmarks(attachmentId) {
-        // Load existing bookmarks from database
-        try {
-            const result = await this.orm.searchRead(
-                "cc.sign.bookmark",
-                [["attachment_id", "=", attachmentId]],
-                ["id", "page_number", "x_position", "y_position", "highlight_color", "sign_type_id"]
-            );
-            this.state.bookmarks = result.map(b => ({
-                id: b.id,
-                pageNumber: b.page_number,
-                x: b.x_position,
-                y: b.y_position,
-                color: b.highlight_color || "#FFFF00",
-                signTypeId: b.sign_type_id?.[0],
-                signTypeName: b.sign_type_id?.[1],
-            }));
+    isPointInPolygon(x, y, polygon) {
+        let inside = false;
+        for (let i = 0, j = polygon.length - 1; i < polygon.length; j = i++) {
+            const xi = polygon[i].x, yi = polygon[i].y;
+            const xj = polygon[j].x, yj = polygon[j].y;
 
-            this.renderBookmarks();
-        } catch (error) {
-            // Model may not exist yet
-            console.log("No bookmarks model or no bookmarks found");
-            this.state.bookmarks = [];
+            if (((yi > y) !== (yj > y)) && (x < (xj - xi) * (y - yi) / (yj - yi) + xi)) {
+                inside = !inside;
+            }
         }
+        return inside;
     }
 
-    renderBookmarks() {
-        // Render bookmark highlights on current page
-        const canvas = this.canvasRef.el;
-        if (!canvas) return;
+    drawLasso() {
+        const lassoCanvas = this.lassoCanvasRef.el;
+        if (!lassoCanvas) return;
 
-        // Get overlay canvas or create one
-        let overlay = canvas.parentElement.querySelector(".bookmark-overlay");
-        if (!overlay) {
-            overlay = document.createElement("canvas");
-            overlay.className = "bookmark-overlay";
-            overlay.style.position = "absolute";
-            overlay.style.top = "0";
-            overlay.style.left = "0";
-            overlay.style.pointerEvents = "none";
-            canvas.parentElement.style.position = "relative";
-            canvas.parentElement.appendChild(overlay);
+        const ctx = lassoCanvas.getContext("2d");
+        ctx.clearRect(0, 0, lassoCanvas.width, lassoCanvas.height);
+
+        if (this.state.lassoPoints.length < 2) return;
+
+        ctx.beginPath();
+        ctx.moveTo(
+            this.state.lassoPoints[0].x * lassoCanvas.width,
+            this.state.lassoPoints[0].y * lassoCanvas.height
+        );
+
+        for (let i = 1; i < this.state.lassoPoints.length; i++) {
+            ctx.lineTo(
+                this.state.lassoPoints[i].x * lassoCanvas.width,
+                this.state.lassoPoints[i].y * lassoCanvas.height
+            );
         }
+
+        ctx.strokeStyle = "#f59e0b";
+        ctx.lineWidth = 3;
+        ctx.lineCap = "round";
+        ctx.lineJoin = "round";
+        ctx.stroke();
+
+        // Draw fill with transparency
+        ctx.fillStyle = "rgba(245, 158, 11, 0.2)";
+        ctx.closePath();
+        ctx.fill();
+    }
+
+    completeLasso() {
+        // Store pending bookmark
+        this.state.pendingBookmark = {
+            attachmentId: this.state.selectedAttachment.id,
+            pageNumber: this.state.currentPage,
+            pathData: [...this.state.lassoPoints],
+        };
+
+        // Open sign type dialog
+        this.openAddSignTypeDialog();
+    }
+
+    // ==================== Bookmark Rendering ====================
+
+    renderBookmarks() {
+        const canvas = this.canvasRef.el;
+        const overlay = this.bookmarkOverlayRef.el;
+
+        if (!canvas || !overlay) return;
 
         overlay.width = canvas.width;
         overlay.height = canvas.height;
@@ -438,27 +823,280 @@ export class PDFViewer extends Component {
         const ctx = overlay.getContext("2d");
         ctx.clearRect(0, 0, overlay.width, overlay.height);
 
-        // Draw bookmarks for current page
+        // Filter bookmarks for current page
         const pageBookmarks = this.state.bookmarks.filter(
             b => b.pageNumber === this.state.currentPage
         );
 
         for (const bookmark of pageBookmarks) {
-            const x = bookmark.x * overlay.width;
-            const y = bookmark.y * overlay.height;
+            if (bookmark.pathData && bookmark.pathData.length > 0) {
+                // Draw lasso polygon
+                ctx.beginPath();
+                ctx.moveTo(
+                    bookmark.pathData[0].x * overlay.width,
+                    bookmark.pathData[0].y * overlay.height
+                );
 
-            // Draw highlight circle
-            ctx.beginPath();
-            ctx.arc(x, y, 20, 0, 2 * Math.PI);
-            ctx.fillStyle = bookmark.color + "66"; // Semi-transparent
-            ctx.fill();
-            ctx.strokeStyle = bookmark.color;
-            ctx.lineWidth = 3;
-            ctx.stroke();
+                for (let i = 1; i < bookmark.pathData.length; i++) {
+                    ctx.lineTo(
+                        bookmark.pathData[i].x * overlay.width,
+                        bookmark.pathData[i].y * overlay.height
+                    );
+                }
+
+                ctx.closePath();
+                ctx.fillStyle = bookmark.color + "33"; // 20% opacity
+                ctx.fill();
+                ctx.strokeStyle = bookmark.color;
+                ctx.lineWidth = 2;
+                ctx.stroke();
+
+            } else if (bookmark.x !== undefined && bookmark.y !== undefined) {
+                // Legacy point bookmark - draw circle
+                const x = bookmark.x * overlay.width;
+                const y = bookmark.y * overlay.height;
+
+                ctx.beginPath();
+                ctx.arc(x, y, 20, 0, 2 * Math.PI);
+                ctx.fillStyle = bookmark.color + "66";
+                ctx.fill();
+                ctx.strokeStyle = bookmark.color;
+                ctx.lineWidth = 3;
+                ctx.stroke();
+            }
+
+            // Draw X delete button if this bookmark is selected
+            if (this.state.selectedBookmarkId === bookmark.id) {
+                let btnX, btnY;
+
+                if (bookmark.pathData && bookmark.pathData.length > 0) {
+                    // Find top-right corner of bounding box
+                    const maxX = Math.max(...bookmark.pathData.map(p => p.x));
+                    const minY = Math.min(...bookmark.pathData.map(p => p.y));
+                    btnX = maxX * overlay.width + 5;
+                    btnY = minY * overlay.height - 5;
+                } else {
+                    btnX = bookmark.x * overlay.width + 20;
+                    btnY = bookmark.y * overlay.height - 20;
+                }
+
+                // Draw delete button
+                const btnRadius = 14;
+                ctx.beginPath();
+                ctx.arc(btnX, btnY, btnRadius, 0, 2 * Math.PI);
+                ctx.fillStyle = "#ef4444";
+                ctx.fill();
+                ctx.strokeStyle = "#fff";
+                ctx.lineWidth = 2;
+                ctx.stroke();
+
+                // Draw X
+                ctx.beginPath();
+                ctx.moveTo(btnX - 5, btnY - 5);
+                ctx.lineTo(btnX + 5, btnY + 5);
+                ctx.moveTo(btnX + 5, btnY - 5);
+                ctx.lineTo(btnX - 5, btnY + 5);
+                ctx.strokeStyle = "#fff";
+                ctx.lineWidth = 2;
+                ctx.stroke();
+
+                // Store button position for click detection
+                bookmark._deleteBtnX = btnX / overlay.width;
+                bookmark._deleteBtnY = btnY / overlay.height;
+            }
         }
     }
 
-    // Format file size for display
+    async deleteBookmarkById(bookmarkId) {
+        try {
+            await this.orm.unlink("cc.sign.bookmark", [bookmarkId]);
+            this.notification.add("Bookmark deleted", { type: "success" });
+            this.state.selectedBookmarkId = null;
+            await this.loadBookmarks(this.state.selectedAttachment.id);
+            await this.loadSignTypes();
+        } catch (error) {
+            console.error("Failed to delete bookmark:", error);
+            this.notification.add("Failed to delete", { type: "danger" });
+        }
+    }
+
+    // ==================== Sign Types ====================
+
+    openAddSignTypeDialog() {
+        this.state.editingSignType = null;
+        this.state.signTypeForm = {
+            name: "",
+            description: "",
+            quantity: 1,
+            dimensions: "",
+            material: "",
+            mounting: "",
+            notes: "",
+        };
+        this.state.showSignTypeModal = true;
+    }
+
+    editSignType(signType) {
+        this.state.editingSignType = signType;
+        this.state.signTypeForm = {
+            name: signType.name || "",
+            description: signType.description || "",
+            quantity: signType.quantity || 1,
+            dimensions: signType.dimensions || "",
+            material: signType.material || "",
+            mounting: signType.mounting || "",
+            notes: signType.notes || "",
+        };
+        this.state.showSignTypeModal = true;
+    }
+
+    closeSignTypeModal() {
+        this.state.showSignTypeModal = false;
+        this.state.editingSignType = null;
+        this.state.pendingBookmark = null;
+        this.state.lassoPoints = [];
+        this.clearLassoCanvas();
+    }
+
+    updateSignTypeForm(field, value) {
+        this.state.signTypeForm[field] = value;
+    }
+
+    async saveSignType() {
+        const form = this.state.signTypeForm;
+
+        if (!form.name) {
+            this.notification.add("Please enter a sign type ID", { type: "warning" });
+            return;
+        }
+
+        try {
+            let signTypeId;
+
+            if (this.state.editingSignType) {
+                // Update existing
+                await this.orm.write("cc.sign.type", [this.state.editingSignType.id], {
+                    name: form.name,
+                    description: form.description,
+                    quantity: form.quantity,
+                    dimensions: form.dimensions,
+                    material: form.material,
+                    mounting: form.mounting,
+                    notes: form.notes,
+                });
+                signTypeId = this.state.editingSignType.id;
+            } else {
+                // Create new
+                signTypeId = await this.orm.create("cc.sign.type", {
+                    name: form.name,
+                    description: form.description,
+                    quantity: form.quantity,
+                    dimensions: form.dimensions,
+                    material: form.material,
+                    mounting: form.mounting,
+                    notes: form.notes,
+                    opportunity_id: this.opportunityId,
+                });
+            }
+
+            // If there's a pending bookmark, create it
+            if (this.state.pendingBookmark) {
+                const pb = this.state.pendingBookmark;
+
+                // Calculate center point from path
+                const centerX = pb.pathData.reduce((sum, p) => sum + p.x, 0) / pb.pathData.length;
+                const centerY = pb.pathData.reduce((sum, p) => sum + p.y, 0) / pb.pathData.length;
+
+                await this.orm.create("cc.sign.bookmark", {
+                    sign_type_id: signTypeId,
+                    attachment_id: pb.attachmentId,
+                    page_number: pb.pageNumber,
+                    x_position: centerX,
+                    y_position: centerY,
+                    path_data: JSON.stringify(pb.pathData),
+                    highlight_color: "#f59e0b",
+                });
+            }
+
+            this.notification.add(`Sign type "${form.name}" saved!`, { type: "success" });
+
+            // Refresh data
+            await this.loadSignTypes();
+            if (this.state.selectedAttachment) {
+                await this.loadBookmarks(this.state.selectedAttachment.id);
+            }
+
+            this.closeSignTypeModal();
+            this.state.isLassoMode = false;
+
+        } catch (error) {
+            console.error("Failed to save sign type:", error);
+            this.notification.add("Failed to save: " + error.message, { type: "danger" });
+        }
+    }
+
+    async goToSignType(signType) {
+        // Find first bookmark for this sign type
+        try {
+            const bookmarks = await this.orm.searchRead(
+                "cc.sign.bookmark",
+                [["sign_type_id", "=", signType.id]],
+                ["attachment_id", "page_number"],
+                { limit: 1 }
+            );
+
+            if (bookmarks.length > 0) {
+                const bookmark = bookmarks[0];
+                const attachment = this.state.attachments.find(a => a.id === bookmark.attachment_id[0]);
+
+                if (attachment) {
+                    await this.openAttachment(attachment);
+                    this.goToPageNumber(bookmark.page_number);
+                }
+            } else {
+                this.notification.add("No bookmarks found for this sign type", { type: "info" });
+            }
+        } catch (error) {
+            console.error("Failed to navigate:", error);
+        }
+    }
+
+    // ==================== Bookmark Context Menu ====================
+
+    onBookmarkRightClick(ev, bookmark) {
+        ev.preventDefault();
+        this.state.selectedBookmark = bookmark;
+        this.state.bookmarkMenuX = ev.clientX;
+        this.state.bookmarkMenuY = ev.clientY;
+        this.state.showBookmarkMenu = true;
+    }
+
+    async deleteSelectedBookmark() {
+        if (!this.state.selectedBookmark) return;
+
+        try {
+            await this.orm.unlink("cc.sign.bookmark", [this.state.selectedBookmark.id]);
+            this.notification.add("Bookmark deleted", { type: "success" });
+
+            // Refresh
+            await this.loadBookmarks(this.state.selectedAttachment.id);
+            await this.loadSignTypes();
+        } catch (error) {
+            console.error("Failed to delete bookmark:", error);
+            this.notification.add("Failed to delete", { type: "danger" });
+        }
+
+        this.state.showBookmarkMenu = false;
+        this.state.selectedBookmark = null;
+    }
+
+    editSelectedBookmark() {
+        // TODO: Open edit dialog for bookmark
+        this.state.showBookmarkMenu = false;
+    }
+
+    // ==================== Utilities ====================
+
     formatSize(bytes) {
         if (!bytes) return "0 B";
         const sizes = ["B", "KB", "MB", "GB"];

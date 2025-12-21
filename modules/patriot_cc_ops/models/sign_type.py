@@ -129,7 +129,11 @@ class SignBookmark(models.Model):
     )
     highlight_color = fields.Char(
         string='Highlight Color',
-        default='#FFFF00'
+        default='#f59e0b'
+    )
+    path_data = fields.Text(
+        string='Lasso Path',
+        help='JSON array of {x, y} normalized coordinates forming the lasso region'
     )
     note = fields.Char(
         string='Note',

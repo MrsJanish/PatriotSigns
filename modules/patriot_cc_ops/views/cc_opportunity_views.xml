@@ -76,6 +76,23 @@
                                 </list>
                             </field>
                         </page>
+                        <page string="Sign Types" name="sign_types">
+                            <div class="d-flex justify-content-end mb-3">
+                                <button name="action_export_sign_schedule" type="object" string="📋 Export Sign Schedule" class="btn-secondary" invisible="sign_type_count == 0"/>
+                            </div>
+                            <field name="sign_type_ids">
+                                <list editable="bottom">
+                                    <field name="name"/>
+                                    <field name="quantity"/>
+                                    <field name="dimensions"/>
+                                    <field name="material"/>
+                                    <field name="mounting"/>
+                                    <field name="bookmark_count"/>
+                                    <field name="confirmed" widget="boolean_toggle"/>
+                                    <button name="action_view_bookmarks" type="object" icon="fa-bookmark" title="Go to Bookmark"/>
+                                </list>
+                            </field>
+                        </page>
                     </notebook>
                 </sheet>
                 <chatter/>

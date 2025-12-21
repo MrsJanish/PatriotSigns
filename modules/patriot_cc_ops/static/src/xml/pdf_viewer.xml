@@ -3,13 +3,13 @@
 
     <t t-name="patriot_cc_ops.PDFViewer" owl="1">
         <div class="pdf-viewer-container" t-ref="viewerContainer" 
-             t-attf-class="#{state.isFullscreen ? 'fullscreen' : ''} #{state.isSplitView ? 'split-view' : ''}">
+             t-attf-class="#{state.isFullscreen ? 'fullscreen' : ''} #{state.theme}">
             
             <!-- Toolbar -->
             <div class="pdf-toolbar">
-                <!-- File selector dropdown -->
+                <!-- File selector -->
                 <div class="toolbar-section file-selector">
-                    <select class="form-select form-select-sm" t-on-change="onAttachmentSelect">
+                    <select class="form-select" t-on-change="onAttachmentSelect">
                         <option value="">Select Document...</option>
                         <t t-foreach="state.filteredAttachments" t-as="attachment" t-key="attachment.id">
                             <option t-att-value="attachment.id" 
@@ -19,93 +19,125 @@
                         </t>
                     </select>
                     
-                    <!-- Filter input -->
-                    <input type="text" class="form-control form-control-sm filter-input" 
+                    <input type="text" class="form-control filter-input" 
                            placeholder="Filter files..."
                            t-att-value="state.filterText"
                            t-on-input="onFilterChange"/>
                 </div>
                 
+                <div class="toolbar-divider"/>
+                
                 <!-- Page navigation -->
                 <div class="toolbar-section page-nav">
-                    <button class="btn btn-sm btn-outline-secondary" t-on-click="prevPage" 
-                            t-att-disabled="state.currentPage &lt;= 1">
+                    <button class="btn btn-icon btn-glass" t-on-click="prevPage" 
+                            t-att-disabled="state.currentPage &lt;= 1" title="Previous Page">
                         <i class="fa fa-chevron-left"/>
                     </button>
-                    <span class="page-info">
-                        <input type="number" class="form-control form-control-sm page-input" 
+                    <div class="page-info">
+                        <input type="number" class="page-input" 
                                t-att-value="state.currentPage" 
                                t-on-change="onPageInputChange"
                                min="1" t-att-max="state.totalPages"/>
                         <span class="total-pages">/ <t t-esc="state.totalPages"/></span>
-                    </span>
-                    <button class="btn btn-sm btn-outline-secondary" t-on-click="nextPage"
-                            t-att-disabled="state.currentPage >= state.totalPages">
+                    </div>
+                    <button class="btn btn-icon btn-glass" t-on-click="nextPage"
+                            t-att-disabled="state.currentPage &gt;= state.totalPages" title="Next Page">
                         <i class="fa fa-chevron-right"/>
                     </button>
                 </div>
                 
+                <div class="toolbar-divider"/>
+                
                 <!-- Zoom controls -->
                 <div class="toolbar-section zoom-controls">
-                    <button class="btn btn-sm btn-outline-secondary" t-on-click="zoomOut" title="Zoom Out">
+                    <button class="btn btn-icon btn-glass" t-on-click="zoomOut" title="Zoom Out">
                         <i class="fa fa-search-minus"/>
                     </button>
                     <span class="zoom-level" t-esc="state.zoomPercent"/>
-                    <button class="btn btn-sm btn-outline-secondary" t-on-click="zoomIn" title="Zoom In">
+                    <button class="btn btn-icon btn-glass" t-on-click="zoomIn" title="Zoom In">
                         <i class="fa fa-search-plus"/>
                     </button>
-                    <button class="btn btn-sm btn-outline-secondary" t-on-click="resetZoom" title="Reset Zoom">
-                        <i class="fa fa-compress"/>
+                    <button class="btn btn-icon btn-glass" t-on-click="fitToWidth" title="Fit to Width">
+                        <i class="fa fa-arrows-h"/>
                     </button>
                 </div>
                 
+                <div class="toolbar-divider"/>
+                
+                <!-- Search -->
+                <div class="toolbar-section search-section">
+                    <input type="text" class="form-control search-input" 
+                           placeholder="Search in document..."
+                           t-att-value="state.searchText"
+                           t-on-input="onSearchInput"
+                           t-on-keypress="onSearchKeypress"/>
+                    <t t-if="state.searchResults.length > 0">
+                        <span class="search-results-count">
+                            <t t-esc="state.currentSearchIndex + 1"/>/<t t-esc="state.searchResults.length"/>
+                        </span>
+                        <button class="btn btn-icon btn-glass" t-on-click="prevSearchResult" title="Previous Match">
+                            <i class="fa fa-arrow-up"/>
+                        </button>
+                        <button class="btn btn-icon btn-glass" t-on-click="nextSearchResult" title="Next Match">
+                            <i class="fa fa-arrow-down"/>
+                        </button>
+                    </t>
+                </div>
+                
+                <div class="toolbar-divider"/>
+                
                 <!-- View controls -->
                 <div class="toolbar-section view-controls">
-                    <button class="btn btn-sm" 
-                            t-attf-class="btn-#{state.isSplitView ? 'primary' : 'outline-secondary'}"
+                    <button class="btn btn-glass" 
+                            t-attf-class="#{state.isSplitView ? 'btn-primary' : 'btn-glass'}"
                             t-on-click="toggleSplitView" title="Split View">
                         <i class="fa fa-columns"/>
                     </button>
-                    <button class="btn btn-sm btn-outline-secondary" t-on-click="toggleFullscreen" title="Fullscreen">
+                    <button class="btn btn-icon btn-glass" t-on-click="toggleFullscreen" title="Fullscreen">
                         <i t-attf-class="fa fa-#{state.isFullscreen ? 'compress' : 'expand'}"/>
                     </button>
                 </div>
                 
-                <!-- Bookmark controls -->
+                <div class="toolbar-divider"/>
+                
+                <!-- Bookmark/Lasso controls -->
                 <div class="toolbar-section bookmark-controls">
-                    <button class="btn btn-sm" 
-                            t-attf-class="btn-#{state.isBookmarkMode ? 'warning' : 'outline-warning'}"
-                            t-on-click="toggleBookmarkMode" title="Click to add bookmark">
-                        <i class="fa fa-bookmark"/> 
-                        <t t-if="state.isBookmarkMode">Click PDF to Mark</t>
-                        <t t-else="">Add Bookmark</t>
+                    <button class="btn btn-bookmark" 
+                            t-attf-class="btn-bookmark #{state.isLassoMode ? 'active' : ''}"
+                            t-on-click="toggleLassoMode" title="Lasso Bookmark Tool">
+                        <i class="fa fa-bookmark"/>
+                        <t t-if="state.isLassoMode">Drawing...</t>
+                        <t t-else="">Lasso</t>
+                    </button>
+                    <button class="btn btn-primary" t-on-click="openAddSignTypeDialog" title="Add Sign Type">
+                        <i class="fa fa-plus"/> Add Sign
                     </button>
                 </div>
             </div>
             
             <!-- Main content area -->
-            <div class="pdf-content">
+            <div class="pdf-content" t-ref="contentArea">
                 <!-- Loading state -->
                 <div t-if="state.isLoading" class="loading-overlay">
-                    <div class="spinner-border text-primary" role="status">
-                        <span class="visually-hidden">Loading...</span>
-                    </div>
+                    <div class="spinner"/>
                     <p>Loading document...</p>
                 </div>
                 
                 <!-- Error state -->
                 <div t-if="state.error" class="error-message">
-                    <i class="fa fa-exclamation-triangle text-danger"/>
+                    <i class="fa fa-exclamation-triangle"/>
                     <p t-esc="state.error"/>
+                    <button class="btn btn-glass" t-on-click="retry">Try Again</button>
                 </div>
                 
                 <!-- No document selected -->
-                <div t-if="!state.selectedAttachment and !state.isLoading" class="no-document">
+                <div t-if="!state.selectedAttachment and !state.isLoading and !state.isSplitView" class="no-document">
                     <i class="fa fa-file-pdf-o"/>
                     <p>Select a document to view</p>
+                    <p class="text-muted">or drag one from the sidebar</p>
                     <div class="file-list">
-                        <t t-foreach="state.filteredAttachments" t-as="att" t-key="att.id">
-                            <div class="file-item" t-on-click="() => this.openAttachment(att)" t-att-data-id="att.id">
+                        <t t-foreach="state.filteredAttachments.slice(0, 5)" t-as="att" t-key="att.id">
+                            <div class="file-item" t-on-click="() => this.openAttachment(att)">
                                 <i class="fa fa-file-pdf-o"/>
                                 <span class="file-name" t-esc="att.name"/>
                                 <span class="file-size" t-esc="formatSize(att.file_size)"/>
@@ -114,51 +146,226 @@
                     </div>
                 </div>
                 
-                <!-- PDF Canvas (single view) -->
-                <div t-if="state.selectedAttachment and !state.isSplitView" class="pdf-canvas-container">
+                <!-- Single View Mode -->
+                <div t-if="state.selectedAttachment and !state.isSplitView" class="pdf-canvas-container" t-ref="canvasContainer">
                     <canvas t-ref="pdfCanvas" 
-                            t-attf-class="pdf-canvas #{state.isBookmarkMode ? 'bookmark-mode' : ''}"
-                            t-on-click="onCanvasClick"/>
+                            t-attf-class="pdf-canvas #{state.isLassoMode ? 'lasso-mode' : ''}"
+                            t-on-mousedown="onCanvasMouseDown"
+                            t-on-mousemove="onCanvasMouseMove"
+                            t-on-mouseup="onCanvasMouseUp"
+                            t-on-mouseleave="onCanvasMouseLeave"
+                            t-on-dblclick="onCanvasDblClick"/>
+                    <canvas t-ref="lassoCanvas" class="lasso-canvas"/>
+                    <canvas t-ref="bookmarkOverlay" class="bookmark-overlay"/>
                 </div>
                 
-                <!-- Split view panels -->
-                <div t-if="state.selectedAttachment and state.isSplitView" class="split-panels">
-                    <div class="left-panel">
-                        <div class="panel-header">Left Panel</div>
-                        <div class="pdf-canvas-container">
-                            <canvas t-ref="leftCanvas" class="pdf-canvas"/>
+                <!-- Split View Mode -->
+                <div t-if="state.isSplitView" class="split-panels">
+                    <!-- Left Panel -->
+                    <div class="split-panel left-panel">
+                        <div class="panel-header">
+                            <span t-if="state.leftPanel.attachment">
+                                <t t-esc="state.leftPanel.attachment.name"/>
+                            </span>
+                            <span t-else="">Left Panel</span>
+                            <button t-if="state.leftPanel.attachment" class="close-btn" t-on-click="clearLeftPanel" title="Close">×</button>
+                        </div>
+                        <div class="panel-content">
+                            <div t-if="state.leftPanel.attachment" class="pdf-canvas-container">
+                                <canvas t-ref="leftCanvas" class="pdf-canvas"/>
+                            </div>
+                            <div t-else="" class="drop-zone" 
+                                 t-attf-class="drop-zone #{state.dragOverLeft ? 'drag-over' : ''}"
+                                 t-on-dragover="onDragOverLeft"
+                                 t-on-dragleave="onDragLeaveLeft"
+                                 t-on-drop="onDropLeft">
+                                <i class="fa fa-download"/>
+                                <p>Drop a document here</p>
+                            </div>
                         </div>
                     </div>
-                    <div class="panel-divider"/>
-                    <div class="right-panel">
-                        <div class="panel-header">Right Panel</div>
-                        <div class="pdf-canvas-container">
-                            <canvas t-ref="rightCanvas" 
-                                    t-attf-class="pdf-canvas #{state.isBookmarkMode ? 'bookmark-mode' : ''}"
-                                    t-on-click="onCanvasClick"/>
+                    
+                    <div class="panel-divider" t-on-mousedown="onDividerMouseDown"/>
+                    
+                    <!-- Right Panel -->
+                    <div class="split-panel right-panel">
+                        <div class="panel-header">
+                            <span t-if="state.rightPanel.attachment">
+                                <t t-esc="state.rightPanel.attachment.name"/>
+                            </span>
+                            <span t-else="">Right Panel</span>
+                            <button t-if="state.rightPanel.attachment" class="close-btn" t-on-click="clearRightPanel" title="Close">×</button>
+                        </div>
+                        <div class="panel-content">
+                            <div t-if="state.rightPanel.attachment" class="pdf-canvas-container">
+                                <canvas t-ref="rightCanvas" 
+                                        t-attf-class="pdf-canvas #{state.isLassoMode ? 'lasso-mode' : ''}"
+                                        t-on-mousedown="onCanvasMouseDown"
+                                        t-on-mousemove="onCanvasMouseMove"
+                                        t-on-mouseup="onCanvasMouseUp"/>
+                                <canvas t-ref="rightLassoCanvas" class="lasso-canvas"/>
+                                <canvas t-ref="rightBookmarkOverlay" class="bookmark-overlay"/>
+                            </div>
+                            <div t-else="" class="drop-zone"
+                                 t-attf-class="drop-zone #{state.dragOverRight ? 'drag-over' : ''}"
+                                 t-on-dragover="onDragOverRight"
+                                 t-on-dragleave="onDragLeaveRight"
+                                 t-on-drop="onDropRight">
+                                <i class="fa fa-download"/>
+                                <p>Drop a document here</p>
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
             
-            <!-- Sidebar: Attachments list -->
+            <!-- Sidebar -->
             <div class="pdf-sidebar">
-                <div class="sidebar-header">
-                    <h5>Documents</h5>
-                    <span class="badge bg-secondary" t-esc="state.attachments.length"/>
+                <!-- Documents Section -->
+                <div class="sidebar-section documents-section">
+                    <div class="sidebar-header">
+                        <h5>Documents</h5>
+                        <span class="badge" t-esc="state.attachments.length"/>
+                    </div>
+                    <div class="sidebar-content">
+                        <t t-foreach="state.filteredAttachments" t-as="att" t-key="att.id">
+                            <div class="attachment-item" 
+                                 t-attf-class="attachment-item #{state.selectedAttachment and state.selectedAttachment.id === att.id ? 'active' : ''}"
+                                 t-att-draggable="true"
+                                 t-on-click="() => this.openAttachment(att)"
+                                 t-on-dragstart="(ev) => this.onDragStart(ev, att)"
+                                 t-on-dragend="onDragEnd">
+                                <span class="drag-handle">
+                                    <i class="fa fa-grip-vertical"/>
+                                </span>
+                                <div class="file-icon">
+                                    <i class="fa fa-file-pdf-o"/>
+                                </div>
+                                <div class="att-info">
+                                    <span class="att-name" t-esc="att.name"/>
+                                    <span class="att-size" t-esc="formatSize(att.file_size)"/>
+                                </div>
+                            </div>
+                        </t>
+                    </div>
                 </div>
-                <div class="sidebar-content">
-                    <t t-foreach="state.filteredAttachments" t-as="att" t-key="att.id">
-                        <div class="attachment-item" 
-                             t-attf-class="#{state.selectedAttachment and state.selectedAttachment.id === att.id ? 'active' : ''}"
-                             t-on-click="onSidebarAttachmentClick" t-att-data-id="att.id">
-                            <i class="fa fa-file-pdf-o"/>
-                            <div class="att-info">
-                                <span class="att-name" t-esc="att.name"/>
-                                <span class="att-size" t-esc="formatSize(att.file_size)"/>
+                
+                <!-- Sign Types Section -->
+                <div class="sidebar-section sign-types-section">
+                    <div class="sidebar-header">
+                        <h5>Sign Types</h5>
+                        <span class="badge" t-esc="state.signTypes.length"/>
+                    </div>
+                    <div class="sidebar-content">
+                        <t t-if="state.signTypes.length === 0">
+                            <div class="no-sign-types" style="text-align: center; padding: 1rem; color: var(--text-muted);">
+                                <p>No sign types yet</p>
+                                <button class="btn btn-glass" t-on-click="openAddSignTypeDialog">
+                                    <i class="fa fa-plus"/> Add First Sign
+                                </button>
+                            </div>
+                        </t>
+                        <t t-foreach="state.signTypes" t-as="signType" t-key="signType.id">
+                            <div class="sign-type-item">
+                                <div class="type-color" t-attf-style="background: #{signType.color || '#3b82f6'}"/>
+                                <div class="type-info">
+                                    <span class="type-name" t-esc="signType.name"/>
+                                    <span class="type-meta">
+                                        Qty: <t t-esc="signType.quantity"/> | 
+                                        <t t-esc="signType.bookmark_count"/> bookmark(s)
+                                    </span>
+                                </div>
+                                <div class="type-actions">
+                                    <button class="btn-sm" t-on-click="() => this.goToSignType(signType)" title="Go to Bookmark">
+                                        <i class="fa fa-bookmark"/>
+                                    </button>
+                                    <button class="btn-sm" t-on-click="() => this.editSignType(signType)" title="Edit">
+                                        <i class="fa fa-pencil"/>
+                                    </button>
+                                </div>
+                            </div>
+                        </t>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Sign Type Modal -->
+            <div t-if="state.showSignTypeModal" class="modal-backdrop" t-on-click="closeSignTypeModal">
+                <div class="modal-dialog" t-on-click.stop="">
+                    <div class="modal-header">
+                        <h3 t-if="state.editingSignType">Edit Sign Type</h3>
+                        <h3 t-else="">Add Sign Type</h3>
+                        <button class="modal-close" t-on-click="closeSignTypeModal">×</button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="form-group">
+                            <label>Sign Type ID</label>
+                            <input type="text" t-att-value="state.signTypeForm.name" 
+                                   t-on-input="(ev) => this.updateSignTypeForm('name', ev.target.value)"
+                                   placeholder="e.g., SN-1, RID-1, ADA-1"/>
+                        </div>
+                        <div class="form-group">
+                            <label>Description</label>
+                            <textarea t-att-value="state.signTypeForm.description"
+                                      t-on-input="(ev) => this.updateSignTypeForm('description', ev.target.value)"
+                                      placeholder="Full description of this sign type"/>
+                        </div>
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                            <div class="form-group">
+                                <label>Quantity</label>
+                                <input type="number" t-att-value="state.signTypeForm.quantity" 
+                                       t-on-input="(ev) => this.updateSignTypeForm('quantity', parseInt(ev.target.value))"
+                                       min="1"/>
+                            </div>
+                            <div class="form-group">
+                                <label>Dimensions</label>
+                                <input type="text" t-att-value="state.signTypeForm.dimensions"
+                                       t-on-input="(ev) => this.updateSignTypeForm('dimensions', ev.target.value)"
+                                       placeholder='e.g., 24" x 36"'/>
                             </div>
                         </div>
-                    </t>
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                            <div class="form-group">
+                                <label>Material</label>
+                                <input type="text" t-att-value="state.signTypeForm.material"
+                                       t-on-input="(ev) => this.updateSignTypeForm('material', ev.target.value)"
+                                       placeholder="e.g., Aluminum, Acrylic"/>
+                            </div>
+                            <div class="form-group">
+                                <label>Mounting</label>
+                                <input type="text" t-att-value="state.signTypeForm.mounting"
+                                       t-on-input="(ev) => this.updateSignTypeForm('mounting', ev.target.value)"
+                                       placeholder="e.g., Wall, Post"/>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label>Notes</label>
+                            <textarea t-att-value="state.signTypeForm.notes"
+                                      t-on-input="(ev) => this.updateSignTypeForm('notes', ev.target.value)"
+                                      placeholder="Additional notes..."/>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button class="btn btn-glass" t-on-click="closeSignTypeModal">Cancel</button>
+                        <button class="btn btn-primary" t-on-click="saveSignType">
+                            <i class="fa fa-check"/> Save
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Bookmark Context Menu -->
+            <div t-if="state.showBookmarkMenu" class="bookmark-context-menu"
+                 t-attf-style="position: fixed; top: #{state.bookmarkMenuY}px; left: #{state.bookmarkMenuX}px; z-index: 1000;">
+                <div class="context-menu" style="background: var(--glass-bg); backdrop-filter: blur(20px); border: 1px solid var(--border-color); border-radius: 12px; padding: 0.5rem; min-width: 150px;">
+                    <button class="context-item" t-on-click="editSelectedBookmark" 
+                            style="display: block; width: 100%; text-align: left; padding: 0.5rem 1rem; border: none; background: transparent; cursor: pointer; border-radius: 8px;">
+                        <i class="fa fa-pencil"/> Edit
+                    </button>
+                    <button class="context-item" t-on-click="deleteSelectedBookmark"
+                            style="display: block; width: 100%; text-align: left; padding: 0.5rem 1rem; border: none; background: transparent; cursor: pointer; border-radius: 8px; color: var(--danger);">
+                        <i class="fa fa-trash"/> Delete
+                    </button>
                 </div>
             </div>
         </div>

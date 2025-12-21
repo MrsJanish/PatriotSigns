@@ -294,3 +294,91 @@ class CCOpportunity(models.Model):
                 'opportunityId': self.id,
             },
         }
+
+    def action_export_sign_schedule(self):
+        """
+        Exports sign types to an Excel sign schedule.
+        """
+        self.ensure_one()
+        import io
+        import base64
+        
+        try:
+            import xlsxwriter
+        except ImportError:
+            self.message_post(body="xlsxwriter not installed. Please install it to export schedules.")
+            return {'type': 'ir.actions.act_window_close'}
+        
+        output = io.BytesIO()
+        workbook = xlsxwriter.Workbook(output, {'in_memory': True})
+        worksheet = workbook.add_worksheet('Sign Schedule')
+        
+        # Formats
+        header_format = workbook.add_format({
+            'bold': True,
+            'bg_color': '#1e293b',
+            'font_color': 'white',
+            'border': 1,
+            'align': 'center',
+            'valign': 'vcenter',
+        })
+        cell_format = workbook.add_format({
+            'border': 1,
+            'align': 'left',
+            'valign': 'vcenter',
+        })
+        alt_format = workbook.add_format({
+            'border': 1,
+            'align': 'left',
+            'valign': 'vcenter',
+            'bg_color': '#f1f5f9',
+        })
+        
+        # Headers
+        headers = ['Sign Type', 'Quantity', 'Dimensions', 'Material', 'Mounting', 'Description', 'Notes', 'Confirmed']
+        for col, header in enumerate(headers):
+            worksheet.write(0, col, header, header_format)
+        
+        # Data rows
+        for row, sign_type in enumerate(self.sign_type_ids, start=1):
+            fmt = alt_format if row % 2 == 0 else cell_format
+            worksheet.write(row, 0, sign_type.name or '', fmt)
+            worksheet.write(row, 1, sign_type.quantity or 0, fmt)
+            worksheet.write(row, 2, sign_type.dimensions or '', fmt)
+            worksheet.write(row, 3, sign_type.material or '', fmt)
+            worksheet.write(row, 4, sign_type.mounting or '', fmt)
+            worksheet.write(row, 5, sign_type.description or '', fmt)
+            worksheet.write(row, 6, sign_type.notes or '', fmt)
+            worksheet.write(row, 7, 'Yes' if sign_type.confirmed else 'No', fmt)
+        
+        # Column widths
+        worksheet.set_column(0, 0, 15)  # Sign Type
+        worksheet.set_column(1, 1, 10)  # Quantity
+        worksheet.set_column(2, 2, 15)  # Dimensions
+        worksheet.set_column(3, 3, 15)  # Material
+        worksheet.set_column(4, 4, 15)  # Mounting
+        worksheet.set_column(5, 5, 30)  # Description
+        worksheet.set_column(6, 6, 25)  # Notes
+        worksheet.set_column(7, 7, 10)  # Confirmed
+        
+        workbook.close()
+        
+        # Create attachment
+        file_data = base64.b64encode(output.getvalue())
+        filename = f"Sign_Schedule_{self.name or 'Export'}_{fields.Date.today()}.xlsx".replace(' ', '_')
+        
+        attachment = self.env['ir.attachment'].create({
+            'name': filename,
+            'type': 'binary',
+            'datas': file_data,
+            'res_model': self._name,
+            'res_id': self.id,
+            'mimetype': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        })
+        
+        return {
+            'type': 'ir.actions.act_url',
+            'url': f'/web/content/{attachment.id}?download=true',
+            'target': 'self',
+        }
+
