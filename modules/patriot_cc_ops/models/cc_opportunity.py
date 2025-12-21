@@ -283,14 +283,14 @@ class CCOpportunity(models.Model):
     
     def action_view_documents(self):
         """
-        Opens the document viewer.
+        Opens the PDF viewer for this opportunity's documents.
         """
         self.ensure_one()
         return {
-            'type': 'ir.actions.act_window',
-            'name': 'Construction Documents',
-            'res_model': 'ir.attachment',
-            'view_mode': 'kanban,list,form',
-            'domain': [('res_model', '=', 'cc.opportunity'), ('res_id', '=', self.id)],
-            'context': {'default_res_model': 'cc.opportunity', 'default_res_id': self.id},
+            'type': 'ir.actions.client',
+            'tag': 'cc_ops_pdf_viewer',
+            'name': 'Document Viewer',
+            'params': {
+                'opportunityId': self.id,
+            },
         }
