@@ -331,9 +331,14 @@ export class PDFViewer extends Component {
             const loadingTask = this.pdfjsLib.getDocument({ data: pdfArray });
             const pdfDoc = await loadingTask.promise;
 
-            // Cleanup old doc
+            // Cleanup old doc safely (may fail due to PDF.js version conflicts)
             if (this.state.pdfDoc) {
-                this.state.pdfDoc.destroy?.();
+                try {
+                    this.state.pdfDoc.destroy();
+                } catch (e) {
+                    console.log("Could not destroy old PDF (safe to ignore):", e.message);
+                }
+                this.state.pdfDoc = null;
             }
 
             this.state.pdfDoc = pdfDoc;
