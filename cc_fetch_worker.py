@@ -322,9 +322,29 @@ def upload_to_odoo(opportunity_id, zip_path):
         with zipfile.ZipFile(zip_path, 'r') as zip_ref:
             zip_ref.extractall(extract_dir)
         
+        # Log extracted structure
+        print(f"Extracted zip to: {extract_dir}")
         for root, dirs, files in os.walk(extract_dir):
+            rel_root = os.path.relpath(root, extract_dir)
+            print(f"Folder: {rel_root} ({len(files)} files)")
+        
+        # Upload all files
+        uploaded_count = 0
+        for root, dirs, files in os.walk(extract_dir):
+            # Get relative folder path for naming (e.g., "Drawings" or "Specifications")
+            rel_folder = os.path.relpath(root, extract_dir)
+            if rel_folder == '.':
+                rel_folder = ''
+            
             for filename in files:
                 filepath = os.path.join(root, filename)
+                
+                # Include folder prefix in name to distinguish source
+                if rel_folder:
+                    display_name = f"[{rel_folder}] {filename}"
+                else:
+                    display_name = filename
+                
                 with open(filepath, 'rb') as f:
                     file_data = base64.b64encode(f.read()).decode('utf-8')
                 
@@ -333,13 +353,16 @@ def upload_to_odoo(opportunity_id, zip_path):
                     ODOO_DB, uid, ODOO_PASSWORD,
                     'ir.attachment', 'create',
                     [{
-                        'name': filename,
+                        'name': display_name,
                         'datas': file_data,
                         'res_model': 'cc.opportunity',
                         'res_id': int(opportunity_id),
                     }]
                 )
-                print(f"Uploaded {filename} as attachment {attachment_id}")
+                uploaded_count += 1
+                print(f"Uploaded {display_name} as attachment {attachment_id}")
+        
+        print(f"Total files uploaded: {uploaded_count}")
     
     # Update opportunity status
     models.execute_kw(
