@@ -57,6 +57,17 @@ class CCOpportunity(models.Model):
         string="Construction Documents")
     document_count = fields.Integer(compute='_compute_document_count', string="# Docs")
 
+    # --- SIGN TYPES ---
+    sign_type_ids = fields.One2many(
+        'cc.sign.type',
+        'opportunity_id',
+        string='Sign Types'
+    )
+    sign_type_count = fields.Integer(
+        compute='_compute_sign_type_count',
+        string='# Sign Types'
+    )
+
     # --- EMAIL PARSING ---
     source_email_id = fields.Many2one('mail.message', string="Source Email")
 
@@ -64,6 +75,11 @@ class CCOpportunity(models.Model):
     def _compute_document_count(self):
         for rec in self:
             rec.document_count = len(rec.document_ids)
+
+    @api.depends('sign_type_ids')
+    def _compute_sign_type_count(self):
+        for rec in self:
+            rec.sign_type_count = len(rec.sign_type_ids)
 
     # --- EMAIL INGESTION ---
     @api.model

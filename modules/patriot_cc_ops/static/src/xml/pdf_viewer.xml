@@ -1,0 +1,168 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+
+    <t t-name="patriot_cc_ops.PDFViewer" owl="1">
+        <div class="pdf-viewer-container" t-ref="viewerContainer" 
+             t-attf-class="{{state.isFullscreen ? 'fullscreen' : ''}} {{state.isSplitView ? 'split-view' : ''}}">
+            
+            <!-- Toolbar -->
+            <div class="pdf-toolbar">
+                <!-- File selector dropdown -->
+                <div class="toolbar-section file-selector">
+                    <select class="form-select form-select-sm" 
+                            t-on-change="(ev) => this.openAttachment(state.attachments.find(a => a.id == ev.target.value))">
+                        <option value="">Select Document...</option>
+                        <t t-foreach="state.filteredAttachments" t-as="attachment" t-key="attachment.id">
+                            <option t-att-value="attachment.id" 
+                                    t-att-selected="state.selectedAttachment?.id === attachment.id">
+                                <t t-esc="attachment.name"/>
+                            </option>
+                        </t>
+                    </select>
+                    
+                    <!-- Filter input -->
+                    <input type="text" class="form-control form-control-sm filter-input" 
+                           placeholder="Filter files..."
+                           t-att-value="state.filterText"
+                           t-on-input="onFilterChange"/>
+                </div>
+                
+                <!-- Page navigation -->
+                <div class="toolbar-section page-nav">
+                    <button class="btn btn-sm btn-outline-secondary" t-on-click="prevPage" 
+                            t-att-disabled="state.currentPage <= 1">
+                        <i class="fa fa-chevron-left"/>
+                    </button>
+                    <span class="page-info">
+                        <input type="number" class="form-control form-control-sm page-input" 
+                               t-att-value="state.currentPage" 
+                               t-on-change="onPageInputChange"
+                               min="1" t-att-max="state.totalPages"/>
+                        <span class="total-pages">/ <t t-esc="state.totalPages"/></span>
+                    </span>
+                    <button class="btn btn-sm btn-outline-secondary" t-on-click="nextPage"
+                            t-att-disabled="state.currentPage >= state.totalPages">
+                        <i class="fa fa-chevron-right"/>
+                    </button>
+                </div>
+                
+                <!-- Zoom controls -->
+                <div class="toolbar-section zoom-controls">
+                    <button class="btn btn-sm btn-outline-secondary" t-on-click="zoomOut" title="Zoom Out">
+                        <i class="fa fa-search-minus"/>
+                    </button>
+                    <span class="zoom-level" t-esc="Math.round(state.scale * 100) + '%'"/>
+                    <button class="btn btn-sm btn-outline-secondary" t-on-click="zoomIn" title="Zoom In">
+                        <i class="fa fa-search-plus"/>
+                    </button>
+                    <button class="btn btn-sm btn-outline-secondary" t-on-click="resetZoom" title="Reset Zoom">
+                        <i class="fa fa-compress"/>
+                    </button>
+                </div>
+                
+                <!-- View controls -->
+                <div class="toolbar-section view-controls">
+                    <button class="btn btn-sm" 
+                            t-attf-class="btn-{{state.isSplitView ? 'primary' : 'outline-secondary'}}"
+                            t-on-click="toggleSplitView" title="Split View">
+                        <i class="fa fa-columns"/>
+                    </button>
+                    <button class="btn btn-sm btn-outline-secondary" t-on-click="toggleFullscreen" title="Fullscreen">
+                        <i t-attf-class="fa fa-{{state.isFullscreen ? 'compress' : 'expand'}}"/>
+                    </button>
+                </div>
+                
+                <!-- Bookmark controls -->
+                <div class="toolbar-section bookmark-controls">
+                    <button class="btn btn-sm" 
+                            t-attf-class="btn-{{state.isBookmarkMode ? 'warning' : 'outline-warning'}}"
+                            t-on-click="toggleBookmarkMode" title="Click to add bookmark">
+                        <i class="fa fa-bookmark"/> 
+                        <t t-if="state.isBookmarkMode">Click PDF to Mark</t>
+                        <t t-else="">Add Bookmark</t>
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Main content area -->
+            <div class="pdf-content">
+                <!-- Loading state -->
+                <div t-if="state.isLoading" class="loading-overlay">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                    <p>Loading document...</p>
+                </div>
+                
+                <!-- Error state -->
+                <div t-if="state.error" class="error-message">
+                    <i class="fa fa-exclamation-triangle text-danger"/>
+                    <p t-esc="state.error"/>
+                </div>
+                
+                <!-- No document selected -->
+                <div t-if="!state.selectedAttachment and !state.isLoading" class="no-document">
+                    <i class="fa fa-file-pdf-o"/>
+                    <p>Select a document to view</p>
+                    <div class="file-list">
+                        <t t-foreach="state.filteredAttachments" t-as="att" t-key="att.id">
+                            <div class="file-item" t-on-click="() => this.openAttachment(att)">
+                                <i class="fa fa-file-pdf-o"/>
+                                <span class="file-name" t-esc="att.name"/>
+                                <span class="file-size" t-esc="formatSize(att.file_size)"/>
+                            </div>
+                        </t>
+                    </div>
+                </div>
+                
+                <!-- PDF Canvas (single view) -->
+                <div t-if="state.selectedAttachment and !state.isSplitView" class="pdf-canvas-container">
+                    <canvas t-ref="pdfCanvas" 
+                            t-attf-class="pdf-canvas {{state.isBookmarkMode ? 'bookmark-mode' : ''}}"
+                            t-on-click="onCanvasClick"/>
+                </div>
+                
+                <!-- Split view panels -->
+                <div t-if="state.selectedAttachment and state.isSplitView" class="split-panels">
+                    <div class="left-panel">
+                        <div class="panel-header">Left Panel</div>
+                        <div class="pdf-canvas-container">
+                            <canvas t-ref="leftCanvas" class="pdf-canvas"/>
+                        </div>
+                    </div>
+                    <div class="panel-divider"/>
+                    <div class="right-panel">
+                        <div class="panel-header">Right Panel</div>
+                        <div class="pdf-canvas-container">
+                            <canvas t-ref="rightCanvas" 
+                                    t-attf-class="pdf-canvas {{state.isBookmarkMode ? 'bookmark-mode' : ''}}"
+                                    t-on-click="onCanvasClick"/>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Sidebar: Attachments list -->
+            <div class="pdf-sidebar">
+                <div class="sidebar-header">
+                    <h5>Documents</h5>
+                    <span class="badge bg-secondary" t-esc="state.attachments.length"/>
+                </div>
+                <div class="sidebar-content">
+                    <t t-foreach="state.filteredAttachments" t-as="att" t-key="att.id">
+                        <div class="attachment-item" 
+                             t-attf-class="{{state.selectedAttachment?.id === att.id ? 'active' : ''}}"
+                             t-on-click="() => this.openAttachment(att)">
+                            <i class="fa fa-file-pdf-o"/>
+                            <div class="att-info">
+                                <span class="att-name" t-esc="att.name"/>
+                                <span class="att-size" t-esc="formatSize(att.file_size)"/>
+                            </div>
+                        </div>
+                    </t>
+                </div>
+            </div>
+        </div>
+    </t>
+
+</templates>

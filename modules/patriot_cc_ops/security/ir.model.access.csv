@@ -1,3 +1,7 @@
 id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
 access_cc_opportunity_user,cc.opportunity.user,model_cc_opportunity,base.group_user,1,1,1,0
 access_cc_opportunity_manager,cc.opportunity.manager,model_cc_opportunity,sales_team.group_sale_manager,1,1,1,1
+access_cc_sign_type_user,cc.sign.type.user,model_cc_sign_type,base.group_user,1,1,1,0
+access_cc_sign_type_manager,cc.sign.type.manager,model_cc_sign_type,sales_team.group_sale_manager,1,1,1,1
+access_cc_sign_bookmark_user,cc.sign.bookmark.user,model_cc_sign_bookmark,base.group_user,1,1,1,0
+access_cc_sign_bookmark_manager,cc.sign.bookmark.manager,model_cc_sign_bookmark,sales_team.group_sale_manager,1,1,1,1

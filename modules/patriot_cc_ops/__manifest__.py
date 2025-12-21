@@ -26,10 +26,13 @@
         'web.assets_backend': [
             # CSS
             'patriot_cc_ops/static/src/css/cc_ops.css',
+            'patriot_cc_ops/static/src/css/pdf_viewer.css',
             # JavaScript (OWL Components)
             'patriot_cc_ops/static/src/js/cc_ops_dashboard.js',
+            'patriot_cc_ops/static/src/js/pdf_viewer.js',
             # XML Templates
             'patriot_cc_ops/static/src/xml/cc_ops_dashboard.xml',
+            'patriot_cc_ops/static/src/xml/pdf_viewer.xml',
         ],
     },
     'installable': True,
