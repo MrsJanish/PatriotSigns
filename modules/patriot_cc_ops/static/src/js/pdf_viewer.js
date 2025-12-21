@@ -3,6 +3,7 @@
 import { Component, useState, useRef, onMounted, onWillUnmount } from "@odoo/owl";
 import { registry } from "@web/core/registry";
 import { useService } from "@web/core/utils/hooks";
+import { standardActionServiceProps } from "@web/webclient/actions/action_service";
 
 /**
  * PDF Viewer Component - Provides in-browser PDF viewing with:
@@ -15,15 +16,21 @@ import { useService } from "@web/core/utils/hooks";
 export class PDFViewer extends Component {
     static template = "patriot_cc_ops.PDFViewer";
     static props = {
+        ...standardActionServiceProps,
         attachmentId: { type: Number, optional: true },
         opportunityId: { type: Number, optional: true },
         onBookmarkCreate: { type: Function, optional: true },
     };
 
     setup() {
-        this.rpc = useService("rpc");
+        this.orm = useService("orm");
         this.action = useService("action");
         this.notification = useService("notification");
+
+        // Get opportunityId from action params if passed
+        const actionParams = this.props.action?.params || {};
+        this.opportunityId = actionParams.opportunityId || this.props.opportunityId;
+        this.attachmentId = actionParams.attachmentId || this.props.attachmentId;
 
         this.state = useState({
             // PDF state
@@ -78,7 +85,7 @@ export class PDFViewer extends Component {
 
         onMounted(() => {
             this.loadPDFJS();
-            if (this.props.opportunityId) {
+            if (this.opportunityId) {
                 this.loadAttachments();
             }
         });
@@ -126,28 +133,24 @@ export class PDFViewer extends Component {
 
     async loadAttachments() {
         try {
-            const result = await this.rpc("/web/dataset/call_kw", {
-                model: "ir.attachment",
-                method: "search_read",
-                args: [],
-                kwargs: {
-                    domain: [
-                        ["res_model", "=", "cc.opportunity"],
-                        ["res_id", "=", this.props.opportunityId],
-                        ["mimetype", "=", "application/pdf"],
-                    ],
-                    fields: ["id", "name", "datas", "file_size"],
-                    order: "name asc",
-                }
-            });
+            const result = await this.orm.searchRead(
+                "ir.attachment",
+                [
+                    ["res_model", "=", "cc.opportunity"],
+                    ["res_id", "=", this.opportunityId],
+                    ["mimetype", "=", "application/pdf"],
+                ],
+                ["id", "name", "file_size"],
+                { order: "name asc" }
+            );
 
             this.state.attachments = result;
             this.state.filteredAttachments = result;
             this.state.isLoading = false;
 
             // Auto-load first attachment if available
-            if (result.length > 0 && this.props.attachmentId) {
-                const target = result.find(a => a.id === this.props.attachmentId);
+            if (result.length > 0 && this.attachmentId) {
+                const target = result.find(a => a.id === this.attachmentId);
                 if (target) {
                     this.openAttachment(target);
                 }
@@ -211,12 +214,7 @@ export class PDFViewer extends Component {
 
         try {
             // Fetch PDF data
-            const response = await this.rpc("/web/dataset/call_kw", {
-                model: "ir.attachment",
-                method: "read",
-                args: [[attachment.id], ["datas"]],
-                kwargs: {}
-            });
+            const response = await this.orm.read("ir.attachment", [attachment.id], ["datas"]);
 
             if (!response || !response[0] || !response[0].datas) {
                 throw new Error("No PDF data returned");
@@ -389,15 +387,11 @@ export class PDFViewer extends Component {
     async loadBookmarks(attachmentId) {
         // Load existing bookmarks from database
         try {
-            const result = await this.rpc("/web/dataset/call_kw", {
-                model: "cc.sign.bookmark",
-                method: "search_read",
-                args: [],
-                kwargs: {
-                    domain: [["attachment_id", "=", attachmentId]],
-                    fields: ["id", "page_number", "x_position", "y_position", "highlight_color", "sign_type_id"],
-                }
-            });
+            const result = await this.orm.searchRead(
+                "cc.sign.bookmark",
+                [["attachment_id", "=", attachmentId]],
+                ["id", "page_number", "x_position", "y_position", "highlight_color", "sign_type_id"]
+            );
             this.state.bookmarks = result.map(b => ({
                 id: b.id,
                 pageNumber: b.page_number,
