@@ -83,10 +83,10 @@ export class PDFViewer extends Component {
         // PDF.js library - loaded from CDN
         this.pdfjsLib = null;
 
-        onMounted(() => {
-            this.loadPDFJS();
+        onMounted(async () => {
+            await this.loadPDFJS();
             if (this.opportunityId) {
-                this.loadAttachments();
+                await this.loadAttachments();
             }
         });
 
@@ -102,7 +102,8 @@ export class PDFViewer extends Component {
         // Load PDF.js from CDN if not already loaded
         if (window.pdfjsLib) {
             this.pdfjsLib = window.pdfjsLib;
-            return;
+            console.log("PDF.js already loaded");
+            return true;
         }
 
         try {
@@ -115,9 +116,12 @@ export class PDFViewer extends Component {
 
             this.pdfjsLib = window.pdfjsLib;
             console.log("PDF.js loaded successfully");
+            return true;
         } catch (error) {
             console.error("Failed to load PDF.js:", error);
             this.state.error = "Failed to load PDF viewer library";
+            this.state.isLoading = false;
+            return false;
         }
     }
 
