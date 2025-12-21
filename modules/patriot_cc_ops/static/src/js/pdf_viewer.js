@@ -88,6 +88,7 @@ export class PDFViewer extends Component {
             bookmarkMenuX: 0,
             bookmarkMenuY: 0,
             selectedBookmark: null,
+            selectedBookmarkId: null,
 
             // Sign Types
             signTypes: [],
@@ -123,7 +124,27 @@ export class PDFViewer extends Component {
         // Render queue for smooth updates
         this.renderTask = null;
 
+        // ResizeObserver for proper canvas sizing
+        this.resizeObserver = null;
+        this._lastContainerWidth = 0;
+
         onMounted(async () => {
+            // Set up ResizeObserver for responsive canvas sizing
+            if (this.contentAreaRef.el) {
+                this.resizeObserver = new ResizeObserver((entries) => {
+                    for (const entry of entries) {
+                        const newWidth = entry.contentRect.width - 80;
+                        if (Math.abs(newWidth - this._lastContainerWidth) > 50) {
+                            this._lastContainerWidth = newWidth;
+                            if (this.state.pdfDoc && !this.state.isLoading) {
+                                this.renderPage(this.state.currentPage);
+                            }
+                        }
+                    }
+                });
+                this.resizeObserver.observe(this.contentAreaRef.el);
+            }
+
             await this.loadPDFJS();
             if (this.opportunityId) {
                 await this.loadAttachments();
@@ -138,17 +159,73 @@ export class PDFViewer extends Component {
             }
         });
 
+        // Store bound reference for cleanup
+        this._boundDocClick = this.handleDocumentClick.bind(this);
+        this._boundKeyDown = this.handleKeyDown.bind(this);
+        document.addEventListener("click", this._boundDocClick);
+        document.addEventListener("keydown", this._boundKeyDown);
+
         onWillUnmount(() => {
+            // Remove global event listeners to prevent memory leak
+            document.removeEventListener("click", this._boundDocClick);
+            document.removeEventListener("keydown", this._boundKeyDown);
+
+            // Stop ResizeObserver
+            if (this.resizeObserver) {
+                this.resizeObserver.disconnect();
+            }
+
             if (this.renderTask) {
                 this.renderTask.cancel?.();
             }
             if (this.state.pdfDoc) {
-                this.state.pdfDoc.destroy?.();
+                try {
+                    this.state.pdfDoc.destroy?.();
+                } catch (e) {
+                    // Ignore destroy errors on unmount
+                }
             }
         });
+    }
 
-        // Close context menu on click outside
-        document.addEventListener("click", this.handleDocumentClick.bind(this));
+    // Keyboard navigation handler
+    handleKeyDown(ev) {
+        // Only handle if not in an input field
+        if (ev.target.tagName === 'INPUT' || ev.target.tagName === 'TEXTAREA') {
+            return;
+        }
+
+        switch (ev.key) {
+            case 'ArrowLeft':
+            case 'ArrowUp':
+                ev.preventDefault();
+                this.prevPage();
+                break;
+            case 'ArrowRight':
+            case 'ArrowDown':
+                ev.preventDefault();
+                this.nextPage();
+                break;
+            case '+':
+            case '=':
+                ev.preventDefault();
+                this.zoomIn();
+                break;
+            case '-':
+                ev.preventDefault();
+                this.zoomOut();
+                break;
+            case 'Escape':
+                if (this.state.isLassoMode) {
+                    this.state.isLassoMode = false;
+                    this.state.lassoPoints = [];
+                    this.clearLassoCanvas();
+                }
+                if (this.state.showSignTypeModal) {
+                    this.closeSignTypeModal();
+                }
+                break;
+        }
     }
 
     handleDocumentClick(ev) {
@@ -384,13 +461,11 @@ export class PDFViewer extends Component {
         try {
             const page = await doc.getPage(pageNum);
 
-            // Get container width with sensible fallback
-            let containerWidth = 800; // Default minimum
-            if (this.contentAreaRef.el) {
-                const measured = this.contentAreaRef.el.clientWidth;
-                if (measured > 100) { // Only use if it's a reasonable value
-                    containerWidth = measured - 80; // Padding
-                }
+            // Get container width using cached value from ResizeObserver
+            let containerWidth = this._lastContainerWidth || 800;
+            if (containerWidth < 100 && this.contentAreaRef.el) {
+                // Fallback measurement if ResizeObserver hasn't fired yet
+                containerWidth = this.contentAreaRef.el.clientWidth - 80 || 800;
             }
 
             // Calculate scale to fit
@@ -742,12 +817,16 @@ export class PDFViewer extends Component {
     }
 
     onCanvasMouseUp(ev) {
-        // Don't complete on mouse up - wait for double click
-        // Just stop tracking mouse movement
+        // Complete lasso on mouse up if we have enough points
+        if (this.state.isDrawingLasso && this.state.lassoPoints.length >= 3) {
+            this.state.isDrawingLasso = false;
+            this.completeLasso();
+        }
     }
 
     onCanvasMouseLeave(ev) {
-        // Don't complete on leave - wait for double click
+        // Stop drawing but don't complete - user may return
+        // this.state.isDrawingLasso = false;
     }
 
     onCanvasDblClick(ev) {
