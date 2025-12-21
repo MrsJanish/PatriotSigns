@@ -3,18 +3,17 @@
 
     <t t-name="patriot_cc_ops.PDFViewer" owl="1">
         <div class="pdf-viewer-container" t-ref="viewerContainer" 
-             t-attf-class="{{state.isFullscreen ? 'fullscreen' : ''}} {{state.isSplitView ? 'split-view' : ''}}">
+             t-attf-class="#{state.isFullscreen ? 'fullscreen' : ''} #{state.isSplitView ? 'split-view' : ''}">
             
             <!-- Toolbar -->
             <div class="pdf-toolbar">
                 <!-- File selector dropdown -->
                 <div class="toolbar-section file-selector">
-                    <select class="form-select form-select-sm" 
-                            t-on-change="(ev) => this.openAttachment(state.attachments.find(a => a.id == ev.target.value))">
+                    <select class="form-select form-select-sm" t-on-change="onAttachmentSelect">
                         <option value="">Select Document...</option>
                         <t t-foreach="state.filteredAttachments" t-as="attachment" t-key="attachment.id">
                             <option t-att-value="attachment.id" 
-                                    t-att-selected="state.selectedAttachment?.id === attachment.id">
+                                    t-att-selected="state.selectedAttachment and state.selectedAttachment.id === attachment.id">
                                 <t t-esc="attachment.name"/>
                             </option>
                         </t>
@@ -30,7 +29,7 @@
                 <!-- Page navigation -->
                 <div class="toolbar-section page-nav">
                     <button class="btn btn-sm btn-outline-secondary" t-on-click="prevPage" 
-                            t-att-disabled="state.currentPage <= 1">
+                            t-att-disabled="state.currentPage &lt;= 1">
                         <i class="fa fa-chevron-left"/>
                     </button>
                     <span class="page-info">
@@ -51,7 +50,7 @@
                     <button class="btn btn-sm btn-outline-secondary" t-on-click="zoomOut" title="Zoom Out">
                         <i class="fa fa-search-minus"/>
                     </button>
-                    <span class="zoom-level" t-esc="Math.round(state.scale * 100) + '%'"/>
+                    <span class="zoom-level" t-esc="state.zoomPercent"/>
                     <button class="btn btn-sm btn-outline-secondary" t-on-click="zoomIn" title="Zoom In">
                         <i class="fa fa-search-plus"/>
                     </button>
@@ -63,19 +62,19 @@
                 <!-- View controls -->
                 <div class="toolbar-section view-controls">
                     <button class="btn btn-sm" 
-                            t-attf-class="btn-{{state.isSplitView ? 'primary' : 'outline-secondary'}}"
+                            t-attf-class="btn-#{state.isSplitView ? 'primary' : 'outline-secondary'}"
                             t-on-click="toggleSplitView" title="Split View">
                         <i class="fa fa-columns"/>
                     </button>
                     <button class="btn btn-sm btn-outline-secondary" t-on-click="toggleFullscreen" title="Fullscreen">
-                        <i t-attf-class="fa fa-{{state.isFullscreen ? 'compress' : 'expand'}}"/>
+                        <i t-attf-class="fa fa-#{state.isFullscreen ? 'compress' : 'expand'}"/>
                     </button>
                 </div>
                 
                 <!-- Bookmark controls -->
                 <div class="toolbar-section bookmark-controls">
                     <button class="btn btn-sm" 
-                            t-attf-class="btn-{{state.isBookmarkMode ? 'warning' : 'outline-warning'}}"
+                            t-attf-class="btn-#{state.isBookmarkMode ? 'warning' : 'outline-warning'}"
                             t-on-click="toggleBookmarkMode" title="Click to add bookmark">
                         <i class="fa fa-bookmark"/> 
                         <t t-if="state.isBookmarkMode">Click PDF to Mark</t>
@@ -106,7 +105,7 @@
                     <p>Select a document to view</p>
                     <div class="file-list">
                         <t t-foreach="state.filteredAttachments" t-as="att" t-key="att.id">
-                            <div class="file-item" t-on-click="() => this.openAttachment(att)">
+                            <div class="file-item" t-on-click="() => this.openAttachment(att)" t-att-data-id="att.id">
                                 <i class="fa fa-file-pdf-o"/>
                                 <span class="file-name" t-esc="att.name"/>
                                 <span class="file-size" t-esc="formatSize(att.file_size)"/>
@@ -118,7 +117,7 @@
                 <!-- PDF Canvas (single view) -->
                 <div t-if="state.selectedAttachment and !state.isSplitView" class="pdf-canvas-container">
                     <canvas t-ref="pdfCanvas" 
-                            t-attf-class="pdf-canvas {{state.isBookmarkMode ? 'bookmark-mode' : ''}}"
+                            t-attf-class="pdf-canvas #{state.isBookmarkMode ? 'bookmark-mode' : ''}"
                             t-on-click="onCanvasClick"/>
                 </div>
                 
@@ -135,7 +134,7 @@
                         <div class="panel-header">Right Panel</div>
                         <div class="pdf-canvas-container">
                             <canvas t-ref="rightCanvas" 
-                                    t-attf-class="pdf-canvas {{state.isBookmarkMode ? 'bookmark-mode' : ''}}"
+                                    t-attf-class="pdf-canvas #{state.isBookmarkMode ? 'bookmark-mode' : ''}"
                                     t-on-click="onCanvasClick"/>
                         </div>
                     </div>
@@ -151,8 +150,8 @@
                 <div class="sidebar-content">
                     <t t-foreach="state.filteredAttachments" t-as="att" t-key="att.id">
                         <div class="attachment-item" 
-                             t-attf-class="{{state.selectedAttachment?.id === att.id ? 'active' : ''}}"
-                             t-on-click="() => this.openAttachment(att)">
+                             t-attf-class="#{state.selectedAttachment and state.selectedAttachment.id === att.id ? 'active' : ''}"
+                             t-on-click="onSidebarAttachmentClick" t-att-data-id="att.id">
                             <i class="fa fa-file-pdf-o"/>
                             <div class="att-info">
                                 <span class="att-name" t-esc="att.name"/>

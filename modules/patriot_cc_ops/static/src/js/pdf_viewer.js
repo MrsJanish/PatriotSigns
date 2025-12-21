@@ -31,6 +31,7 @@ export class PDFViewer extends Component {
             currentPage: 1,
             totalPages: 0,
             scale: 1.0,
+            zoomPercent: "100%",
             isLoading: true,
             error: null,
 
@@ -176,6 +177,28 @@ export class PDFViewer extends Component {
         this.filterAttachments();
     }
 
+    // Handler for dropdown attachment selection
+    onAttachmentSelect(ev) {
+        const attachmentId = parseInt(ev.target.value, 10);
+        if (attachmentId) {
+            const att = this.state.attachments.find(a => a.id === attachmentId);
+            if (att) {
+                this.openAttachment(att);
+            }
+        }
+    }
+
+    // Handler for sidebar attachment click
+    onSidebarAttachmentClick(ev) {
+        const attachmentId = parseInt(ev.currentTarget.dataset.id, 10);
+        if (attachmentId) {
+            const att = this.state.attachments.find(a => a.id === attachmentId);
+            if (att) {
+                this.openAttachment(att);
+            }
+        }
+    }
+
     async openAttachment(attachment) {
         if (!this.pdfjsLib) {
             console.error("PDF.js not loaded yet");
@@ -286,16 +309,19 @@ export class PDFViewer extends Component {
     // Zoom controls
     zoomIn() {
         this.state.scale = Math.min(this.state.scale + 0.25, 4.0);
+        this.state.zoomPercent = Math.round(this.state.scale * 100) + "%";
         this.renderPage(this.state.currentPage);
     }
 
     zoomOut() {
         this.state.scale = Math.max(this.state.scale - 0.25, 0.25);
+        this.state.zoomPercent = Math.round(this.state.scale * 100) + "%";
         this.renderPage(this.state.currentPage);
     }
 
     resetZoom() {
         this.state.scale = 1.0;
+        this.state.zoomPercent = "100%";
         this.renderPage(this.state.currentPage);
     }
 
