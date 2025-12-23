@@ -129,12 +129,21 @@ export class PDFViewer extends Component {
         this._lastContainerWidth = 0;
 
         onMounted(async () => {
+            // Wait for DOM to be fully ready before measuring
+            await new Promise(resolve => setTimeout(resolve, 150));
+
             // Set up ResizeObserver for responsive canvas sizing
             if (this.contentAreaRef.el) {
+                // Force initial measurement
+                this._lastContainerWidth = this.contentAreaRef.el.clientWidth - 80;
+                if (this._lastContainerWidth < 400) {
+                    this._lastContainerWidth = 900; // Sensible default for construction drawings
+                }
+
                 this.resizeObserver = new ResizeObserver((entries) => {
                     for (const entry of entries) {
                         const newWidth = entry.contentRect.width - 80;
-                        if (Math.abs(newWidth - this._lastContainerWidth) > 50) {
+                        if (Math.abs(newWidth - this._lastContainerWidth) > 50 && newWidth > 100) {
                             this._lastContainerWidth = newWidth;
                             if (this.state.pdfDoc && !this.state.isLoading) {
                                 this.renderPage(this.state.currentPage);
@@ -143,6 +152,9 @@ export class PDFViewer extends Component {
                     }
                 });
                 this.resizeObserver.observe(this.contentAreaRef.el);
+            } else {
+                // Fallback if contentAreaRef not available
+                this._lastContainerWidth = 900;
             }
 
             await this.loadPDFJS();
@@ -462,10 +474,16 @@ export class PDFViewer extends Component {
             const page = await doc.getPage(pageNum);
 
             // Get container width using cached value from ResizeObserver
-            let containerWidth = this._lastContainerWidth || 800;
-            if (containerWidth < 100 && this.contentAreaRef.el) {
-                // Fallback measurement if ResizeObserver hasn't fired yet
-                containerWidth = this.contentAreaRef.el.clientWidth - 80 || 800;
+            let containerWidth = this._lastContainerWidth;
+            if (!containerWidth || containerWidth < 400) {
+                // Fallback measurement
+                if (this.contentAreaRef.el) {
+                    containerWidth = this.contentAreaRef.el.clientWidth - 80;
+                }
+                if (!containerWidth || containerWidth < 400) {
+                    containerWidth = 900; // Good default for construction drawings
+                }
+                this._lastContainerWidth = containerWidth;
             }
 
             // Calculate scale to fit
@@ -718,6 +736,86 @@ export class PDFViewer extends Component {
             this.state.rightPanel.pdfDoc.destroy?.();
         }
         this.state.rightPanel = { attachment: null, pdfDoc: null, currentPage: 1, totalPages: 0 };
+    }
+
+    // ==================== Split Panel Navigation ====================
+
+    prevLeftPage() {
+        if (this.state.leftPanel.currentPage > 1) {
+            this.state.leftPanel.currentPage--;
+            this.renderPage(this.state.leftPanel.currentPage, this.leftCanvasRef.el, this.state.leftPanel.pdfDoc);
+        }
+    }
+
+    nextLeftPage() {
+        if (this.state.leftPanel.currentPage < this.state.leftPanel.totalPages) {
+            this.state.leftPanel.currentPage++;
+            this.renderPage(this.state.leftPanel.currentPage, this.leftCanvasRef.el, this.state.leftPanel.pdfDoc);
+        }
+    }
+
+    zoomInLeft() {
+        // Re-render at larger scale
+        this.renderPanelAtScale("left", 1.25);
+    }
+
+    zoomOutLeft() {
+        this.renderPanelAtScale("left", 0.8);
+    }
+
+    prevRightPage() {
+        if (this.state.rightPanel.currentPage > 1) {
+            this.state.rightPanel.currentPage--;
+            this.renderPage(this.state.rightPanel.currentPage, this.rightCanvasRef.el, this.state.rightPanel.pdfDoc);
+        }
+    }
+
+    nextRightPage() {
+        if (this.state.rightPanel.currentPage < this.state.rightPanel.totalPages) {
+            this.state.rightPanel.currentPage++;
+            this.renderPage(this.state.rightPanel.currentPage, this.rightCanvasRef.el, this.state.rightPanel.pdfDoc);
+        }
+    }
+
+    zoomInRight() {
+        this.renderPanelAtScale("right", 1.25);
+    }
+
+    zoomOutRight() {
+        this.renderPanelAtScale("right", 0.8);
+    }
+
+    async renderPanelAtScale(panel, scaleFactor) {
+        const panelState = panel === "left" ? this.state.leftPanel : this.state.rightPanel;
+        const canvasRef = panel === "left" ? this.leftCanvasRef : this.rightCanvasRef;
+
+        if (!panelState.pdfDoc || !canvasRef.el) return;
+
+        try {
+            const page = await panelState.pdfDoc.getPage(panelState.currentPage);
+            const currentViewport = page.getViewport({ scale: 1.0 });
+
+            // Calculate current scale from canvas
+            const currentScale = canvasRef.el.width / currentViewport.width || 1.0;
+            const newScale = Math.min(Math.max(currentScale * scaleFactor, 0.25), 4.0);
+
+            const viewport = page.getViewport({ scale: newScale });
+
+            canvasRef.el.width = viewport.width;
+            canvasRef.el.height = viewport.height;
+            canvasRef.el.style.width = viewport.width + 'px';
+            canvasRef.el.style.height = viewport.height + 'px';
+
+            const context = canvasRef.el.getContext("2d");
+            context.clearRect(0, 0, canvasRef.el.width, canvasRef.el.height);
+
+            await page.render({
+                canvasContext: context,
+                viewport: viewport
+            }).promise;
+        } catch (error) {
+            console.error("Zoom failed:", error);
+        }
     }
 
     onDividerMouseDown(ev) {

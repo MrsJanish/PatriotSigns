@@ -144,10 +144,18 @@
                     <!-- Left Panel -->
                     <div class="split-panel left-panel">
                         <div class="panel-header">
-                            <span t-if="state.leftPanel.attachment">
+                            <span t-if="state.leftPanel.attachment" class="panel-title">
                                 <t t-esc="state.leftPanel.attachment.name"/>
                             </span>
                             <span t-else="">Left Panel</span>
+                            <!-- Navigation controls for left panel -->
+                            <div t-if="state.leftPanel.attachment" class="panel-nav">
+                                <button class="btn-sm" t-on-click="prevLeftPage" title="Previous">←</button>
+                                <span class="page-indicator"><t t-esc="state.leftPanel.currentPage"/>/<t t-esc="state.leftPanel.totalPages"/></span>
+                                <button class="btn-sm" t-on-click="nextLeftPage" title="Next">→</button>
+                                <button class="btn-sm" t-on-click="zoomOutLeft" title="Zoom Out">−</button>
+                                <button class="btn-sm" t-on-click="zoomInLeft" title="Zoom In">+</button>
+                            </div>
                             <button t-if="state.leftPanel.attachment" class="close-btn" t-on-click="clearLeftPanel" title="Close">×</button>
                         </div>
                         <div class="panel-content">
@@ -170,10 +178,18 @@
                     <!-- Right Panel -->
                     <div class="split-panel right-panel">
                         <div class="panel-header">
-                            <span t-if="state.rightPanel.attachment">
+                            <span t-if="state.rightPanel.attachment" class="panel-title">
                                 <t t-esc="state.rightPanel.attachment.name"/>
                             </span>
                             <span t-else="">Right Panel</span>
+                            <!-- Navigation controls for right panel -->
+                            <div t-if="state.rightPanel.attachment" class="panel-nav">
+                                <button class="btn-sm" t-on-click="prevRightPage" title="Previous">←</button>
+                                <span class="page-indicator"><t t-esc="state.rightPanel.currentPage"/>/<t t-esc="state.rightPanel.totalPages"/></span>
+                                <button class="btn-sm" t-on-click="nextRightPage" title="Next">→</button>
+                                <button class="btn-sm" t-on-click="zoomOutRight" title="Zoom Out">−</button>
+                                <button class="btn-sm" t-on-click="zoomInRight" title="Zoom In">+</button>
+                            </div>
                             <button t-if="state.rightPanel.attachment" class="close-btn" t-on-click="clearRightPanel" title="Close">×</button>
                         </div>
                         <div class="panel-content">

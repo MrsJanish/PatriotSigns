@@ -116,6 +116,18 @@
     box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
 }
 
+/* Dropdown options need explicit colors for visibility */
+.pdf-viewer-container .pdf-toolbar .form-select option {
+    background: #1e293b;
+    color: #ffffff;
+    padding: 0.5rem;
+}
+
+.pdf-viewer-container.aurora-theme .pdf-toolbar .form-select option {
+    background: #1e1e2e;
+    color: #ffffff;
+}
+
 .pdf-viewer-container .filter-input {
     max-width: 160px;
 }
@@ -354,6 +366,52 @@
     background: var(--danger);
     color: white;
     transform: scale(1.1);
+}
+
+/* Panel navigation controls */
+.pdf-viewer-container .split-panel .panel-nav {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-left: auto;
+    margin-right: 0.5rem;
+}
+
+.pdf-viewer-container .split-panel .panel-nav .btn-sm {
+    width: 28px;
+    height: 28px;
+    border-radius: 6px;
+    border: 1px solid var(--border-color);
+    background: var(--glass-bg);
+    color: var(--text-primary);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.875rem;
+    font-weight: 600;
+    transition: all 0.2s ease;
+}
+
+.pdf-viewer-container .split-panel .panel-nav .btn-sm:hover {
+    background: var(--accent-primary);
+    color: white;
+    border-color: var(--accent-primary);
+}
+
+.pdf-viewer-container .split-panel .panel-nav .page-indicator {
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+    min-width: 40px;
+    text-align: center;
+}
+
+.pdf-viewer-container .split-panel .panel-title {
+    flex: 1;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    max-width: 150px;
 }
 
 .pdf-viewer-container .split-panel .panel-content {
