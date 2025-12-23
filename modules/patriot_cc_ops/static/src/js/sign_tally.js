@@ -1,15 +1,12 @@
 /** @odoo-module **/
 
-import { Component, useState, useRef, onMounted } from "@odoo/owl";
+import { Component, useState, onMounted } from "@odoo/owl";
 import { registry } from "@web/core/registry";
 import { useService } from "@web/core/utils/hooks";
 import { standardActionServiceProps } from "@web/webclient/actions/action_service";
 
 /**
- * Sign Tally - Compact popup for counting signs
- * 
- * Simple +/- counter for each sign type
- * Quick add modal with minimal fields
+ * Sign Tally - Full page sign counter with auto-fill
  */
 export class SignTally extends Component {
     static template = "patriot_cc_ops.SignTally";
@@ -27,19 +24,21 @@ export class SignTally extends Component {
         this.opportunityId = actionParams.opportunityId || this.props.opportunityId;
 
         this.state = useState({
-            // Data
             signTypes: [],
             opportunity: null,
             attachments: [],
             isLoading: true,
 
-            // Quick Add Modal
+            // Add Modal
             showAddModal: false,
             newSignType: {
                 name: "",
-                dimensions: "",
+                length: 0,
+                width: 0,
+                has_window: false,
                 notes: "",
             },
+            isAutoFilled: false,
 
             // Edit Modal
             showEditModal: false,
@@ -54,22 +53,18 @@ export class SignTally extends Component {
     async loadData() {
         this.state.isLoading = true;
         try {
-            // Load opportunity info
             if (this.opportunityId) {
                 const opps = await this.orm.read("cc.opportunity", [this.opportunityId], ["name", "document_ids"]);
                 if (opps.length > 0) {
                     this.state.opportunity = opps[0];
 
-                    // Load attachments
                     if (opps[0].document_ids?.length > 0) {
-                        const attachments = await this.orm.read("ir.attachment", opps[0].document_ids, ["name", "mimetype", "file_size"]);
+                        const attachments = await this.orm.read("ir.attachment", opps[0].document_ids, ["name", "mimetype"]);
                         this.state.attachments = attachments.filter(a =>
                             a.mimetype === "application/pdf" || a.name?.toLowerCase().endsWith(".pdf")
                         );
                     }
                 }
-
-                // Load sign types
                 await this.loadSignTypes();
             }
         } catch (error) {
@@ -83,7 +78,7 @@ export class SignTally extends Component {
         const signTypes = await this.orm.searchRead(
             "cc.sign.type",
             [["opportunity_id", "=", this.opportunityId]],
-            ["name", "quantity", "dimensions", "material", "mounting", "notes"],
+            ["name", "quantity", "length", "width", "dimensions", "has_window", "material", "mounting", "notes"],
             { order: "name ASC" }
         );
         this.state.signTypes = signTypes;
@@ -107,10 +102,11 @@ export class SignTally extends Component {
         }
     }
 
-    // ==================== Quick Add Modal ====================
+    // ==================== Add Modal ====================
 
     openAddModal() {
-        this.state.newSignType = { name: "", dimensions: "", notes: "" };
+        this.state.newSignType = { name: "", length: 0, width: 0, has_window: false, notes: "" };
+        this.state.isAutoFilled = false;
         this.state.showAddModal = true;
     }
 
@@ -118,12 +114,36 @@ export class SignTally extends Component {
         this.state.showAddModal = false;
     }
 
-    onNewNameInput(ev) {
-        this.state.newSignType.name = ev.target.value;
+    async onNewNameInput(ev) {
+        const name = ev.target.value;
+        this.state.newSignType.name = name;
+
+        // Auto-fill: check if this sign type name already exists in the project
+        if (name.trim()) {
+            const existing = this.state.signTypes.find(st =>
+                st.name.toLowerCase() === name.toLowerCase()
+            );
+            if (existing) {
+                this.state.newSignType.length = existing.length || 0;
+                this.state.newSignType.width = existing.width || 0;
+                this.state.newSignType.has_window = existing.has_window || false;
+                this.state.isAutoFilled = true;
+            } else {
+                this.state.isAutoFilled = false;
+            }
+        }
     }
 
-    onNewDimensionsInput(ev) {
-        this.state.newSignType.dimensions = ev.target.value;
+    onNewLengthInput(ev) {
+        this.state.newSignType.length = parseFloat(ev.target.value) || 0;
+    }
+
+    onNewWidthInput(ev) {
+        this.state.newSignType.width = parseFloat(ev.target.value) || 0;
+    }
+
+    onNewWindowChange(ev) {
+        this.state.newSignType.has_window = ev.target.checked;
     }
 
     onNewNotesInput(ev) {
@@ -131,26 +151,28 @@ export class SignTally extends Component {
     }
 
     async saveNewSignType() {
-        if (!this.state.newSignType.name) {
+        if (!this.state.newSignType.name.trim()) {
             this.notification.add("Please enter a Sign ID", { type: "warning" });
             return;
         }
 
         try {
-            await this.orm.create("cc.sign.type", {
-                name: this.state.newSignType.name,
-                dimensions: this.state.newSignType.dimensions,
+            await this.orm.create("cc.sign.type", [{
+                name: this.state.newSignType.name.trim(),
+                length: this.state.newSignType.length,
+                width: this.state.newSignType.width,
+                has_window: this.state.newSignType.has_window,
                 notes: this.state.newSignType.notes,
                 quantity: 1,
                 opportunity_id: this.opportunityId,
-            });
+            }]);
 
             this.notification.add(`Added "${this.state.newSignType.name}"`, { type: "success" });
             this.closeAddModal();
             await this.loadSignTypes();
         } catch (error) {
             console.error("Failed to create sign type:", error);
-            this.notification.add("Failed to add sign type", { type: "danger" });
+            this.notification.add("Failed to add sign type: " + (error.message || "Unknown error"), { type: "danger" });
         }
     }
 
@@ -170,8 +192,16 @@ export class SignTally extends Component {
         this.state.editingSignType.name = ev.target.value;
     }
 
-    onEditDimensionsInput(ev) {
-        this.state.editingSignType.dimensions = ev.target.value;
+    onEditLengthInput(ev) {
+        this.state.editingSignType.length = parseFloat(ev.target.value) || 0;
+    }
+
+    onEditWidthInput(ev) {
+        this.state.editingSignType.width = parseFloat(ev.target.value) || 0;
+    }
+
+    onEditWindowChange(ev) {
+        this.state.editingSignType.has_window = ev.target.checked;
     }
 
     onEditMaterialInput(ev) {
@@ -187,15 +217,17 @@ export class SignTally extends Component {
     }
 
     async saveEditSignType() {
-        if (!this.state.editingSignType.name) {
+        if (!this.state.editingSignType.name?.trim()) {
             this.notification.add("Please enter a Sign ID", { type: "warning" });
             return;
         }
 
         try {
             await this.orm.write("cc.sign.type", [this.state.editingSignType.id], {
-                name: this.state.editingSignType.name,
-                dimensions: this.state.editingSignType.dimensions,
+                name: this.state.editingSignType.name.trim(),
+                length: this.state.editingSignType.length,
+                width: this.state.editingSignType.width,
+                has_window: this.state.editingSignType.has_window,
                 material: this.state.editingSignType.material,
                 mounting: this.state.editingSignType.mounting,
                 notes: this.state.editingSignType.notes,
@@ -227,9 +259,7 @@ export class SignTally extends Component {
     // ==================== Actions ====================
 
     async openDocuments() {
-        // Open each PDF attachment in new tab (will open in browser or Adobe)
         for (const att of this.state.attachments) {
-            // Remove download=true so browser opens it instead of downloading
             const url = `/web/content/${att.id}`;
             window.open(url, "_blank");
         }
@@ -238,8 +268,17 @@ export class SignTally extends Component {
     async exportToExcel() {
         if (!this.opportunityId) return;
 
-        // Trigger the export action on the opportunity
-        window.location.href = `/web/content/cc.opportunity/${this.opportunityId}/export_sign_schedule`;
+        this.action.doAction({
+            type: "ir.actions.act_window",
+            res_model: "cc.opportunity",
+            res_id: this.opportunityId,
+            views: [[false, "form"]],
+            target: "current",
+        });
+        // Trigger export from the opportunity
+        setTimeout(() => {
+            window.location.href = `/web/content/cc.opportunity/${this.opportunityId}/export_sign_schedule`;
+        }, 100);
     }
 
     goBack() {
@@ -259,5 +298,4 @@ export class SignTally extends Component {
     }
 }
 
-// Register as action
 registry.category("actions").add("cc_ops_sign_tally", SignTally);

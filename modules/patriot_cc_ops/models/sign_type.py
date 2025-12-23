@@ -32,10 +32,28 @@ class SignType(models.Model):
         default=1,
         help='Number of signs of this type'
     )
+    
+    # Dimensions as separate numeric fields (inches)
+    length = fields.Float(
+        string='Length (in)',
+        help='Sign length in inches'
+    )
+    width = fields.Float(
+        string='Width (in)',
+        help='Sign width in inches'
+    )
     dimensions = fields.Char(
         string='Dimensions',
-        help='Size of the sign, e.g., 24" x 36"'
+        compute='_compute_dimensions',
+        store=True,
+        help='Computed display of dimensions'
     )
+    has_window = fields.Boolean(
+        string='Has Window',
+        default=False,
+        help='Whether this sign has a window/cutout'
+    )
+    
     material = fields.Char(
         string='Material',
         help='Sign material, e.g., Aluminum, Acrylic'
@@ -71,6 +89,18 @@ class SignType(models.Model):
         help='Set to true when sign type is confirmed for the schedule'
     )
     
+    @api.depends('length', 'width')
+    def _compute_dimensions(self):
+        for record in self:
+            if record.length and record.width:
+                record.dimensions = f'{record.length}" x {record.width}"'
+            elif record.length:
+                record.dimensions = f'{record.length}"'
+            elif record.width:
+                record.dimensions = f'{record.width}"'
+            else:
+                record.dimensions = ''
+
     @api.depends('bookmark_ids')
     def _compute_bookmark_count(self):
         for record in self:

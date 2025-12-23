@@ -3,8 +3,6 @@
 
     <t t-name="patriot_cc_ops.SignTally" owl="1">
         <div class="sign-tally-container">
-            <!-- Aurora Background handled by CSS -->
-            
             <div class="tally-wrapper">
                 <!-- Header -->
                 <div class="tally-header">
@@ -16,20 +14,13 @@
                     </div>
                     <div class="header-actions">
                         <button class="header-btn" t-on-click="goBack">
-                            <i class="fa fa-arrow-left"/>
-                            Back
+                            <i class="fa fa-arrow-left"/> Back
                         </button>
                         <button class="header-btn" t-on-click="openDocuments" t-if="state.attachments.length">
-                            <i class="fa fa-external-link"/>
-                            Open PDFs
-                        </button>
-                        <button class="header-btn" t-on-click="exportToExcel" t-if="state.signTypes.length">
-                            <i class="fa fa-file-excel-o"/>
-                            Export
+                            <i class="fa fa-external-link"/> Open PDFs
                         </button>
                         <button class="header-btn primary" t-on-click="openAddModal">
-                            <i class="fa fa-plus"/>
-                            Add Sign Type
+                            <i class="fa fa-plus"/> Add Sign Type
                         </button>
                     </div>
                 </div>
@@ -37,42 +28,47 @@
                 <!-- Stats Bar -->
                 <div class="stats-bar">
                     <div class="stat-card">
-                        <i class="fa fa-sign"/>
+                        <i class="fa fa-list-alt"/>
                         <div>
                             <div class="stat-value"><t t-esc="state.signTypes.length"/></div>
-                            <div class="stat-label">Sign Types</div>
+                            <div class="stat-label">Types</div>
                         </div>
                     </div>
                     <div class="stat-card">
                         <i class="fa fa-hashtag"/>
                         <div>
                             <div class="stat-value"><t t-esc="totalSigns"/></div>
-                            <div class="stat-label">Total Signs</div>
+                            <div class="stat-label">Total</div>
                         </div>
                     </div>
                     <div class="stat-card">
                         <i class="fa fa-file-pdf-o"/>
                         <div>
                             <div class="stat-value"><t t-esc="state.attachments.length"/></div>
-                            <div class="stat-label">Documents</div>
+                            <div class="stat-label">Docs</div>
                         </div>
                     </div>
                 </div>
 
-                <!-- Loading State -->
+                <!-- Loading -->
                 <div t-if="state.isLoading" class="tally-loading">
                     <i class="fa fa-spinner fa-spin"/>
                 </div>
 
-                <!-- Sign Cards Grid -->
+                <!-- Sign Cards -->
                 <div t-else="" class="sign-cards">
                     <t t-foreach="state.signTypes" t-as="signType" t-key="signType.id">
                         <div class="sign-card" t-on-click="() => this.openEditModal(signType)">
                             <div class="sign-card-header">
-                                <div>
+                                <div class="sign-info">
                                     <div class="sign-name"><t t-esc="signType.name"/></div>
-                                    <div class="sign-dims" t-if="signType.dimensions">
-                                        <t t-esc="signType.dimensions"/>
+                                    <div class="sign-details">
+                                        <span t-if="signType.dimensions" class="sign-dims">
+                                            <t t-esc="signType.dimensions"/>
+                                        </span>
+                                        <span t-if="signType.has_window" class="sign-window">
+                                            <i class="fa fa-square-o"/> Window
+                                        </span>
                                     </div>
                                 </div>
                                 <div class="qty-controls" t-on-click.stop="">
@@ -95,11 +91,10 @@
                 <div t-if="!state.isLoading and state.signTypes.length === 0" class="empty-state">
                     <i class="fa fa-clipboard"/>
                     <p>No sign types yet</p>
-                    <p>Click "Add Sign Type" to get started</p>
                 </div>
             </div>
 
-            <!-- Quick Add Modal -->
+            <!-- Add Modal -->
             <div t-if="state.showAddModal" class="modal-overlay" t-on-click="closeAddModal">
                 <div class="modal-content" t-on-click.stop="">
                     <div class="modal-header">
@@ -110,21 +105,41 @@
                         <div class="form-group">
                             <label>Sign ID *</label>
                             <input type="text" class="form-input" 
-                                   placeholder="e.g. SN-1"
+                                   placeholder="e.g. SN-1, A, B"
                                    t-att-value="state.newSignType.name"
                                    t-on-input="onNewNameInput"/>
+                            <span t-if="state.isAutoFilled" class="autofill-hint">
+                                <i class="fa fa-magic"/> Auto-filled from existing type
+                            </span>
                         </div>
-                        <div class="form-group">
-                            <label>Dimensions</label>
-                            <input type="text" class="form-input" 
-                                   placeholder='e.g. 12" x 18"'
-                                   t-att-value="state.newSignType.dimensions"
-                                   t-on-input="onNewDimensionsInput"/>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>Length (inches)</label>
+                                <input type="number" class="form-input" 
+                                       step="0.1" min="0"
+                                       t-att-value="state.newSignType.length"
+                                       t-on-input="onNewLengthInput"/>
+                            </div>
+                            <div class="form-group">
+                                <label>Width (inches)</label>
+                                <input type="number" class="form-input" 
+                                       step="0.1" min="0"
+                                       t-att-value="state.newSignType.width"
+                                       t-on-input="onNewWidthInput"/>
+                            </div>
+                        </div>
+                        <div class="form-group checkbox-group">
+                            <label>
+                                <input type="checkbox" 
+                                       t-att-checked="state.newSignType.has_window"
+                                       t-on-change="onNewWindowChange"/>
+                                <span>Has Window</span>
+                            </label>
                         </div>
                         <div class="form-group">
                             <label>Notes</label>
                             <input type="text" class="form-input" 
-                                   placeholder="Optional notes"
+                                   placeholder="Optional"
                                    t-att-value="state.newSignType.notes"
                                    t-on-input="onNewNotesInput"/>
                         </div>
@@ -150,11 +165,29 @@
                                    t-att-value="state.editingSignType?.name"
                                    t-on-input="onEditNameInput"/>
                         </div>
-                        <div class="form-group">
-                            <label>Dimensions</label>
-                            <input type="text" class="form-input" 
-                                   t-att-value="state.editingSignType?.dimensions"
-                                   t-on-input="onEditDimensionsInput"/>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>Length (inches)</label>
+                                <input type="number" class="form-input" 
+                                       step="0.1" min="0"
+                                       t-att-value="state.editingSignType?.length"
+                                       t-on-input="onEditLengthInput"/>
+                            </div>
+                            <div class="form-group">
+                                <label>Width (inches)</label>
+                                <input type="number" class="form-input" 
+                                       step="0.1" min="0"
+                                       t-att-value="state.editingSignType?.width"
+                                       t-on-input="onEditWidthInput"/>
+                            </div>
+                        </div>
+                        <div class="form-group checkbox-group">
+                            <label>
+                                <input type="checkbox" 
+                                       t-att-checked="state.editingSignType?.has_window"
+                                       t-on-change="onEditWindowChange"/>
+                                <span>Has Window</span>
+                            </label>
                         </div>
                         <div class="form-group">
                             <label>Material</label>
@@ -180,7 +213,7 @@
                             <i class="fa fa-trash"/> Delete
                         </button>
                         <button class="btn-modal btn-cancel" t-on-click="closeEditModal">Cancel</button>
-                        <button class="btn-modal btn-save" t-on-click="saveEditSignType">Save Changes</button>
+                        <button class="btn-modal btn-save" t-on-click="saveEditSignType">Save</button>
                     </div>
                 </div>
             </div>
