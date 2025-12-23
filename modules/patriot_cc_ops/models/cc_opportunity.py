@@ -283,14 +283,14 @@ class CCOpportunity(models.Model):
     
     def action_open_sign_tally(self):
         """
-        Opens the Sign Tally popup for counting signs.
+        Opens the Sign Tally as a full page view.
         """
         self.ensure_one()
         return {
             'type': 'ir.actions.client',
             'tag': 'cc_ops_sign_tally',
             'name': f'Sign Tally - {self.name}',
-            'target': 'new',
+            'target': 'current',  # Full page, not popup
             'params': {
                 'opportunityId': self.id,
             },
@@ -298,7 +298,7 @@ class CCOpportunity(models.Model):
 
     def action_download_documents(self):
         """
-        Downloads all PDF documents as a ZIP file or opens them.
+        Downloads all PDF documents as a ZIP file.
         """
         self.ensure_one()
         import io
@@ -309,41 +309,34 @@ class CCOpportunity(models.Model):
             lambda a: a.mimetype == 'application/pdf' or (a.name and a.name.lower().endswith('.pdf'))
         )
 
-        if len(pdf_attachments) == 1:
-            # Single file - direct download
-            return {
-                'type': 'ir.actions.act_url',
-                'url': f'/web/content/{pdf_attachments[0].id}?download=true',
-                'target': 'new',
-            }
-        elif len(pdf_attachments) > 1:
-            # Multiple files - create ZIP
-            zip_buffer = io.BytesIO()
-            with zipfile.ZipFile(zip_buffer, 'w', zipfile.ZIP_DEFLATED) as zip_file:
-                for att in pdf_attachments:
-                    if att.datas:
-                        zip_file.writestr(att.name or f'document_{att.id}.pdf', base64.b64decode(att.datas))
-
-            zip_buffer.seek(0)
-            zip_data = base64.b64encode(zip_buffer.getvalue())
-
-            filename = f"{self.name or 'Documents'}_PDFs.zip".replace(' ', '_')
-            zip_attachment = self.env['ir.attachment'].create({
-                'name': filename,
-                'type': 'binary',
-                'datas': zip_data,
-                'res_model': self._name,
-                'res_id': self.id,
-                'mimetype': 'application/zip',
-            })
-
-            return {
-                'type': 'ir.actions.act_url',
-                'url': f'/web/content/{zip_attachment.id}?download=true',
-                'target': 'new',
-            }
-        else:
+        if not pdf_attachments:
             return {'type': 'ir.actions.act_window_close'}
+
+        # Always create ZIP (even for single file for consistency)
+        zip_buffer = io.BytesIO()
+        with zipfile.ZipFile(zip_buffer, 'w', zipfile.ZIP_DEFLATED) as zip_file:
+            for att in pdf_attachments:
+                if att.datas:
+                    zip_file.writestr(att.name or f'document_{att.id}.pdf', base64.b64decode(att.datas))
+
+        zip_buffer.seek(0)
+        zip_data = base64.b64encode(zip_buffer.getvalue())
+
+        filename = f"{self.name or 'Documents'}_PDFs.zip".replace(' ', '_').replace('/', '-')
+        zip_attachment = self.env['ir.attachment'].create({
+            'name': filename,
+            'type': 'binary',
+            'datas': zip_data,
+            'res_model': self._name,
+            'res_id': self.id,
+            'mimetype': 'application/zip',
+        })
+
+        return {
+            'type': 'ir.actions.act_url',
+            'url': f'/web/content/{zip_attachment.id}?download=true',
+            'target': 'self',
+        }
 
     def action_export_sign_schedule(self):
         """

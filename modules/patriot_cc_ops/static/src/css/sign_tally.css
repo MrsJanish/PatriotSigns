@@ -1,8 +1,8 @@
-/* Sign Tally - Compact Popup Styles */
+/* Sign Tally - Full Page Styles */
 
 .sign-tally-container {
     width: 100%;
-    height: 100vh;
+    min-height: 100vh;
     display: flex;
     flex-direction: column;
     background: linear-gradient(135deg, #1e1e2e 0%, #2d2d44 100%);
@@ -12,16 +12,19 @@
 
 /* Header */
 .sign-tally-container .tally-header {
-    padding: 1rem;
+    padding: 1.5rem 2rem;
     background: rgba(255, 255, 255, 0.05);
     border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
 }
 
 .sign-tally-container .header-title {
     display: flex;
     align-items: center;
-    gap: 0.5rem;
-    font-size: 1.25rem;
+    gap: 0.75rem;
+    font-size: 1.5rem;
     font-weight: 600;
 }
 
@@ -30,12 +33,13 @@
 }
 
 .sign-tally-container .header-project {
-    margin-top: 0.25rem;
-    font-size: 0.75rem;
+    font-size: 0.9rem;
     color: rgba(255, 255, 255, 0.6);
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
+}
+
+.sign-tally-container .header-actions {
+    display: flex;
+    gap: 0.75rem;
 }
 
 /* Loading */
@@ -57,17 +61,17 @@
 .sign-tally-container .tally-content {
     flex: 1;
     overflow-y: auto;
-    padding: 1rem;
-    display: flex;
-    flex-direction: column;
-    gap: 0.75rem;
+    padding: 2rem;
+    max-width: 1200px;
+    margin: 0 auto;
+    width: 100%;
 }
 
-/* Sign Cards */
+/* Sign Cards - Grid layout for full page */
 .sign-tally-container .sign-cards {
-    display: flex;
-    flex-direction: column;
-    gap: 0.5rem;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 1rem;
 }
 
 .sign-tally-container .sign-card {
