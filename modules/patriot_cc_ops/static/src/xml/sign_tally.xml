@@ -3,71 +3,99 @@
 
     <t t-name="patriot_cc_ops.SignTally" owl="1">
         <div class="sign-tally-container">
-            <!-- Header -->
-            <div class="tally-header">
-                <div class="header-title">
-                    <i class="fa fa-list-alt"/>
-                    <span>Sign Tally</span>
+            <!-- Aurora Background handled by CSS -->
+            
+            <div class="tally-wrapper">
+                <!-- Header -->
+                <div class="tally-header">
+                    <div class="header-left">
+                        <h1>Sign<span>Tally</span></h1>
+                        <div class="header-project" t-if="state.opportunity">
+                            <t t-esc="state.opportunity.name"/>
+                        </div>
+                    </div>
+                    <div class="header-actions">
+                        <button class="header-btn" t-on-click="goBack">
+                            <i class="fa fa-arrow-left"/>
+                            Back
+                        </button>
+                        <button class="header-btn" t-on-click="openDocuments" t-if="state.attachments.length">
+                            <i class="fa fa-external-link"/>
+                            Open PDFs
+                        </button>
+                        <button class="header-btn" t-on-click="exportToExcel" t-if="state.signTypes.length">
+                            <i class="fa fa-file-excel-o"/>
+                            Export
+                        </button>
+                        <button class="header-btn primary" t-on-click="openAddModal">
+                            <i class="fa fa-plus"/>
+                            Add Sign Type
+                        </button>
+                    </div>
                 </div>
-                <div class="header-project" t-if="state.opportunity">
-                    <t t-esc="state.opportunity.name"/>
+
+                <!-- Stats Bar -->
+                <div class="stats-bar">
+                    <div class="stat-card">
+                        <i class="fa fa-sign"/>
+                        <div>
+                            <div class="stat-value"><t t-esc="state.signTypes.length"/></div>
+                            <div class="stat-label">Sign Types</div>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <i class="fa fa-hashtag"/>
+                        <div>
+                            <div class="stat-value"><t t-esc="totalSigns"/></div>
+                            <div class="stat-label">Total Signs</div>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <i class="fa fa-file-pdf-o"/>
+                        <div>
+                            <div class="stat-value"><t t-esc="state.attachments.length"/></div>
+                            <div class="stat-label">Documents</div>
+                        </div>
+                    </div>
                 </div>
-            </div>
 
-            <!-- Loading State -->
-            <div t-if="state.isLoading" class="tally-loading">
-                <i class="fa fa-spinner fa-spin"/>
-                <span>Loading...</span>
-            </div>
+                <!-- Loading State -->
+                <div t-if="state.isLoading" class="tally-loading">
+                    <i class="fa fa-spinner fa-spin"/>
+                </div>
 
-            <!-- Main Content -->
-            <div t-else="" class="tally-content">
-                <!-- Sign Type Cards -->
-                <div class="sign-cards">
+                <!-- Sign Cards Grid -->
+                <div t-else="" class="sign-cards">
                     <t t-foreach="state.signTypes" t-as="signType" t-key="signType.id">
-                        <div class="sign-card">
-                            <div class="sign-info" t-on-click="() => this.openEditModal(signType)">
-                                <div class="sign-name"><t t-esc="signType.name"/></div>
-                                <div class="sign-dims" t-if="signType.dimensions">
-                                    <t t-esc="signType.dimensions"/>
+                        <div class="sign-card" t-on-click="() => this.openEditModal(signType)">
+                            <div class="sign-card-header">
+                                <div>
+                                    <div class="sign-name"><t t-esc="signType.name"/></div>
+                                    <div class="sign-dims" t-if="signType.dimensions">
+                                        <t t-esc="signType.dimensions"/>
+                                    </div>
                                 </div>
-                            </div>
-                            <div class="sign-controls">
-                                <button class="btn-qty minus" t-on-click="() => this.decrementQuantity(signType)">−</button>
-                                <span class="qty-display"><t t-esc="signType.quantity || 0"/></span>
-                                <button class="btn-qty plus" t-on-click="() => this.incrementQuantity(signType)">+</button>
+                                <div class="qty-controls" t-on-click.stop="">
+                                    <button class="btn-qty minus" t-on-click="() => this.decrementQuantity(signType)">−</button>
+                                    <span class="qty-value"><t t-esc="signType.quantity || 0"/></span>
+                                    <button class="btn-qty plus" t-on-click="() => this.incrementQuantity(signType)">+</button>
+                                </div>
                             </div>
                         </div>
                     </t>
 
-                    <!-- Empty State -->
-                    <div t-if="state.signTypes.length === 0" class="empty-state">
-                        <i class="fa fa-sign"/>
-                        <p>No sign types yet</p>
-                        <p class="hint">Click "Add Sign Type" to get started</p>
+                    <!-- Add Card -->
+                    <div class="btn-add-card" t-on-click="openAddModal">
+                        <i class="fa fa-plus"/>
+                        <span>Add Sign Type</span>
                     </div>
                 </div>
 
-                <!-- Add Button -->
-                <button class="btn-add" t-on-click="openAddModal">
-                    <i class="fa fa-plus"/>
-                    Add Sign Type
-                </button>
-            </div>
-
-            <!-- Footer -->
-            <div class="tally-footer">
-                <div class="total-count">
-                    <span>Total Signs:</span>
-                    <strong><t t-esc="totalSigns"/></strong>
-                </div>
-                <div class="footer-actions">
-                    <button class="btn-action" t-on-click="openDocuments" title="Open PDFs">
-                        <i class="fa fa-file-pdf-o"/>
-                    </button>
-                    <button class="btn-action" t-on-click="exportToExcel" title="Export Excel">
-                        <i class="fa fa-download"/>
-                    </button>
+                <!-- Empty State -->
+                <div t-if="!state.isLoading and state.signTypes.length === 0" class="empty-state">
+                    <i class="fa fa-clipboard"/>
+                    <p>No sign types yet</p>
+                    <p>Click "Add Sign Type" to get started</p>
                 </div>
             </div>
 
@@ -89,7 +117,7 @@
                         <div class="form-group">
                             <label>Dimensions</label>
                             <input type="text" class="form-input" 
-                                   placeholder="e.g. 12&quot; x 18&quot;"
+                                   placeholder='e.g. 12" x 18"'
                                    t-att-value="state.newSignType.dimensions"
                                    t-on-input="onNewDimensionsInput"/>
                         </div>
@@ -102,8 +130,8 @@
                         </div>
                     </div>
                     <div class="modal-footer">
-                        <button class="btn-cancel" t-on-click="closeAddModal">Cancel</button>
-                        <button class="btn-save" t-on-click="saveNewSignType">Add &amp; Count 1</button>
+                        <button class="btn-modal btn-cancel" t-on-click="closeAddModal">Cancel</button>
+                        <button class="btn-modal btn-save" t-on-click="saveNewSignType">Add Sign Type</button>
                     </div>
                 </div>
             </div>
@@ -148,11 +176,11 @@
                         </div>
                     </div>
                     <div class="modal-footer">
-                        <button class="btn-delete" t-on-click="deleteSignType">
+                        <button class="btn-modal btn-delete" t-on-click="deleteSignType">
                             <i class="fa fa-trash"/> Delete
                         </button>
-                        <button class="btn-cancel" t-on-click="closeEditModal">Cancel</button>
-                        <button class="btn-save" t-on-click="saveEditSignType">Save</button>
+                        <button class="btn-modal btn-cancel" t-on-click="closeEditModal">Cancel</button>
+                        <button class="btn-modal btn-save" t-on-click="saveEditSignType">Save Changes</button>
                     </div>
                 </div>
             </div>

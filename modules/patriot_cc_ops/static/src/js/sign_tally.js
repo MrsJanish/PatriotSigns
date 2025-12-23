@@ -227,9 +227,10 @@ export class SignTally extends Component {
     // ==================== Actions ====================
 
     async openDocuments() {
-        // Open each PDF attachment in new tab
+        // Open each PDF attachment in new tab (will open in browser or Adobe)
         for (const att of this.state.attachments) {
-            const url = `/web/content/${att.id}?download=true`;
+            // Remove download=true so browser opens it instead of downloading
+            const url = `/web/content/${att.id}`;
             window.open(url, "_blank");
         }
     }
