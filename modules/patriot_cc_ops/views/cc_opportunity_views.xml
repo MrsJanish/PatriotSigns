@@ -26,7 +26,8 @@
             <form string="CC Opportunity">
                 <header>
                     <button name="trigger_github_fetch" type="object" string="🔄 Fetch Documents (GitHub)" class="btn-primary" invisible="not cc_project_id"/>
-                    <button name="action_view_documents" type="object" string="📄 View Documents" class="btn-secondary" invisible="document_count == 0"/>
+                    <button name="action_open_sign_tally" type="object" string="📋 Sign Tally" class="btn-primary" invisible="document_count == 0"/>
+                    <button name="action_download_documents" type="object" string="📥 Download PDFs" class="btn-secondary" invisible="document_count == 0"/>
                     <field name="state" widget="statusbar" statusbar_visible="new,ready,bidding,won,lost"/>
                 </header>
                 <sheet>

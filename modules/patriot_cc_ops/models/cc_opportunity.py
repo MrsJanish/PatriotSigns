@@ -281,19 +281,69 @@ class CCOpportunity(models.Model):
             self.state = 'new'
             self.message_post(body=f"Error: {e}")
     
-    def action_view_documents(self):
+    def action_open_sign_tally(self):
         """
-        Opens the PDF viewer for this opportunity's documents.
+        Opens the Sign Tally popup for counting signs.
         """
         self.ensure_one()
         return {
             'type': 'ir.actions.client',
-            'tag': 'cc_ops_pdf_viewer',
-            'name': 'Document Viewer',
+            'tag': 'cc_ops_sign_tally',
+            'name': f'Sign Tally - {self.name}',
+            'target': 'new',
             'params': {
                 'opportunityId': self.id,
             },
         }
+
+    def action_download_documents(self):
+        """
+        Downloads all PDF documents as a ZIP file or opens them.
+        """
+        self.ensure_one()
+        import io
+        import zipfile
+        import base64
+
+        pdf_attachments = self.document_ids.filtered(
+            lambda a: a.mimetype == 'application/pdf' or (a.name and a.name.lower().endswith('.pdf'))
+        )
+
+        if len(pdf_attachments) == 1:
+            # Single file - direct download
+            return {
+                'type': 'ir.actions.act_url',
+                'url': f'/web/content/{pdf_attachments[0].id}?download=true',
+                'target': 'new',
+            }
+        elif len(pdf_attachments) > 1:
+            # Multiple files - create ZIP
+            zip_buffer = io.BytesIO()
+            with zipfile.ZipFile(zip_buffer, 'w', zipfile.ZIP_DEFLATED) as zip_file:
+                for att in pdf_attachments:
+                    if att.datas:
+                        zip_file.writestr(att.name or f'document_{att.id}.pdf', base64.b64decode(att.datas))
+
+            zip_buffer.seek(0)
+            zip_data = base64.b64encode(zip_buffer.getvalue())
+
+            filename = f"{self.name or 'Documents'}_PDFs.zip".replace(' ', '_')
+            zip_attachment = self.env['ir.attachment'].create({
+                'name': filename,
+                'type': 'binary',
+                'datas': zip_data,
+                'res_model': self._name,
+                'res_id': self.id,
+                'mimetype': 'application/zip',
+            })
+
+            return {
+                'type': 'ir.actions.act_url',
+                'url': f'/web/content/{zip_attachment.id}?download=true',
+                'target': 'new',
+            }
+        else:
+            return {'type': 'ir.actions.act_window_close'}
 
     def action_export_sign_schedule(self):
         """

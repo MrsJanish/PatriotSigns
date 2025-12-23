@@ -1,0 +1,162 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+
+    <t t-name="patriot_cc_ops.SignTally" owl="1">
+        <div class="sign-tally-container">
+            <!-- Header -->
+            <div class="tally-header">
+                <div class="header-title">
+                    <i class="fa fa-list-alt"/>
+                    <span>Sign Tally</span>
+                </div>
+                <div class="header-project" t-if="state.opportunity">
+                    <t t-esc="state.opportunity.name"/>
+                </div>
+            </div>
+
+            <!-- Loading State -->
+            <div t-if="state.isLoading" class="tally-loading">
+                <i class="fa fa-spinner fa-spin"/>
+                <span>Loading...</span>
+            </div>
+
+            <!-- Main Content -->
+            <div t-else="" class="tally-content">
+                <!-- Sign Type Cards -->
+                <div class="sign-cards">
+                    <t t-foreach="state.signTypes" t-as="signType" t-key="signType.id">
+                        <div class="sign-card">
+                            <div class="sign-info" t-on-click="() => this.openEditModal(signType)">
+                                <div class="sign-name"><t t-esc="signType.name"/></div>
+                                <div class="sign-dims" t-if="signType.dimensions">
+                                    <t t-esc="signType.dimensions"/>
+                                </div>
+                            </div>
+                            <div class="sign-controls">
+                                <button class="btn-qty minus" t-on-click="() => this.decrementQuantity(signType)">−</button>
+                                <span class="qty-display"><t t-esc="signType.quantity || 0"/></span>
+                                <button class="btn-qty plus" t-on-click="() => this.incrementQuantity(signType)">+</button>
+                            </div>
+                        </div>
+                    </t>
+
+                    <!-- Empty State -->
+                    <div t-if="state.signTypes.length === 0" class="empty-state">
+                        <i class="fa fa-sign"/>
+                        <p>No sign types yet</p>
+                        <p class="hint">Click "Add Sign Type" to get started</p>
+                    </div>
+                </div>
+
+                <!-- Add Button -->
+                <button class="btn-add" t-on-click="openAddModal">
+                    <i class="fa fa-plus"/>
+                    Add Sign Type
+                </button>
+            </div>
+
+            <!-- Footer -->
+            <div class="tally-footer">
+                <div class="total-count">
+                    <span>Total Signs:</span>
+                    <strong><t t-esc="totalSigns"/></strong>
+                </div>
+                <div class="footer-actions">
+                    <button class="btn-action" t-on-click="openDocuments" title="Open PDFs">
+                        <i class="fa fa-file-pdf-o"/>
+                    </button>
+                    <button class="btn-action" t-on-click="exportToExcel" title="Export Excel">
+                        <i class="fa fa-download"/>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Quick Add Modal -->
+            <div t-if="state.showAddModal" class="modal-overlay" t-on-click="closeAddModal">
+                <div class="modal-content" t-on-click.stop="">
+                    <div class="modal-header">
+                        <h4>Add Sign Type</h4>
+                        <button class="close-btn" t-on-click="closeAddModal">×</button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="form-group">
+                            <label>Sign ID *</label>
+                            <input type="text" class="form-input" 
+                                   placeholder="e.g. SN-1"
+                                   t-att-value="state.newSignType.name"
+                                   t-on-input="onNewNameInput"/>
+                        </div>
+                        <div class="form-group">
+                            <label>Dimensions</label>
+                            <input type="text" class="form-input" 
+                                   placeholder="e.g. 12&quot; x 18&quot;"
+                                   t-att-value="state.newSignType.dimensions"
+                                   t-on-input="onNewDimensionsInput"/>
+                        </div>
+                        <div class="form-group">
+                            <label>Notes</label>
+                            <input type="text" class="form-input" 
+                                   placeholder="Optional notes"
+                                   t-att-value="state.newSignType.notes"
+                                   t-on-input="onNewNotesInput"/>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button class="btn-cancel" t-on-click="closeAddModal">Cancel</button>
+                        <button class="btn-save" t-on-click="saveNewSignType">Add &amp; Count 1</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Edit Modal -->
+            <div t-if="state.showEditModal" class="modal-overlay" t-on-click="closeEditModal">
+                <div class="modal-content" t-on-click.stop="">
+                    <div class="modal-header">
+                        <h4>Edit Sign Type</h4>
+                        <button class="close-btn" t-on-click="closeEditModal">×</button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="form-group">
+                            <label>Sign ID *</label>
+                            <input type="text" class="form-input" 
+                                   t-att-value="state.editingSignType?.name"
+                                   t-on-input="onEditNameInput"/>
+                        </div>
+                        <div class="form-group">
+                            <label>Dimensions</label>
+                            <input type="text" class="form-input" 
+                                   t-att-value="state.editingSignType?.dimensions"
+                                   t-on-input="onEditDimensionsInput"/>
+                        </div>
+                        <div class="form-group">
+                            <label>Material</label>
+                            <input type="text" class="form-input" 
+                                   t-att-value="state.editingSignType?.material"
+                                   t-on-input="onEditMaterialInput"/>
+                        </div>
+                        <div class="form-group">
+                            <label>Mounting</label>
+                            <input type="text" class="form-input" 
+                                   t-att-value="state.editingSignType?.mounting"
+                                   t-on-input="onEditMountingInput"/>
+                        </div>
+                        <div class="form-group">
+                            <label>Notes</label>
+                            <input type="text" class="form-input" 
+                                   t-att-value="state.editingSignType?.notes"
+                                   t-on-input="onEditNotesInput"/>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button class="btn-delete" t-on-click="deleteSignType">
+                            <i class="fa fa-trash"/> Delete
+                        </button>
+                        <button class="btn-cancel" t-on-click="closeEditModal">Cancel</button>
+                        <button class="btn-save" t-on-click="saveEditSignType">Save</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </t>
+
+</templates>
