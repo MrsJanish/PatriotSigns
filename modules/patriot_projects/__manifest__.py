@@ -20,6 +20,7 @@ This module bridges CRM (bidding) to execution (production/install).
     'website': 'https://patriotsigns.com',
     'depends': [
         'project',
+        'hr_timesheet',
         'patriot_signage',
     ],
     'data': [
