@@ -1,8 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
-    <data noupdate="1">
+    <data noupdate="0">
         <!-- CRM Stages for Sign Project Pipeline -->
-        <!-- Based on Workflow.drawio stages -->
+        <!-- Note: Default Odoo stages (New, Qualified, Proposition) should be archived manually -->
+        <!-- Go to CRM > Configuration > Stages and set Active=False on default stages -->
         
         <record id="stage_new_itb" model="crm.stage">
             <field name="name">📧 New ITB</field>
