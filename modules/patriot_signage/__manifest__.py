@@ -24,6 +24,7 @@ bid intake through production and installation.
     ],
     'data': [
         'security/ir.model.access.csv',
+        'data/mock_sign_types.xml',
         'views/sign_type_views.xml',
         'views/sign_instance_views.xml',
         'views/location_views.xml',
