@@ -72,7 +72,7 @@
                     
                     <notebook>
                         <page string="Signs to Install">
-                            <field name="instance_ids" mode="tree">
+                            <field name="instance_ids" mode="list">
                                 <list>
                                     <field name="sign_type_id"/>
                                     <field name="room_number_plans"/>
@@ -100,7 +100,7 @@
                         </page>
                         
                         <page string="Punchlist" name="punchlist">
-                            <field name="punchlist_ids" mode="tree">
+                            <field name="punchlist_ids" mode="list">
                                 <list editable="bottom">
                                     <field name="sequence" widget="handle"/>
                                     <field name="instance_id"/>

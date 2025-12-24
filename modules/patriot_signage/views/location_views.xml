@@ -75,7 +75,7 @@
                     
                     <!-- Sub-locations -->
                     <group string="Sub-Locations" invisible="child_count == 0">
-                        <field name="child_ids" nolabel="1" mode="tree">
+                        <field name="child_ids" nolabel="1" mode="list">
                             <list>
                                 <field name="name"/>
                                 <field name="location_type"/>
@@ -86,7 +86,7 @@
                     
                     <!-- Sign instances at this location -->
                     <group string="Signs at this Location" invisible="instance_count == 0">
-                        <field name="instance_ids" nolabel="1" mode="tree" readonly="1">
+                        <field name="instance_ids" nolabel="1" mode="list" readonly="1">
                             <list>
                                 <field name="sign_type_id"/>
                                 <field name="copy_line_1"/>

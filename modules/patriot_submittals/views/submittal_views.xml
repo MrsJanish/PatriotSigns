@@ -93,7 +93,7 @@
                             <field name="description"/>
                         </page>
                         <page string="Sign Types">
-                            <field name="sign_type_ids" mode="tree">
+                            <field name="sign_type_ids" mode="list">
                                 <list>
                                     <field name="name"/>
                                     <field name="category_id"/>

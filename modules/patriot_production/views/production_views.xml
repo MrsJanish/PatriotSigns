@@ -77,7 +77,7 @@
                     
                     <notebook>
                         <page string="Sign Instances">
-                            <field name="instance_ids" mode="tree">
+                            <field name="instance_ids" mode="list">
                                 <list>
                                     <field name="sign_type_id"/>
                                     <field name="room_number_plans"/>

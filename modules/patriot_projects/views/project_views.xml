@@ -127,7 +127,7 @@
                             </group>
                         </page>
                         <page string="Change Orders">
-                            <field name="change_order_ids" mode="tree">
+                            <field name="change_order_ids" mode="list">
                                 <list editable="bottom">
                                     <field name="sequence" widget="handle"/>
                                     <field name="name"/>

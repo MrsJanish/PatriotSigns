@@ -28,7 +28,7 @@
             <!-- Add Sign Schedule inside Sign Project page -->
             <xpath expr="//page[@name='sign_project']" position="inside">
                 <group string="Sign Schedule" invisible="sign_type_count == 0">
-                    <field name="sign_type_ids" nolabel="1" mode="tree">
+                    <field name="sign_type_ids" nolabel="1" mode="list">
                         <list editable="bottom" create="0" delete="0">
                             <field name="name"/>
                             <field name="category_id"/>

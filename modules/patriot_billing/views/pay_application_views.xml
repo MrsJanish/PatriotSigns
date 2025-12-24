@@ -55,7 +55,7 @@
                     
                     <notebook>
                         <page string="Line Items" name="lines">
-                            <field name="line_ids" mode="tree">
+                            <field name="line_ids" mode="list">
                                 <list editable="bottom">
                                     <field name="sequence" widget="handle"/>
                                     <field name="description"/>

@@ -66,7 +66,7 @@
                     
                     <notebook>
                         <page string="Estimate Lines" name="lines">
-                            <field name="line_ids" mode="tree">
+                            <field name="line_ids" mode="list">
                                 <list editable="bottom">
                                     <field name="sequence" widget="handle"/>
                                     <field name="sign_type_id"/>
