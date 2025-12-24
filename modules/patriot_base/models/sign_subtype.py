@@ -18,6 +18,15 @@ class SignSubtype(models.Model):
         required=True,
         help='Display name, e.g., "Room Num, Insert", "Evacuation Plan"'
     )
+    display_name_custom = fields.Char(
+        string='Display Name',
+        help='Custom display name for this subtype'
+    )
+    is_ada_default = fields.Boolean(
+        string='ADA by Default',
+        default=False,
+        help='This subtype is typically ADA compliant'
+    )
     code = fields.Char(
         string='Code',
         help='Short code, e.g., RNI, EVAC'
