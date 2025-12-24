@@ -38,6 +38,31 @@ class SignType(models.Model):
         string='Project Alias',
         store=True
     )
+    
+    # =========================================================================
+    # TEMPLATE (for quick-add)
+    # =========================================================================
+    template_id = fields.Many2one(
+        'ps.sign.type.template',
+        string='Template',
+        help='Select a template to auto-fill dimensions and category'
+    )
+    
+    @api.onchange('template_id')
+    def _onchange_template_id(self):
+        """Auto-fill fields from selected template"""
+        if self.template_id:
+            template = self.template_id
+            self.category_id = template.category_id
+            self.width = template.width
+            self.length = template.length
+            self.unit_price = template.default_unit_price
+            self.is_ada = template.is_ada
+            if not self.name:
+                self.name = template.name
+            # Increment usage counter
+            template.sudo().write({'use_count': template.use_count + 1})
+    
     sequence = fields.Integer(
         string='Sequence',
         default=10

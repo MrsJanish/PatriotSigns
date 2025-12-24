@@ -6,3 +6,5 @@ access_ps_sign_instance_manager,ps.sign.instance.manager,model_ps_sign_instance,
 access_ps_location_user,ps.location.user,model_ps_location,base.group_user,1,1,1,0
 access_ps_location_manager,ps.location.manager,model_ps_location,base.group_system,1,1,1,1
 access_ps_sign_bookmark_user,ps.sign.bookmark.user,model_ps_sign_bookmark,base.group_user,1,1,1,1
+access_ps_sign_type_template_user,ps.sign.type.template.user,model_ps_sign_type_template,base.group_user,1,0,0,0
+access_ps_sign_type_template_manager,ps.sign.type.template.manager,model_ps_sign_type_template,base.group_system,1,1,1,1
