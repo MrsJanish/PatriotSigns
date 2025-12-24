@@ -57,7 +57,7 @@
             <field name="work_email">lexi@omegasignsco.com</field>
             <field name="work_phone">+1 405-738-3298</field>
             <field name="mobile_phone">+1 405-738-3298</field>
-            <field name="job_title">Office Manager</field>
+            <field name="job_title">Project Manager</field>
         </record>
 
     </data>
