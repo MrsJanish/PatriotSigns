@@ -294,13 +294,15 @@
         <field name="model">ps.sign.type.template</field>
         <field name="arch" type="xml">
             <list>
+                <field name="sequence" widget="handle"/>
                 <field name="name"/>
+                <field name="code"/>
                 <field name="category_id"/>
-                <field name="subtype_id"/>
-                <field name="default_width"/>
-                <field name="default_length"/>
+                <field name="width"/>
+                <field name="length"/>
                 <field name="default_unit_price"/>
                 <field name="is_ada"/>
+                <field name="use_count"/>
             </list>
         </field>
     </record>
@@ -315,26 +317,25 @@
                     <group>
                         <group string="Basic Info">
                             <field name="name"/>
+                            <field name="code"/>
+                            <field name="sequence"/>
                             <field name="category_id"/>
-                            <field name="subtype_id"/>
                         </group>
-                        <group string="Defaults">
-                            <field name="default_width"/>
-                            <field name="default_length"/>
+                        <group string="Dimensions &amp; Pricing">
+                            <field name="width"/>
+                            <field name="length"/>
                             <field name="default_unit_price"/>
-                            <field name="default_install_rate"/>
                         </group>
                     </group>
                     <group>
-                        <group string="Physical">
-                            <field name="default_material"/>
-                            <field name="default_finish"/>
-                            <field name="default_mounting"/>
-                        </group>
                         <group string="ADA">
                             <field name="is_ada"/>
                             <field name="has_tactile"/>
                             <field name="has_braille"/>
+                        </group>
+                        <group string="Usage">
+                            <field name="use_count" readonly="1"/>
+                            <field name="active"/>
                         </group>
                     </group>
                     <field name="description" placeholder="Description..."/>
