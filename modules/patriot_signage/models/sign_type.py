@@ -466,6 +466,81 @@ class SignType(models.Model):
             self.has_tactile = True
             self.has_braille = True
 
+    @api.onchange('length', 'width', 'quantity', 'is_ada', 'category_id')
+    def _onchange_compute_price(self):
+        """
+        Auto-calculate unit price based on dimensions, category, and quantity.
+        
+        Formula from patriot_estimating:
+        1. Calculate material cost per unit (based on sheet usage)
+        2. Add labor cost per unit
+        3. Add 15% overhead
+        4. Multiply by markup (2.4x)
+        5. Round to nearest $5
+        """
+        if not self.length or not self.width:
+            return
+            
+        import math
+        
+        # Constants from the estimating module
+        PRESS_W, PRESS_H = 13.0, 19.0  # Press sheet size
+        SHEET_W, SHEET_H = 49.0, 97.0  # Pionite sheet size
+        MOLDS_PER_SHEET = 17
+        
+        # Costs (from product catalog defaults)
+        PIONITE_COST = 211.30  # Per sheet
+        ABS_COST = 80.00       # Per sheet
+        INK_COST = 0.33        # Per sign
+        PAINT_COST = 0.60      # Per sign
+        TAPE_COST = 0.25       # Per mold
+        MCLUBE_COST = 0.50     # Per mold
+        EMPLOYEE_WAGE = 10.00  # $/hr
+        MOLD_TIME_MINUTES = 80  # Worst case per mold
+        
+        OVERHEAD_PCT = 15.0
+        MARKUP = 2.4
+        ROUND_TO = 5.0
+        
+        # Calculate how many signs fit per mold (optimize rotation)
+        w, h = self.width, self.length
+        fit1 = int(PRESS_W // w) * int(PRESS_H // h) if w > 0 and h > 0 else 1
+        fit2 = int(PRESS_W // h) * int(PRESS_H // w) if w > 0 and h > 0 else 1
+        signs_per_mold = max(fit1, fit2, 1)
+        
+        # Calculate molds needed
+        qty = self.quantity or 1
+        molds_needed = math.ceil(qty / signs_per_mold)
+        
+        # Sheets needed
+        sheets_needed = math.ceil(molds_needed / MOLDS_PER_SHEET)
+        
+        # Material cost
+        sheet_cost = sheets_needed * (PIONITE_COST + ABS_COST)
+        consumables = (qty * INK_COST) + (qty * PAINT_COST) + \
+                      (molds_needed * TAPE_COST) + (molds_needed * MCLUBE_COST)
+        total_material = sheet_cost + consumables
+        material_per_unit = total_material / qty if qty else 0
+        
+        # Labor cost
+        labor_per_mold = (MOLD_TIME_MINUTES / 60.0) * EMPLOYEE_WAGE  # ~$13.33
+        total_labor = molds_needed * labor_per_mold
+        labor_per_unit = total_labor / qty if qty else 0
+        
+        # Overhead
+        overhead_per_unit = (material_per_unit + labor_per_unit) * (OVERHEAD_PCT / 100.0)
+        
+        # Total cost per unit
+        total_cost_per_unit = material_per_unit + labor_per_unit + overhead_per_unit
+        
+        # Apply markup and round
+        raw_price = total_cost_per_unit * MARKUP
+        rounded_price = round(raw_price / ROUND_TO) * ROUND_TO
+        
+        # Set unit cost and unit price
+        self.unit_cost = round(total_cost_per_unit, 2)
+        self.unit_price = rounded_price
+
     # =========================================================================
     # ACTIONS
     # =========================================================================
