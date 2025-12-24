@@ -27,7 +27,7 @@
                 <filter name="high_waste" string="High Waste (&gt;50%)" domain="[('waste_percent', '&gt;', 50)]"/>
                 <filter name="has_stock" string="Generated Stock" domain="[('stock_generated', '&gt;', 0)]"/>
                 <separator/>
-                <group expand="0" string="Group By">
+                <group string="Group By">
                     <filter name="group_by_estimate" string="Estimate" context="{'group_by': 'estimate_id'}"/>
                     <filter name="group_by_category" string="Category" context="{'group_by': 'category_id'}"/>
                     <filter name="group_by_month" string="Month" context="{'group_by': 'create_date:month'}"/>

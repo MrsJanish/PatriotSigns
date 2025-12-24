@@ -39,6 +39,7 @@
                             <field name="quantity" sum="Total Signs"/>
                             <field name="width" string="W (in)"/>
                             <field name="length" string="L (in)"/>
+                            <field name="is_ada" invisible="1"/>
                             <field name="unit_price" string="$/ea"/>
                         </list>
                     </field>
