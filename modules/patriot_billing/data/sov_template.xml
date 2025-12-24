@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
-    <data noupdate="1">
+    <data noupdate="0">
         <!-- 
             Standard Schedule of Values (SOV) Line Items
             These are the typical billing line items for sign projects.
