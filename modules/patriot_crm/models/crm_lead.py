@@ -176,6 +176,78 @@ class CrmLead(models.Model):
         help='Estimated hours for installation'
     )
     
+    # =========================================================================
+    # EQUIPMENT RENTAL
+    # =========================================================================
+    equipment_rental_required = fields.Boolean(
+        string='Equipment Rental Required',
+        default=False,
+        help='Check if rental equipment (lift, scaffold, etc.) is needed'
+    )
+    equipment_type = fields.Selection([
+        ('lift', 'Lift / Boom'),
+        ('scaffold', 'Scaffolding'),
+        ('forklift', 'Forklift'),
+        ('ladder', 'Extension Ladder'),
+        ('other', 'Other'),
+    ], string='Equipment Type')
+    equipment_rental_cost = fields.Float(
+        string='Equipment Rental Cost',
+        help='Estimated rental cost to pass through to customer'
+    )
+    equipment_notes = fields.Text(
+        string='Equipment Notes'
+    )
+    
+    # =========================================================================
+    # INSTALLER BILLING RATES
+    # =========================================================================
+    installer_choice = fields.Selection([
+        ('robert', 'Robert Scott Only'),
+        ('bryson', 'Bryson Only'),
+        ('both', 'Both (Robert + Bryson)'),
+    ], string='Installers', default='both')
+    installer_hourly_rate = fields.Float(
+        string='Install Hourly Rate',
+        compute='_compute_installer_rate',
+        store=True,
+        help='Hourly rate based on installer selection'
+    )
+    install_labor_cost = fields.Float(
+        string='Install Labor Cost',
+        compute='_compute_install_labor_cost',
+        store=True,
+        help='Est. Install Hours × Hourly Rate'
+    )
+    total_install_cost = fields.Float(
+        string='Total Install Cost',
+        compute='_compute_total_install_cost',
+        store=True,
+        help='Labor + Travel + Equipment'
+    )
+    
+    @api.depends('installer_choice')
+    def _compute_installer_rate(self):
+        for lead in self:
+            if lead.installer_choice == 'robert':
+                lead.installer_hourly_rate = 25.0
+            elif lead.installer_choice == 'bryson':
+                lead.installer_hourly_rate = 15.0
+            else:  # both
+                lead.installer_hourly_rate = 40.0
+    
+    @api.depends('estimated_install_hours', 'installer_hourly_rate')
+    def _compute_install_labor_cost(self):
+        for lead in self:
+            lead.install_labor_cost = (lead.estimated_install_hours or 0) * (lead.installer_hourly_rate or 40.0)
+    
+    @api.depends('install_labor_cost', 'travel_cost', 'equipment_rental_cost')
+    def _compute_total_install_cost(self):
+        for lead in self:
+            lead.total_install_cost = (lead.install_labor_cost or 0) + \
+                                       (lead.travel_cost or 0) + \
+                                       (lead.equipment_rental_cost or 0)
+    
     @api.depends('distance_miles', 'mileage_rate')
     def _compute_travel_cost(self):
         for lead in self:

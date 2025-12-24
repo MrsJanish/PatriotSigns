@@ -70,6 +70,72 @@ class CCOpportunity(models.Model):
 
     # --- EMAIL PARSING ---
     source_email_id = fields.Many2one('mail.message', string="Source Email")
+    
+    # --- CRM INTEGRATION ---
+    crm_lead_id = fields.Many2one(
+        'crm.lead',
+        string='CRM Opportunity',
+        help='Linked CRM opportunity for pipeline tracking'
+    )
+    
+    def _create_or_update_crm_lead(self):
+        """Create or update linked CRM lead for pipeline visibility"""
+        self.ensure_one()
+        
+        # Get stage references
+        stage_new_itb = self.env.ref('patriot_crm.stage_new_itb', raise_if_not_found=False)
+        stage_fetching = self.env.ref('patriot_crm.stage_fetching_docs', raise_if_not_found=False)
+        stage_reviewing = self.env.ref('patriot_crm.stage_reviewing', raise_if_not_found=False)
+        
+        # Map CC state to CRM stage
+        stage_map = {
+            'new': stage_new_itb,
+            'fetching': stage_fetching,
+            'ready': stage_reviewing,
+        }
+        
+        crm_stage = stage_map.get(self.state, stage_new_itb)
+        
+        lead_vals = {
+            'name': self.name,
+            'cc_project_id': self.cc_project_id,
+            'cc_source_url': self.cc_source_url,
+            'bid_date': self.bid_date,
+            'bid_time': self.bid_time,
+            'project_address': self.street,
+            'project_city': self.city,
+            'project_zip': self.zip_code,
+            'type': 'opportunity',
+            'is_cc_opportunity': True,
+        }
+        
+        if crm_stage:
+            lead_vals['stage_id'] = crm_stage.id
+        
+        if self.crm_lead_id:
+            # Update existing
+            self.crm_lead_id.write(lead_vals)
+        else:
+            # Create new CRM lead
+            lead = self.env['crm.lead'].create(lead_vals)
+            self.crm_lead_id = lead.id
+            
+        return self.crm_lead_id
+    
+    def _update_crm_stage(self, new_state):
+        """Update CRM lead stage when CC state changes"""
+        stage_map = {
+            'new': 'patriot_crm.stage_new_itb',
+            'fetching': 'patriot_crm.stage_fetching_docs',
+            'ready': 'patriot_crm.stage_reviewing',
+            'bidding': 'patriot_crm.stage_estimating',
+        }
+        
+        stage_ref = stage_map.get(new_state)
+        if stage_ref and self.crm_lead_id:
+            stage = self.env.ref(stage_ref, raise_if_not_found=False)
+            if stage:
+                self.crm_lead_id.stage_id = stage.id
 
     @api.depends('document_ids')
     def _compute_document_count(self):
@@ -178,6 +244,9 @@ class CCOpportunity(models.Model):
         
         _logger.info(f"Created CC Opportunity from email: {record.name}")
         
+        # Create linked CRM opportunity for pipeline visibility
+        record._create_or_update_crm_lead()
+        
         # Auto-trigger GitHub Action if we have a CC Project ID
         if record.cc_project_id:
             record.trigger_github_fetch()
@@ -223,6 +292,7 @@ class CCOpportunity(models.Model):
         
         try:
             self.state = 'fetching'
+            self._update_crm_stage('fetching')  # Sync CRM stage
             response = requests.post(url, headers=headers, json=data, timeout=30)
             if response.status_code == 204:
                 _logger.info(f"GitHub Action triggered for project {self.cc_project_id}")
@@ -267,6 +337,10 @@ class CCOpportunity(models.Model):
                     'gc_name': data.get('generalContractor'),
                     'state': 'ready',
                 })
+                
+                # Sync CRM stage to REVIEWING and update lead data
+                self._update_crm_stage('ready')
+                self._create_or_update_crm_lead()
                 
                 # Fetch Documents
                 api.download_documents(self)
