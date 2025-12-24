@@ -1,0 +1,152 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- ================================================================== -->
+    <!-- WASTE ANALYSIS DASHBOARD                                           -->
+    <!-- ================================================================== -->
+
+    <!-- Dashboard Search View with Date Filters -->
+    <record id="ps_waste_analysis_search" model="ir.ui.view">
+        <field name="name">ps.estimate.line.waste.search</field>
+        <field name="model">ps.estimate.line</field>
+        <field name="arch" type="xml">
+            <search string="Waste Analysis">
+                <field name="estimate_id"/>
+                <field name="sign_type_id"/>
+                <field name="category_id"/>
+                <separator/>
+                <filter name="last_30_days" string="Last 30 Days"
+                    domain="[('create_date', '&gt;=', (context_today() - relativedelta(days=30)).strftime('%Y-%m-%d'))]"/>
+                <filter name="last_90_days" string="Last 90 Days"
+                    domain="[('create_date', '&gt;=', (context_today() - relativedelta(days=90)).strftime('%Y-%m-%d'))]"/>
+                <filter name="last_6_months" string="Last 6 Months"
+                    domain="[('create_date', '&gt;=', (context_today() - relativedelta(months=6)).strftime('%Y-%m-%d'))]"/>
+                <filter name="this_year" string="This Year"
+                    domain="[('create_date', '&gt;=', time.strftime('%Y-01-01'))]"/>
+                <separator/>
+                <filter name="high_waste" string="High Waste (&gt;50%)" domain="[('waste_percent', '&gt;', 50)]"/>
+                <filter name="has_stock" string="Generated Stock" domain="[('stock_generated', '&gt;', 0)]"/>
+                <separator/>
+                <group expand="0" string="Group By">
+                    <filter name="group_by_estimate" string="Estimate" context="{'group_by': 'estimate_id'}"/>
+                    <filter name="group_by_category" string="Category" context="{'group_by': 'category_id'}"/>
+                    <filter name="group_by_month" string="Month" context="{'group_by': 'create_date:month'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <!-- Waste Dashboard Graph View -->
+    <record id="ps_waste_dashboard_graph" model="ir.ui.view">
+        <field name="name">ps.estimate.line.waste.graph</field>
+        <field name="model">ps.estimate.line</field>
+        <field name="arch" type="xml">
+            <graph string="Waste Analysis" type="bar" stacked="True">
+                <field name="estimate_id"/>
+                <field name="waste_percent" type="measure"/>
+                <field name="stock_generated" type="measure"/>
+                <field name="sheets_needed" type="measure"/>
+            </graph>
+        </field>
+    </record>
+
+    <!-- Waste Dashboard Pivot View -->
+    <record id="ps_waste_dashboard_pivot" model="ir.ui.view">
+        <field name="name">ps.estimate.line.waste.pivot</field>
+        <field name="model">ps.estimate.line</field>
+        <field name="arch" type="xml">
+            <pivot string="Waste Analysis">
+                <field name="estimate_id" type="row"/>
+                <field name="category_id" type="col"/>
+                <field name="quantity" type="measure"/>
+                <field name="signs_produced" type="measure"/>
+                <field name="stock_generated" type="measure"/>
+                <field name="molds_needed" type="measure"/>
+                <field name="sheets_needed" type="measure"/>
+                <field name="waste_percent" type="measure" widget="percentage"/>
+                <field name="material_unit_cost" type="measure"/>
+                <field name="profit_margin" type="measure"/>
+            </pivot>
+        </field>
+    </record>
+
+    <!-- Waste Dashboard Tree View -->
+    <record id="ps_waste_dashboard_tree" model="ir.ui.view">
+        <field name="name">ps.estimate.line.waste.tree</field>
+        <field name="model">ps.estimate.line</field>
+        <field name="arch" type="xml">
+            <list decoration-danger="waste_percent &gt; 50" 
+                  decoration-warning="waste_percent &gt; 30 and waste_percent &lt;= 50"
+                  decoration-success="waste_percent &lt;= 30">
+                <field name="estimate_id"/>
+                <field name="sign_type_id"/>
+                <field name="category_id"/>
+                <field name="sign_width"/>
+                <field name="sign_height"/>
+                <field name="quantity"/>
+                <field name="signs_per_mold"/>
+                <field name="molds_needed"/>
+                <field name="signs_produced"/>
+                <field name="stock_generated" string="Stock"/>
+                <field name="sheets_needed"/>
+                <field name="waste_percent" widget="progressbar"/>
+                <field name="material_unit_cost" sum="Total"/>
+                <field name="profit_margin"/>
+            </list>
+        </field>
+    </record>
+
+    <!-- Main Waste Dashboard Action -->
+    <record id="ps_waste_dashboard_action" model="ir.actions.act_window">
+        <field name="name">Waste &amp; Efficiency Dashboard</field>
+        <field name="res_model">ps.estimate.line</field>
+        <field name="view_mode">pivot,graph,list</field>
+        <field name="search_view_id" ref="ps_waste_analysis_search"/>
+        <field name="context">{
+            'search_default_last_6_months': 1,
+            'search_default_group_by_estimate': 1
+        }</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                No estimate data to analyze yet
+            </p>
+            <p>
+                Create estimates with sign dimensions to see waste analysis,
+                material efficiency, and stock generation metrics.
+            </p>
+        </field>
+    </record>
+
+    <!-- Stock Generation Report Action -->
+    <record id="ps_stock_report_action" model="ir.actions.act_window">
+        <field name="name">Stock Generation Report</field>
+        <field name="res_model">ps.estimate.line</field>
+        <field name="view_mode">list,pivot,graph</field>
+        <field name="domain">[('stock_generated', '&gt;', 0)]</field>
+        <field name="search_view_id" ref="ps_waste_analysis_search"/>
+        <field name="context">{'search_default_group_by_category': 1}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                No stock generated yet
+            </p>
+            <p>
+                When orders produce extra signs (e.g., ordering 5 but making 6),
+                those extras appear here as inventory stock.
+            </p>
+        </field>
+    </record>
+
+    <!-- Menu Items for Dashboard -->
+    <menuitem id="menu_waste_dashboard"
+        name="Waste Dashboard"
+        parent="ps_estimating_menu"
+        action="ps_waste_dashboard_action"
+        sequence="30"/>
+    
+    <menuitem id="menu_stock_report"
+        name="Stock Report"
+        parent="ps_estimating_menu"
+        action="ps_stock_report_action"
+        sequence="31"/>
+
+</odoo>
+</field>

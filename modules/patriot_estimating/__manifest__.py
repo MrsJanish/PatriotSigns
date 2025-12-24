@@ -25,6 +25,7 @@ Links CRM opportunities to detailed cost estimates.
         'security/ir.model.access.csv',
         'data/sequences.xml',
         'views/estimate_views.xml',
+        'views/waste_dashboard.xml',
         'views/menu.xml',
         'views/res_config_settings_views.xml',
     ],
