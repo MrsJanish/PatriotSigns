@@ -492,31 +492,48 @@ class EstimateLine(models.Model):
 
     @api.depends('sheets_needed', 'molds_needed', 'quantity', 'calculate_dynamic')
     def _compute_costs(self):
+        """Calculate material and labor costs from product catalog"""
         company = self.env.company
+        
+        # Look up material products from catalog
+        Product = self.env['product.product']
+        pionite = self.env.ref('patriot_base.product_pionite_sheet', raise_if_not_found=False)
+        abs_sheet = self.env.ref('patriot_base.product_abs_18', raise_if_not_found=False)
+        ink = self.env.ref('patriot_base.product_ink', raise_if_not_found=False)
+        paint = self.env.ref('patriot_base.product_paint', raise_if_not_found=False)
+        tape = self.env.ref('patriot_base.product_tape', raise_if_not_found=False)
+        mclube = self.env.ref('patriot_base.product_mclube', raise_if_not_found=False)
+        mold_labor = self.env.ref('patriot_base.product_mold_labor', raise_if_not_found=False)
+        
+        # Get costs from products (fall back to 0 if not found)
+        pionite_cost = pionite.standard_price if pionite else 211.30
+        abs_cost = abs_sheet.standard_price if abs_sheet else 80.00
+        ink_cost = ink.standard_price if ink else 0.33
+        paint_cost = paint.standard_price if paint else 0.60
+        tape_cost = tape.standard_price if tape else 0.25
+        mclube_cost = mclube.standard_price if mclube else 0.50
+        mold_labor_cost = mold_labor.standard_price if mold_labor else 40.00
         
         for line in self:
             if not line.calculate_dynamic:
                 continue
                 
-            # Material Cost
-            # Assuming standard Pionite + ABS construction for calculation baseline
-            sheet_cost_total = (line.sheets_needed * company.cost_pionite_sheet) + \
-                               (line.sheets_needed * company.cost_abs_18_sheet)
+            # Material Cost (from product catalog)
+            sheet_cost_total = (line.sheets_needed * pionite_cost) + \
+                               (line.sheets_needed * abs_cost)
                                
-            consumables = (line.quantity * company.cost_ink_per_unit) + \
-                          (line.quantity * company.cost_paint_per_unit) + \
-                          (line.molds_needed * company.cost_tape_per_mold) + \
-                          (line.molds_needed * company.cost_mclube_per_mold)
+            consumables = (line.quantity * ink_cost) + \
+                          (line.quantity * paint_cost) + \
+                          (line.molds_needed * tape_cost) + \
+                          (line.molds_needed * mclube_cost)
                           
             total_material = sheet_cost_total + consumables
             
             if line.quantity:
                 line.material_unit_cost = total_material / line.quantity
             
-            # Labor Cost (Mold labor)
-            # Conservative estimate: $100 per mold set up / processing
-            MOLD_LABOR_COST = 100.0
-            total_labor = line.molds_needed * MOLD_LABOR_COST
+            # Labor Cost (from product catalog)
+            total_labor = line.molds_needed * mold_labor_cost
             
             if line.quantity:
                 line.labor_unit_cost = total_labor / line.quantity
