@@ -1,20 +1,18 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
-    <!-- Production menu under Manufacturing -->
-    <menuitem id="menu_sign_production"
-              name="Sign Production"
-              parent="mrp.menu_mrp_root"
-              sequence="5"/>
-
+    <!-- Production menu items under unified Patriot Signs menu -->
+    
+    <!-- Production Orders -->
     <menuitem id="menu_production_orders"
               name="Production Orders"
-              parent="menu_sign_production"
+              parent="patriot_base.menu_production"
               action="ps_production_order_action"
               sequence="10"/>
 
+    <!-- Quality Checks -->
     <menuitem id="menu_quality_checks"
               name="Quality Checks"
-              parent="menu_sign_production"
+              parent="patriot_base.menu_production"
               action="ps_quality_check_action"
               sequence="20"/>
 

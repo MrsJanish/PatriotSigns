@@ -1,20 +1,18 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
-    <!-- Submittals menu under Project -->
-    <menuitem id="menu_submittals_root"
-              name="Submittals"
-              parent="project.menu_main_pm"
-              sequence="25"/>
-
-    <menuitem id="menu_submittals"
-              name="Submittals"
-              parent="menu_submittals_root"
+    <!-- Submittals menu items under unified Patriot Signs menu -->
+    
+    <!-- Shop Drawings -->
+    <menuitem id="menu_shop_drawings"
+              name="Shop Drawings"
+              parent="patriot_base.menu_submittals"
               action="ps_submittal_action"
               sequence="10"/>
 
+    <!-- RFIs -->
     <menuitem id="menu_rfis"
               name="RFIs"
-              parent="menu_submittals_root"
+              parent="patriot_base.menu_submittals"
               action="ps_rfi_action"
               sequence="20"/>
 

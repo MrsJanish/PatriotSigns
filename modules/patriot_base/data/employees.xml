@@ -65,6 +65,8 @@
         <record id="employee_tiffany_janish" model="hr.employee">
             <field name="name">Tiffany Janish</field>
             <field name="work_email">tiffany@omegasignsco.com</field>
+            <field name="work_phone">+1 405-641-1594</field>
+            <field name="mobile_phone">+1 405-641-1594</field>
             <field name="job_title">Estimator / Bidding</field>
         </record>
 

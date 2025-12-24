@@ -1,11 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
     <!-- 
-        UNIFIED PATRIOT SIGNS MENU
-        Assembly-line workflow: Bid → Estimate → Project → Submit → Produce → Install → Bill
+        UNIFIED PATRIOT SIGNS MENU - ROOT STRUCTURE
         
-        Created: 2024-12-24
-        Purpose: ONE linear workflow matching Tiffany's actual process
+        This file only defines the ROOT menu and items that use models available
+        in patriot_base or earlier modules (crm, project, hr).
+        
+        Other modules will add their menu items under this structure.
     -->
 
     <!-- ========================================================================= -->
@@ -17,8 +18,7 @@
               sequence="5"/>
 
     <!-- ========================================================================= -->
-    <!-- 1. BID OPPORTUNITIES (📧)                                                  -->
-    <!-- Where Tiffany starts - ITB comes in, review docs, create sign schedule    -->
+    <!-- 1. BID OPPORTUNITIES (📧) - Uses crm.lead (available)                     -->
     <!-- ========================================================================= -->
     <menuitem id="menu_bid_opportunities"
               name="📧 Bid Opportunities"
@@ -53,73 +53,21 @@
               action="action_upcoming_bids"
               sequence="20"/>
 
-    <!-- CC Dashboard (visual project cards) -->
-    <record id="action_cc_dashboard" model="ir.actions.client">
-        <field name="name">Project Dashboard</field>
-        <field name="tag">cc_ops_dashboard</field>
-    </record>
-    <menuitem id="menu_cc_dashboard"
-              name="Dashboard"
-              parent="menu_bid_opportunities"
-              action="action_cc_dashboard"
-              sequence="30"/>
-
     <!-- ========================================================================= -->
-    <!-- 2. ESTIMATING (📊)                                                         -->
-    <!-- Sign types, dimensions, create the estimate                               -->
+    <!-- PLACEHOLDER MENUS - Will be populated by other modules                   -->
     <!-- ========================================================================= -->
+    
     <menuitem id="menu_estimating"
               name="📊 Estimating"
               parent="menu_patriot_root"
               sequence="20"/>
-
-    <!-- Sign Types by Project -->
-    <record id="action_sign_types" model="ir.actions.act_window">
-        <field name="name">Sign Types</field>
-        <field name="res_model">ps.sign.type</field>
-        <field name="view_mode">list,form</field>
-        <field name="context">{'group_by': 'opportunity_id'}</field>
-    </record>
-    <menuitem id="menu_sign_types"
-              name="Sign Types"
-              parent="menu_estimating"
-              action="action_sign_types"
-              sequence="10"/>
-
-    <!-- Estimates -->
-    <record id="action_estimates" model="ir.actions.act_window">
-        <field name="name">Estimates</field>
-        <field name="res_model">ps.estimate</field>
-        <field name="view_mode">list,form</field>
-    </record>
-    <menuitem id="menu_estimates"
-              name="Estimates"
-              parent="menu_estimating"
-              action="action_estimates"
-              sequence="20"/>
-
-    <!-- Sign Type Templates -->
-    <record id="action_sign_templates" model="ir.actions.act_window">
-        <field name="name">Sign Templates</field>
-        <field name="res_model">ps.sign.type.template</field>
-        <field name="view_mode">list,form</field>
-    </record>
-    <menuitem id="menu_sign_templates"
-              name="Templates"
-              parent="menu_estimating"
-              action="action_sign_templates"
-              sequence="30"/>
-
-    <!-- ========================================================================= -->
-    <!-- 3. WON PROJECTS (✅)                                                       -->
-    <!-- Projects that have been awarded - contract stage                          -->
-    <!-- ========================================================================= -->
+    
     <menuitem id="menu_won_projects"
               name="✅ Won Projects"
               parent="menu_patriot_root"
               sequence="30"/>
 
-    <!-- Active Projects -->
+    <!-- Active Projects - Uses project.project (available from project module) -->
     <record id="action_active_projects" model="ir.actions.act_window">
         <field name="name">Active Projects</field>
         <field name="res_model">project.project</field>
@@ -132,129 +80,28 @@
               action="action_active_projects"
               sequence="10"/>
 
-    <!-- ========================================================================= -->
-    <!-- 4. SUBMITTALS (📐)                                                         -->
-    <!-- Shop drawings, RFIs, approval workflow                                    -->
-    <!-- ========================================================================= -->
     <menuitem id="menu_submittals"
               name="📐 Submittals"
               parent="menu_patriot_root"
               sequence="40"/>
 
-    <!-- Shop Drawings -->
-    <record id="action_submittals" model="ir.actions.act_window">
-        <field name="name">Shop Drawings</field>
-        <field name="res_model">ps.submittal</field>
-        <field name="view_mode">list,form</field>
-    </record>
-    <menuitem id="menu_shop_drawings"
-              name="Shop Drawings"
-              parent="menu_submittals"
-              action="action_submittals"
-              sequence="10"/>
-
-    <!-- RFIs -->
-    <record id="action_rfis" model="ir.actions.act_window">
-        <field name="name">RFIs</field>
-        <field name="res_model">ps.rfi</field>
-        <field name="view_mode">list,form</field>
-    </record>
-    <menuitem id="menu_rfis"
-              name="RFIs"
-              parent="menu_submittals"
-              action="action_rfis"
-              sequence="20"/>
-
-    <!-- ========================================================================= -->
-    <!-- 5. PRODUCTION (🏭)                                                         -->
-    <!-- Manufacturing orders, work centers                                        -->
-    <!-- ========================================================================= -->
     <menuitem id="menu_production"
               name="🏭 Production"
               parent="menu_patriot_root"
               sequence="50"/>
 
-    <!-- Production Orders -->
-    <record id="action_production_orders" model="ir.actions.act_window">
-        <field name="name">Production Orders</field>
-        <field name="res_model">ps.production.order</field>
-        <field name="view_mode">list,form</field>
-    </record>
-    <menuitem id="menu_production_orders"
-              name="Production Orders"
-              parent="menu_production"
-              action="action_production_orders"
-              sequence="10"/>
-
-    <!-- ========================================================================= -->
-    <!-- 6. INSTALLATION (🔧)                                                       -->
-    <!-- Crew scheduling, field work                                               -->
-    <!-- ========================================================================= -->
     <menuitem id="menu_installation"
               name="🔧 Installation"
               parent="menu_patriot_root"
               sequence="60"/>
 
-    <!-- Scheduled Installations -->
-    <record id="action_installations" model="ir.actions.act_window">
-        <field name="name">Installations</field>
-        <field name="res_model">ps.installation</field>
-        <field name="view_mode">list,calendar,form</field>
-    </record>
-    <menuitem id="menu_installations"
-              name="Scheduled"
-              parent="menu_installation"
-              action="action_installations"
-              sequence="10"/>
-
-    <!-- Crews -->
-    <record id="action_crews" model="ir.actions.act_window">
-        <field name="name">Crews</field>
-        <field name="res_model">ps.crew</field>
-        <field name="view_mode">list,form</field>
-    </record>
-    <menuitem id="menu_crews"
-              name="Crews"
-              parent="menu_installation"
-              action="action_crews"
-              sequence="20"/>
-
-    <!-- ========================================================================= -->
-    <!-- 7. BILLING (💰)                                                            -->
-    <!-- Pay applications, SOV, invoicing                                          -->
-    <!-- ========================================================================= -->
     <menuitem id="menu_billing"
               name="💰 Billing"
               parent="menu_patriot_root"
               sequence="70"/>
 
-    <!-- Pay Applications -->
-    <record id="action_pay_applications" model="ir.actions.act_window">
-        <field name="name">Pay Applications</field>
-        <field name="res_model">ps.pay.application</field>
-        <field name="view_mode">list,form</field>
-    </record>
-    <menuitem id="menu_pay_applications"
-              name="Pay Applications"
-              parent="menu_billing"
-              action="action_pay_applications"
-              sequence="10"/>
-
-    <!-- Schedule of Values -->
-    <record id="action_sov" model="ir.actions.act_window">
-        <field name="name">Schedule of Values</field>
-        <field name="res_model">ps.sov</field>
-        <field name="view_mode">list,form</field>
-    </record>
-    <menuitem id="menu_sov"
-              name="Schedule of Values"
-              parent="menu_billing"
-              action="action_sov"
-              sequence="20"/>
-
     <!-- ========================================================================= -->
-    <!-- 8. CONFIGURATION (⚙️)                                                      -->
-    <!-- Reference tables, settings                                                -->
+    <!-- 8. CONFIGURATION (⚙️) - Uses models available in patriot_base            -->
     <!-- ========================================================================= -->
     <menuitem id="menu_configuration"
               name="⚙️ Configuration"
@@ -266,21 +113,21 @@
     <menuitem id="menu_config_categories"
               name="Sign Categories"
               parent="menu_configuration"
-              action="patriot_base.sign_category_action"
+              action="sign_category_action"
               sequence="10"/>
 
     <!-- Sign Subtypes -->
     <menuitem id="menu_config_subtypes"
               name="Sign Subtypes"
               parent="menu_configuration"
-              action="patriot_base.sign_subtype_action"
+              action="sign_subtype_action"
               sequence="20"/>
 
     <!-- Dimensions -->
     <menuitem id="menu_config_dimensions"
               name="Dimensions"
               parent="menu_configuration"
-              action="patriot_base.sign_dimension_action"
+              action="sign_dimension_action"
               sequence="30"/>
 
     <!-- Employees (link to HR) -->

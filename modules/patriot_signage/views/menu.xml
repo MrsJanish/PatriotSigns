@@ -1,59 +1,49 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
-    <!-- Patriot Signage root menu -->
-    <menuitem id="menu_patriot_signage_root"
-              name="Signage"
-              web_icon="patriot_signage,static/description/icon.png"
-              sequence="15"/>
+    <!-- 
+        Patriot Signage Menu Items
+        Adds to the unified Patriot Signs menu structure
+    -->
 
-    <!-- Sign Schedule submenu -->
-    <menuitem id="menu_sign_schedule"
-              name="Sign Schedule"
-              parent="menu_patriot_signage_root"
-              sequence="10"/>
-
+    <!-- ========================================================================= -->
+    <!-- ESTIMATING MENU ITEMS (under patriot_base.menu_estimating)               -->
+    <!-- ========================================================================= -->
+    
+    <!-- Sign Types -->
     <menuitem id="menu_sign_types"
               name="Sign Types"
-              parent="menu_sign_schedule"
+              parent="patriot_base.menu_estimating"
               action="ps_sign_type_action"
               sequence="10"/>
 
+    <!-- Sign Templates -->
+    <menuitem id="menu_sign_templates"
+              name="Templates"
+              parent="patriot_base.menu_estimating"
+              action="ps_sign_type_template_action"
+              sequence="30"/>
+
+    <!-- ========================================================================= -->
+    <!-- LEGACY STANDALONE MENU (for backwards compatibility)                     -->
+    <!-- ========================================================================= -->
+    <menuitem id="menu_patriot_signage_root"
+              name="Signage"
+              web_icon="patriot_signage,static/description/icon.png"
+              sequence="115"
+              groups="base.group_no_one"/>
+
+    <!-- Sign Instances (under standalone for now) -->
     <menuitem id="menu_sign_instances"
               name="Sign Instances"
-              parent="menu_sign_schedule"
+              parent="menu_patriot_signage_root"
               action="ps_sign_instance_action"
               sequence="20"/>
 
-    <!-- Locations submenu -->
+    <!-- Locations -->
     <menuitem id="menu_locations"
               name="Locations"
               parent="menu_patriot_signage_root"
               action="ps_location_action"
-              sequence="20"/>
-
-    <!-- Configuration submenu -->
-    <menuitem id="menu_signage_config"
-              name="Configuration"
-              parent="menu_patriot_signage_root"
-              sequence="90"/>
-
-    <!-- Link to base module reference tables -->
-    <menuitem id="menu_signage_categories"
-              name="Sign Categories"
-              parent="menu_signage_config"
-              action="patriot_base.sign_category_action"
-              sequence="10"/>
-
-    <menuitem id="menu_signage_subtypes"
-              name="Sign Subtypes"
-              parent="menu_signage_config"
-              action="patriot_base.sign_subtype_action"
-              sequence="20"/>
-
-    <menuitem id="menu_signage_dimensions"
-              name="Dimensions"
-              parent="menu_signage_config"
-              action="patriot_base.sign_dimension_action"
               sequence="30"/>
 
 </odoo>

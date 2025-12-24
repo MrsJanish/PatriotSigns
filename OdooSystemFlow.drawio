@@ -1,0 +1,321 @@
+<mxfile host="draw.io" agent="Antigravity" version="24.0.0">
+  <diagram id="OdooSystemFlow" name="Project Flow Through Odoo">
+    <mxGraphModel dx="1800" dy="1100" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1700" pageHeight="1000" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        
+        <!-- TITLE -->
+        <mxCell id="title" value="HOW A PROJECT MOVES THROUGH ODOO" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=24;fontStyle=1" vertex="1" parent="1">
+          <mxGeometry x="500" y="10" width="500" height="40" as="geometry" />
+        </mxCell>
+        
+        <!-- ===================== STAGE 1: NEW ITB ===================== -->
+        <mxCell id="stage1_box" value="" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e3f2fd;strokeColor=#1976d2;strokeWidth=2" vertex="1" parent="1">
+          <mxGeometry x="40" y="70" width="200" height="280" as="geometry" />
+        </mxCell>
+        <mxCell id="stage1_header" value="📧 NEW ITB" style="text;html=1;strokeColor=none;fillColor=#1976d2;align=center;verticalAlign=middle;fontStyle=1;fontSize=14;fontColor=#FFFFFF;rounded=1" vertex="1" parent="1">
+          <mxGeometry x="50" y="80" width="180" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="stage1_menu" value="Menu: Bid Opportunities → Pipeline" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;fontSize=10;fontStyle=2" vertex="1" parent="1">
+          <mxGeometry x="50" y="115" width="180" height="20" as="geometry" />
+        </mxCell>
+        <mxCell id="stage1_model" value="Model: crm.lead" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#bbdefb;strokeColor=#1976d2;fontStyle=1" vertex="1" parent="1">
+          <mxGeometry x="60" y="140" width="160" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="stage1_auto" value="⚡ AUTO: Email parsed&#xa;→ crm.lead created&#xa;→ PDFs fetched" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#c8e6c9;strokeColor=#388e3c;align=left;spacingLeft=5;fontSize=11" vertex="1" parent="1">
+          <mxGeometry x="60" y="180" width="160" height="55" as="geometry" />
+        </mxCell>
+        <mxCell id="stage1_who" value="👤 Tiffany assigned" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;fontSize=11" vertex="1" parent="1">
+          <mxGeometry x="60" y="240" width="160" height="20" as="geometry" />
+        </mxCell>
+        <mxCell id="stage1_creates" value="Creates:&#xa;• ir.attachment (PDFs)" style="text;html=1;strokeColor=none;fillColor=#fff9c4;align=left;verticalAlign=top;fontSize=10;rounded=1;spacingLeft=5" vertex="1" parent="1">
+          <mxGeometry x="60" y="265" width="160" height="35" as="geometry" />
+        </mxCell>
+        
+        <!-- ARROW 1→2 -->
+        <mxCell id="arrow1" value="" style="endArrow=classic;html=1;strokeWidth=3;strokeColor=#333333" edge="1" parent="1">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="240" y="210" as="sourcePoint" />
+            <mxPoint x="280" y="210" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        
+        <!-- ===================== STAGE 2: REVIEWING ===================== -->
+        <mxCell id="stage2_box" value="" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e3f2fd;strokeColor=#1976d2;strokeWidth=2" vertex="1" parent="1">
+          <mxGeometry x="280" y="70" width="200" height="280" as="geometry" />
+        </mxCell>
+        <mxCell id="stage2_header" value="📄 REVIEWING" style="text;html=1;strokeColor=none;fillColor=#1976d2;align=center;verticalAlign=middle;fontStyle=1;fontSize=14;fontColor=#FFFFFF;rounded=1" vertex="1" parent="1">
+          <mxGeometry x="290" y="80" width="180" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="stage2_menu" value="Menu: Estimating → Sign Types" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;fontSize=10;fontStyle=2" vertex="1" parent="1">
+          <mxGeometry x="290" y="115" width="180" height="20" as="geometry" />
+        </mxCell>
+        <mxCell id="stage2_model" value="Model: ps.sign.type" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#bbdefb;strokeColor=#1976d2;fontStyle=1" vertex="1" parent="1">
+          <mxGeometry x="300" y="140" width="160" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="stage2_manual" value="✋ MANUAL: Tiffany&#xa;• Reviews PDFs&#xa;• Creates sign schedule&#xa;• Adds ps.sign.type records" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffcdd2;strokeColor=#d32f2f;align=left;spacingLeft=5;fontSize=11" vertex="1" parent="1">
+          <mxGeometry x="300" y="180" width="160" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="stage2_who" value="👤 Tiffany" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;fontSize=11" vertex="1" parent="1">
+          <mxGeometry x="300" y="255" width="160" height="20" as="geometry" />
+        </mxCell>
+        <mxCell id="stage2_creates" value="Creates:&#xa;• ps.sign.type (each sign)&#xa;• ps.bookmark (PDF refs)" style="text;html=1;strokeColor=none;fillColor=#fff9c4;align=left;verticalAlign=top;fontSize=10;rounded=1;spacingLeft=5" vertex="1" parent="1">
+          <mxGeometry x="300" y="280" width="160" height="50" as="geometry" />
+        </mxCell>
+        
+        <!-- ARROW 2→3 -->
+        <mxCell id="arrow2" value="" style="endArrow=classic;html=1;strokeWidth=3;strokeColor=#333333" edge="1" parent="1">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="480" y="210" as="sourcePoint" />
+            <mxPoint x="520" y="210" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        
+        <!-- ===================== STAGE 3: ESTIMATING ===================== -->
+        <mxCell id="stage3_box" value="" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e3f2fd;strokeColor=#1976d2;strokeWidth=2" vertex="1" parent="1">
+          <mxGeometry x="520" y="70" width="200" height="280" as="geometry" />
+        </mxCell>
+        <mxCell id="stage3_header" value="📊 ESTIMATING" style="text;html=1;strokeColor=none;fillColor=#1976d2;align=center;verticalAlign=middle;fontStyle=1;fontSize=14;fontColor=#FFFFFF;rounded=1" vertex="1" parent="1">
+          <mxGeometry x="530" y="80" width="180" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="stage3_menu" value="Menu: Estimating → Estimates" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;fontSize=10;fontStyle=2" vertex="1" parent="1">
+          <mxGeometry x="530" y="115" width="180" height="20" as="geometry" />
+        </mxCell>
+        <mxCell id="stage3_model" value="Model: ps.estimate" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#bbdefb;strokeColor=#1976d2;fontStyle=1" vertex="1" parent="1">
+          <mxGeometry x="540" y="140" width="160" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="stage3_manual" value="✋ MANUAL: Tiffany&#xa;• Creates estimate&#xa;• Prices sign types&#xa;• Submits bid to GC" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffcdd2;strokeColor=#d32f2f;align=left;spacingLeft=5;fontSize=11" vertex="1" parent="1">
+          <mxGeometry x="540" y="180" width="160" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="stage3_who" value="👤 Tiffany → GC" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;fontSize=11" vertex="1" parent="1">
+          <mxGeometry x="540" y="255" width="160" height="20" as="geometry" />
+        </mxCell>
+        <mxCell id="stage3_creates" value="Creates:&#xa;• ps.estimate&#xa;• ps.estimate.line" style="text;html=1;strokeColor=none;fillColor=#fff9c4;align=left;verticalAlign=top;fontSize=10;rounded=1;spacingLeft=5" vertex="1" parent="1">
+          <mxGeometry x="540" y="280" width="160" height="50" as="geometry" />
+        </mxCell>
+        
+        <!-- ARROW 3→4 -->
+        <mxCell id="arrow3" value="WON!" style="endArrow=classic;html=1;strokeWidth=4;strokeColor=#388e3c;fontStyle=1;fontSize=12" edge="1" parent="1">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="720" y="210" as="sourcePoint" />
+            <mxPoint x="760" y="210" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        
+        <!-- ===================== STAGE 4: WON / PROJECT ===================== -->
+        <mxCell id="stage4_box" value="" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e8f5e9;strokeColor=#388e3c;strokeWidth=3" vertex="1" parent="1">
+          <mxGeometry x="760" y="70" width="200" height="280" as="geometry" />
+        </mxCell>
+        <mxCell id="stage4_header" value="✅ WON → PROJECT" style="text;html=1;strokeColor=none;fillColor=#388e3c;align=center;verticalAlign=middle;fontStyle=1;fontSize=14;fontColor=#FFFFFF;rounded=1" vertex="1" parent="1">
+          <mxGeometry x="770" y="80" width="180" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="stage4_menu" value="Menu: Won Projects" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;fontSize=10;fontStyle=2" vertex="1" parent="1">
+          <mxGeometry x="770" y="115" width="180" height="20" as="geometry" />
+        </mxCell>
+        <mxCell id="stage4_model" value="Model: project.project" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#c8e6c9;strokeColor=#388e3c;fontStyle=1" vertex="1" parent="1">
+          <mxGeometry x="780" y="140" width="160" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="stage4_auto" value="⚡ AUTO on &quot;Won&quot; click:&#xa;→ project.project&#xa;→ ps.submittal&#xa;→ ps.production.order" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#c8e6c9;strokeColor=#388e3c;align=left;spacingLeft=5;fontSize=11" vertex="1" parent="1">
+          <mxGeometry x="780" y="180" width="160" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="stage4_who" value="👤 Tiffany clicks Won" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;fontSize=11" vertex="1" parent="1">
+          <mxGeometry x="780" y="255" width="160" height="20" as="geometry" />
+        </mxCell>
+        <mxCell id="stage4_creates" value="Creates (AUTO):&#xa;• project.project&#xa;• ps.submittal&#xa;• ps.production.order" style="text;html=1;strokeColor=none;fillColor=#fff9c4;align=left;verticalAlign=top;fontSize=10;rounded=1;spacingLeft=5" vertex="1" parent="1">
+          <mxGeometry x="780" y="280" width="160" height="60" as="geometry" />
+        </mxCell>
+        
+        <!-- ARROW 4→5 -->
+        <mxCell id="arrow4" value="" style="endArrow=classic;html=1;strokeWidth=3;strokeColor=#333333" edge="1" parent="1">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="960" y="210" as="sourcePoint" />
+            <mxPoint x="1000" y="210" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        
+        <!-- ===================== STAGE 5: SUBMITTALS ===================== -->
+        <mxCell id="stage5_box" value="" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff3e0;strokeColor=#f57c00;strokeWidth=2" vertex="1" parent="1">
+          <mxGeometry x="1000" y="70" width="200" height="280" as="geometry" />
+        </mxCell>
+        <mxCell id="stage5_header" value="📐 SUBMITTALS" style="text;html=1;strokeColor=none;fillColor=#f57c00;align=center;verticalAlign=middle;fontStyle=1;fontSize=14;fontColor=#FFFFFF;rounded=1" vertex="1" parent="1">
+          <mxGeometry x="1010" y="80" width="180" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="stage5_menu" value="Menu: Submittals → Shop Drawings" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;fontSize=10;fontStyle=2" vertex="1" parent="1">
+          <mxGeometry x="1010" y="115" width="180" height="20" as="geometry" />
+        </mxCell>
+        <mxCell id="stage5_model" value="Model: ps.submittal" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffe0b2;strokeColor=#f57c00;fontStyle=1" vertex="1" parent="1">
+          <mxGeometry x="1020" y="140" width="160" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="stage5_manual" value="✋ MANUAL:&#xa;• Darrell creates drawings&#xa;• Lexi/Tiffany sends to GC&#xa;• Handles revisions" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffcdd2;strokeColor=#d32f2f;align=left;spacingLeft=5;fontSize=11" vertex="1" parent="1">
+          <mxGeometry x="1020" y="180" width="160" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="stage5_who" value="👤 Darrell → Lexi/Tiffany → GC" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;fontSize=11" vertex="1" parent="1">
+          <mxGeometry x="1020" y="255" width="160" height="20" as="geometry" />
+        </mxCell>
+        <mxCell id="stage5_creates" value="Updates:&#xa;• ps.submittal.state&#xa;→ approved triggers prod" style="text;html=1;strokeColor=none;fillColor=#fff9c4;align=left;verticalAlign=top;fontSize=10;rounded=1;spacingLeft=5" vertex="1" parent="1">
+          <mxGeometry x="1020" y="280" width="160" height="50" as="geometry" />
+        </mxCell>
+        
+        <!-- ARROW 5→6 -->
+        <mxCell id="arrow5" value="Approved" style="endArrow=classic;html=1;strokeWidth=3;strokeColor=#333333;fontSize=10" edge="1" parent="1">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="1200" y="210" as="sourcePoint" />
+            <mxPoint x="1240" y="210" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        
+        <!-- ===================== STAGE 6: PRODUCTION ===================== -->
+        <mxCell id="stage6_box" value="" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fce4ec;strokeColor=#c2185b;strokeWidth=2" vertex="1" parent="1">
+          <mxGeometry x="1240" y="70" width="200" height="280" as="geometry" />
+        </mxCell>
+        <mxCell id="stage6_header" value="🏭 PRODUCTION" style="text;html=1;strokeColor=none;fillColor=#c2185b;align=center;verticalAlign=middle;fontStyle=1;fontSize=14;fontColor=#FFFFFF;rounded=1" vertex="1" parent="1">
+          <mxGeometry x="1250" y="80" width="180" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="stage6_menu" value="Menu: Production → Orders" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;fontSize=10;fontStyle=2" vertex="1" parent="1">
+          <mxGeometry x="1250" y="115" width="180" height="20" as="geometry" />
+        </mxCell>
+        <mxCell id="stage6_model" value="Model: ps.production.order" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#f8bbd9;strokeColor=#c2185b;fontStyle=1" vertex="1" parent="1">
+          <mxGeometry x="1260" y="140" width="160" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="stage6_manual" value="✋ MANUAL: Production&#xa;• Design → Fab → Assembly&#xa;• QC checks&#xa;• Package for shipping" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffcdd2;strokeColor=#d32f2f;align=left;spacingLeft=5;fontSize=11" vertex="1" parent="1">
+          <mxGeometry x="1260" y="180" width="160" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="stage6_who" value="👤 Production Team" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;fontSize=11" vertex="1" parent="1">
+          <mxGeometry x="1260" y="255" width="160" height="20" as="geometry" />
+        </mxCell>
+        <mxCell id="stage6_creates" value="Updates:&#xa;• ps.production.order.state&#xa;→ complete triggers install" style="text;html=1;strokeColor=none;fillColor=#fff9c4;align=left;verticalAlign=top;fontSize=10;rounded=1;spacingLeft=5" vertex="1" parent="1">
+          <mxGeometry x="1260" y="280" width="160" height="50" as="geometry" />
+        </mxCell>
+        
+        <!-- ===================== ROW 2: INSTALLATION & BILLING ===================== -->
+        
+        <!-- ARROW DOWN -->
+        <mxCell id="arrow_down" value="" style="endArrow=classic;html=1;strokeWidth=3;strokeColor=#333333" edge="1" parent="1">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="1340" y="350" as="sourcePoint" />
+            <mxPoint x="1340" y="400" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        
+        <!-- ===================== STAGE 7: INSTALLATION ===================== -->
+        <mxCell id="stage7_box" value="" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ede7f6;strokeColor=#7b1fa2;strokeWidth=2" vertex="1" parent="1">
+          <mxGeometry x="1240" y="400" width="200" height="280" as="geometry" />
+        </mxCell>
+        <mxCell id="stage7_header" value="🔧 INSTALLATION" style="text;html=1;strokeColor=none;fillColor=#7b1fa2;align=center;verticalAlign=middle;fontStyle=1;fontSize=14;fontColor=#FFFFFF;rounded=1" vertex="1" parent="1">
+          <mxGeometry x="1250" y="410" width="180" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="stage7_menu" value="Menu: Installation → Scheduled" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;fontSize=10;fontStyle=2" vertex="1" parent="1">
+          <mxGeometry x="1250" y="445" width="180" height="20" as="geometry" />
+        </mxCell>
+        <mxCell id="stage7_model" value="Model: ps.installation" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#d1c4e9;strokeColor=#7b1fa2;fontStyle=1" vertex="1" parent="1">
+          <mxGeometry x="1260" y="470" width="160" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="stage7_manual" value="✋ MANUAL: Field Crew&#xa;• Schedule install date&#xa;• Assign crew (Bryson, etc)&#xa;• Install signs on site" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffcdd2;strokeColor=#d32f2f;align=left;spacingLeft=5;fontSize=11" vertex="1" parent="1">
+          <mxGeometry x="1260" y="510" width="160" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="stage7_who" value="👤 Field Crew → GC" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;fontSize=11" vertex="1" parent="1">
+          <mxGeometry x="1260" y="585" width="160" height="20" as="geometry" />
+        </mxCell>
+        <mxCell id="stage7_creates" value="Creates:&#xa;• ps.sign.instance (each sign)&#xa;• ps.installation photos" style="text;html=1;strokeColor=none;fillColor=#fff9c4;align=left;verticalAlign=top;fontSize=10;rounded=1;spacingLeft=5" vertex="1" parent="1">
+          <mxGeometry x="1260" y="610" width="160" height="55" as="geometry" />
+        </mxCell>
+        
+        <!-- ARROW 7→8 -->
+        <mxCell id="arrow7" value="" style="endArrow=classic;html=1;strokeWidth=3;strokeColor=#333333" edge="1" parent="1">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="1240" y="540" as="sourcePoint" />
+            <mxPoint x="1200" y="540" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        
+        <!-- ===================== STAGE 8: BILLING ===================== -->
+        <mxCell id="stage8_box" value="" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e8f5e9;strokeColor=#2e7d32;strokeWidth=2" vertex="1" parent="1">
+          <mxGeometry x="1000" y="400" width="200" height="280" as="geometry" />
+        </mxCell>
+        <mxCell id="stage8_header" value="💰 BILLING" style="text;html=1;strokeColor=none;fillColor=#2e7d32;align=center;verticalAlign=middle;fontStyle=1;fontSize=14;fontColor=#FFFFFF;rounded=1" vertex="1" parent="1">
+          <mxGeometry x="1010" y="410" width="180" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="stage8_menu" value="Menu: Billing → Pay Applications" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;fontSize=10;fontStyle=2" vertex="1" parent="1">
+          <mxGeometry x="1010" y="445" width="180" height="20" as="geometry" />
+        </mxCell>
+        <mxCell id="stage8_model" value="Model: ps.pay.application" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#c8e6c9;strokeColor=#2e7d32;fontStyle=1" vertex="1" parent="1">
+          <mxGeometry x="1020" y="470" width="160" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="stage8_manual" value="✋ MANUAL: Lexi&#xa;• Create pay app (AIA G702)&#xa;• Bill for installed work&#xa;• Track retainage" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffcdd2;strokeColor=#d32f2f;align=left;spacingLeft=5;fontSize=11" vertex="1" parent="1">
+          <mxGeometry x="1020" y="510" width="160" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="stage8_who" value="👤 Lexi → GC → $$$" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;fontSize=11" vertex="1" parent="1">
+          <mxGeometry x="1020" y="585" width="160" height="20" as="geometry" />
+        </mxCell>
+        <mxCell id="stage8_creates" value="Creates:&#xa;• ps.pay.application&#xa;• ps.sov (Schedule of Values)&#xa;• account.move (Invoice)" style="text;html=1;strokeColor=none;fillColor=#fff9c4;align=left;verticalAlign=top;fontSize=10;rounded=1;spacingLeft=5" vertex="1" parent="1">
+          <mxGeometry x="1020" y="610" width="160" height="60" as="geometry" />
+        </mxCell>
+        
+        <!-- END -->
+        <mxCell id="end" value="COMPLETE" style="ellipse;whiteSpace=wrap;html=1;fillColor=#000000;strokeColor=#000000;fontColor=#FFFFFF;fontStyle=1" vertex="1" parent="1">
+          <mxGeometry x="1045" y="700" width="110" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="arrow_end" value="" style="endArrow=classic;html=1;strokeWidth=3;strokeColor=#333333" edge="1" parent="1">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="1100" y="680" as="sourcePoint" />
+            <mxPoint x="1100" y="700" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        
+        <!-- ===================== LEGEND ===================== -->
+        <mxCell id="legend_box" value="" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fafafa;strokeColor=#999999" vertex="1" parent="1">
+          <mxGeometry x="40" y="400" width="350" height="140" as="geometry" />
+        </mxCell>
+        <mxCell id="legend_title" value="LEGEND" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;fontStyle=1;fontSize=14" vertex="1" parent="1">
+          <mxGeometry x="50" y="405" width="80" height="25" as="geometry" />
+        </mxCell>
+        <mxCell id="leg1" value="" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#c8e6c9;strokeColor=#388e3c" vertex="1" parent="1">
+          <mxGeometry x="50" y="435" width="25" height="20" as="geometry" />
+        </mxCell>
+        <mxCell id="leg1_txt" value="⚡ = AUTOMATED by Odoo" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;fontSize=11" vertex="1" parent="1">
+          <mxGeometry x="80" y="435" width="170" height="20" as="geometry" />
+        </mxCell>
+        <mxCell id="leg2" value="" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffcdd2;strokeColor=#d32f2f" vertex="1" parent="1">
+          <mxGeometry x="50" y="460" width="25" height="20" as="geometry" />
+        </mxCell>
+        <mxCell id="leg2_txt" value="✋ = MANUAL task required" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;fontSize=11" vertex="1" parent="1">
+          <mxGeometry x="80" y="460" width="170" height="20" as="geometry" />
+        </mxCell>
+        <mxCell id="leg3" value="" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#fff9c4;strokeColor=#999999" vertex="1" parent="1">
+          <mxGeometry x="50" y="485" width="25" height="20" as="geometry" />
+        </mxCell>
+        <mxCell id="leg3_txt" value="Creates: = Records created at this stage" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;fontSize=11" vertex="1" parent="1">
+          <mxGeometry x="80" y="485" width="220" height="20" as="geometry" />
+        </mxCell>
+        <mxCell id="leg4_txt" value="👤 = Who does this step" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;fontSize=11" vertex="1" parent="1">
+          <mxGeometry x="50" y="510" width="200" height="20" as="geometry" />
+        </mxCell>
+        
+        <!-- ===================== PEOPLE SUMMARY ===================== -->
+        <mxCell id="people_box" value="" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fafafa;strokeColor=#999999" vertex="1" parent="1">
+          <mxGeometry x="40" y="560" width="350" height="120" as="geometry" />
+        </mxCell>
+        <mxCell id="people_title" value="WHO DOES WHAT" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;fontStyle=1;fontSize=14" vertex="1" parent="1">
+          <mxGeometry x="50" y="565" width="140" height="25" as="geometry" />
+        </mxCell>
+        <mxCell id="person1" value="Tiffany: ITB intake, sign schedule, estimating, marks Won" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;fontSize=11" vertex="1" parent="1">
+          <mxGeometry x="50" y="590" width="330" height="20" as="geometry" />
+        </mxCell>
+        <mxCell id="person2" value="Lexi: Submits drawings, project mgmt, pay applications" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;fontSize=11" vertex="1" parent="1">
+          <mxGeometry x="50" y="610" width="330" height="20" as="geometry" />
+        </mxCell>
+        <mxCell id="person2b" value="Darrell: Creates shop drawings" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;fontSize=11" vertex="1" parent="1">
+          <mxGeometry x="50" y="630" width="330" height="20" as="geometry" />
+        </mxCell>
+        <mxCell id="person3" value="Production: Fabrication, QC, packaging" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;fontSize=11" vertex="1" parent="1">
+          <mxGeometry x="50" y="630" width="330" height="20" as="geometry" />
+        </mxCell>
+        <mxCell id="person4" value="Field Crew: Installation" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;fontSize=11" vertex="1" parent="1">
+          <mxGeometry x="50" y="650" width="330" height="20" as="geometry" />
+        </mxCell>
+        
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
