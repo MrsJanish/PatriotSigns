@@ -65,6 +65,117 @@ class Estimate(models.Model):
     )
     
     # =========================================================================
+    # SHOP LABOR (Mold-based)
+    # =========================================================================
+    total_molds = fields.Integer(
+        string='Total Molds',
+        compute='_compute_shop_labor',
+        store=True,
+        help='Sum of molds needed across all sign types'
+    )
+    mold_time_minutes = fields.Float(
+        string='Time per Mold (min)',
+        default=80.0,
+        help='Average time to make one mold (80 min worst case)'
+    )
+    shop_rate = fields.Float(
+        string='Shop Rate ($/hr)',
+        default=75.0,
+        help='Hourly rate for shop labor'
+    )
+    shop_labor_total = fields.Float(
+        string='Shop Labor',
+        compute='_compute_shop_labor',
+        store=True,
+        help='Total Molds × Time per Mold × Shop Rate'
+    )
+    
+    # =========================================================================
+    # TRAVEL
+    # =========================================================================
+    travel_miles = fields.Float(
+        string='Travel Miles (one-way)',
+        help='Distance from shop to job site'
+    )
+    travel_rate = fields.Float(
+        string='Mileage Rate ($/mi)',
+        default=0.67,
+        help='IRS standard mileage rate or custom rate'
+    )
+    travel_trips = fields.Integer(
+        string='Number of Trips',
+        default=2,
+        help='Number of round trips (2 = install + pickup/punchlist)'
+    )
+    travel_total = fields.Float(
+        string='Travel Total',
+        compute='_compute_travel',
+        store=True,
+        help='Miles × Rate × 2 (round trip) × Number of Trips'
+    )
+    
+    # =========================================================================
+    # INSTALLATION
+    # =========================================================================
+    install_hours = fields.Float(
+        string='Install Hours',
+        default=8.0,
+        help='Estimated hours to install all signs'
+    )
+    install_rate = fields.Float(
+        string='Install Rate ($/hr)',
+        default=40.0,
+        help='Combined crew rate: Robert ($25) + Bryson ($15) = $40/hr'
+    )
+    install_crew_size = fields.Integer(
+        string='Crew Size',
+        default=2,
+        help='Number of installers (rate already includes 2-person crew at $40/hr)'
+    )
+    install_total = fields.Float(
+        string='Installation Total',
+        compute='_compute_install',
+        store=True,
+        help='Hours × Rate (rate is combined for full crew)'
+    )
+    
+    # =========================================================================
+    # EQUIPMENT RENTAL
+    # =========================================================================
+    needs_equipment = fields.Boolean(
+        string='Equipment Needed',
+        default=False,
+        help='Check if lift, scissor lift, or other equipment rental is needed'
+    )
+    equipment_type = fields.Selection([
+        ('lift', 'Boom Lift'),
+        ('scissor', 'Scissor Lift'),
+        ('scaffold', 'Scaffolding'),
+        ('bucket', 'Bucket Truck'),
+        ('other', 'Other'),
+    ], string='Equipment Type')
+    equipment_days = fields.Float(
+        string='Rental Days',
+        default=1.0
+    )
+    equipment_daily_rate = fields.Float(
+        string='Daily Rate',
+        default=350.0,
+        help='Daily rental rate for equipment'
+    )
+    equipment_delivery = fields.Float(
+        string='Delivery/Pickup',
+        default=150.0,
+        help='Delivery and pickup charges'
+    )
+    equipment_total = fields.Float(
+        string='Equipment Total',
+        compute='_compute_equipment',
+        store=True,
+        help='(Days × Daily Rate) + Delivery'
+    )
+    
+    # =========================================================================
     # TOTALS
     # =========================================================================
     material_total = fields.Float(
@@ -74,11 +185,6 @@ class Estimate(models.Model):
     )
     labor_total = fields.Float(
         string='Labor Total',
-        compute='_compute_totals',
-        store=True
-    )
-    install_total = fields.Float(
-        string='Install Total',
         compute='_compute_totals',
         store=True
     )
@@ -139,15 +245,59 @@ class Estimate(models.Model):
     # =========================================================================
     # COMPUTED
     # =========================================================================
-    
-    @api.depends('line_ids.material_extended', 'line_ids.labor_extended', 
-                 'line_ids.install_extended', 'markup_percent')
+
+    @api.depends('line_ids.molds_needed', 'mold_time_minutes', 'shop_rate')
+    def _compute_shop_labor(self):
+        """Calculate shop labor from mold count"""
+        for estimate in self:
+            estimate.total_molds = sum(estimate.line_ids.mapped('molds_needed'))
+            hours = (estimate.total_molds * estimate.mold_time_minutes) / 60.0
+            estimate.shop_labor_total = hours * estimate.shop_rate
+
+    @api.depends('travel_miles', 'travel_rate', 'travel_trips')
+    def _compute_travel(self):
+        """Calculate travel cost: miles × rate × 2 (round trip) × trips"""
+        for estimate in self:
+            estimate.travel_total = estimate.travel_miles * estimate.travel_rate * 2 * estimate.travel_trips
+
+    @api.depends('install_hours', 'install_rate')
+    def _compute_install(self):
+        """Calculate installation cost: hours × rate (rate is combined crew rate)"""
+        for estimate in self:
+            estimate.install_total = estimate.install_hours * estimate.install_rate
+
+    @api.depends('needs_equipment', 'equipment_days', 'equipment_daily_rate', 'equipment_delivery')
+    def _compute_equipment(self):
+        """Calculate equipment rental cost: (days × rate) + delivery"""
+        for estimate in self:
+            if estimate.needs_equipment:
+                estimate.equipment_total = (
+                    (estimate.equipment_days * estimate.equipment_daily_rate) + 
+                    estimate.equipment_delivery
+                )
+            else:
+                estimate.equipment_total = 0.0
+
+    @api.depends('line_ids.material_extended', 'line_ids.labor_extended',
+                 'shop_labor_total', 'travel_total', 'install_total', 
+                 'equipment_total', 'markup_percent')
     def _compute_totals(self):
         for estimate in self:
+            # Line item costs
             estimate.material_total = sum(estimate.line_ids.mapped('material_extended'))
             estimate.labor_total = sum(estimate.line_ids.mapped('labor_extended'))
-            estimate.install_total = sum(estimate.line_ids.mapped('install_extended'))
-            estimate.subtotal = estimate.material_total + estimate.labor_total + estimate.install_total
+            
+            # Subtotal = Materials + Line Labor + Shop Labor + Travel + Install + Equipment
+            estimate.subtotal = (
+                estimate.material_total + 
+                estimate.labor_total + 
+                estimate.shop_labor_total +
+                estimate.travel_total +
+                estimate.install_total +
+                estimate.equipment_total
+            )
+            
+            # Markup on subtotal
             estimate.markup_amount = estimate.subtotal * (estimate.markup_percent / 100)
             estimate.total = estimate.subtotal + estimate.markup_amount
 

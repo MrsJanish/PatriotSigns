@@ -79,17 +79,55 @@
                                     <field name="labor_hours" optional="show"/>
                                     <field name="labor_rate" optional="hide"/>
                                     <field name="labor_extended" sum="Labor"/>
-                                    <field name="install_hours" optional="show"/>
-                                    <field name="install_rate" optional="hide"/>
-                                    <field name="install_extended" sum="Install"/>
                                     <field name="line_total" sum="Total"/>
                                 </list>
                             </field>
-                            
+                        </page>
+                        
+                        <page string="Labor &amp; Travel" name="labor_travel">
+                            <group>
+                                <group string="Shop Labor (Mold-Based)">
+                                    <field name="total_molds" readonly="1"/>
+                                    <field name="mold_time_minutes"/>
+                                    <field name="shop_rate"/>
+                                    <field name="shop_labor_total" widget="monetary" readonly="1"/>
+                                </group>
+                                <group string="Travel">
+                                    <field name="travel_miles"/>
+                                    <field name="travel_rate"/>
+                                    <field name="travel_trips"/>
+                                    <field name="travel_total" widget="monetary" readonly="1"/>
+                                </group>
+                            </group>
+                        </page>
+                        
+                        <page string="Installation" name="installation">
+                            <group>
+                                <group string="Install Labor">
+                                    <field name="install_hours"/>
+                                    <field name="install_rate"/>
+                                    <field name="install_crew_size"/>
+                                    <field name="install_total" widget="monetary" readonly="1"/>
+                                </group>
+                                <group string="Equipment Rental">
+                                    <field name="needs_equipment"/>
+                                    <field name="equipment_type" invisible="not needs_equipment"/>
+                                    <field name="equipment_days" invisible="not needs_equipment"/>
+                                    <field name="equipment_daily_rate" invisible="not needs_equipment"/>
+                                    <field name="equipment_delivery" invisible="not needs_equipment"/>
+                                    <field name="equipment_total" widget="monetary" readonly="1" invisible="not needs_equipment"/>
+                                </group>
+                            </group>
+                        </page>
+                        
+                        <page string="Summary" name="summary">
                             <group class="oe_subtotal_footer oe_right">
                                 <field name="material_total" widget="monetary" readonly="1"/>
                                 <field name="labor_total" widget="monetary" readonly="1"/>
+                                <field name="shop_labor_total" widget="monetary" readonly="1"/>
+                                <field name="travel_total" widget="monetary" readonly="1"/>
                                 <field name="install_total" widget="monetary" readonly="1"/>
+                                <field name="equipment_total" widget="monetary" readonly="1" invisible="not needs_equipment"/>
                                 <field name="subtotal" widget="monetary" readonly="1" class="oe_subtotal_footer_separator"/>
                                 <label for="markup_percent"/>
                                 <div class="o_row">
