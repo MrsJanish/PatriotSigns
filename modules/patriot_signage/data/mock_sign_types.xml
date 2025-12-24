@@ -12,7 +12,7 @@
         
         <record id="sign_type_ou_health_room_id" model="ps.sign.type">
             <field name="name">Room ID - 8x8</field>
-            <field name="lead_id" ref="patriot_crm.crm_lead_ou_health_tower"/>
+            <field name="opportunity_id" ref="patriot_crm.crm_lead_ou_health_tower"/>
             <field name="category_id" ref="patriot_base.category_pan"/>
             <field name="quantity">75</field>
             <field name="width">8.0</field>
@@ -22,7 +22,7 @@
 
         <record id="sign_type_ou_health_directory" model="ps.sign.type">
             <field name="name">Directory Panel - 24x36</field>
-            <field name="lead_id" ref="patriot_crm.crm_lead_ou_health_tower"/>
+            <field name="opportunity_id" ref="patriot_crm.crm_lead_ou_health_tower"/>
             <field name="category_id" ref="patriot_base.category_pan"/>
             <field name="quantity">8</field>
             <field name="width">24.0</field>
@@ -32,7 +32,7 @@
 
         <record id="sign_type_ou_health_wayfinding" model="ps.sign.type">
             <field name="name">Wayfinding - 12x18</field>
-            <field name="lead_id" ref="patriot_crm.crm_lead_ou_health_tower"/>
+            <field name="opportunity_id" ref="patriot_crm.crm_lead_ou_health_tower"/>
             <field name="category_id" ref="patriot_base.category_wf"/>
             <field name="quantity">40</field>
             <field name="width">12.0</field>
@@ -42,7 +42,7 @@
 
         <record id="sign_type_ou_health_ada" model="ps.sign.type">
             <field name="name">ADA Restroom - 6x9</field>
-            <field name="lead_id" ref="patriot_crm.crm_lead_ou_health_tower"/>
+            <field name="opportunity_id" ref="patriot_crm.crm_lead_ou_health_tower"/>
             <field name="category_id" ref="patriot_base.category_pan"/>
             <field name="quantity">25</field>
             <field name="width">6.0</field>
@@ -56,7 +56,7 @@
 
         <record id="sign_type_integris_monument" model="ps.sign.type">
             <field name="name">Monument Sign</field>
-            <field name="lead_id" ref="patriot_crm.crm_lead_integris_edmond"/>
+            <field name="opportunity_id" ref="patriot_crm.crm_lead_integris_edmond"/>
             <field name="category_id" ref="patriot_base.category_mon"/>
             <field name="quantity">1</field>
             <field name="width">96.0</field>
@@ -66,7 +66,7 @@
 
         <record id="sign_type_integris_suite" model="ps.sign.type">
             <field name="name">Suite ID - 4x10</field>
-            <field name="lead_id" ref="patriot_crm.crm_lead_integris_edmond"/>
+            <field name="opportunity_id" ref="patriot_crm.crm_lead_integris_edmond"/>
             <field name="category_id" ref="patriot_base.category_pan"/>
             <field name="quantity">45</field>
             <field name="width">4.0</field>
@@ -76,7 +76,7 @@
 
         <record id="sign_type_integris_directory" model="ps.sign.type">
             <field name="name">Building Directory - 30x48</field>
-            <field name="lead_id" ref="patriot_crm.crm_lead_integris_edmond"/>
+            <field name="opportunity_id" ref="patriot_crm.crm_lead_integris_edmond"/>
             <field name="category_id" ref="patriot_base.category_pan"/>
             <field name="quantity">3</field>
             <field name="width">30.0</field>
@@ -86,7 +86,7 @@
 
         <record id="sign_type_integris_floor" model="ps.sign.type">
             <field name="name">Floor ID - 18x6</field>
-            <field name="lead_id" ref="patriot_crm.crm_lead_integris_edmond"/>
+            <field name="opportunity_id" ref="patriot_crm.crm_lead_integris_edmond"/>
             <field name="category_id" ref="patriot_base.category_wf"/>
             <field name="quantity">9</field>
             <field name="width">18.0</field>
@@ -100,7 +100,7 @@
 
         <record id="sign_type_norman_room" model="ps.sign.type">
             <field name="name">Room ID Replacement - 8x8</field>
-            <field name="lead_id" ref="patriot_crm.crm_lead_norman_regional"/>
+            <field name="opportunity_id" ref="patriot_crm.crm_lead_norman_regional"/>
             <field name="category_id" ref="patriot_base.category_pan"/>
             <field name="quantity">50</field>
             <field name="width">8.0</field>
@@ -110,7 +110,7 @@
 
         <record id="sign_type_norman_overhead" model="ps.sign.type">
             <field name="name">Overhead - 24x8</field>
-            <field name="lead_id" ref="patriot_crm.crm_lead_norman_regional"/>
+            <field name="opportunity_id" ref="patriot_crm.crm_lead_norman_regional"/>
             <field name="category_id" ref="patriot_base.category_wf"/>
             <field name="quantity">15</field>
             <field name="width">24.0</field>
@@ -120,7 +120,7 @@
 
         <record id="sign_type_norman_ada" model="ps.sign.type">
             <field name="name">ADA Compliance - 6x8</field>
-            <field name="lead_id" ref="patriot_crm.crm_lead_norman_regional"/>
+            <field name="opportunity_id" ref="patriot_crm.crm_lead_norman_regional"/>
             <field name="category_id" ref="patriot_base.category_pan"/>
             <field name="quantity">10</field>
             <field name="width">6.0</field>
@@ -134,7 +134,7 @@
 
         <record id="sign_type_okc_ballroom" model="ps.sign.type">
             <field name="name">Ballroom ID - 36x12</field>
-            <field name="lead_id" ref="patriot_crm.crm_lead_okc_convention"/>
+            <field name="opportunity_id" ref="patriot_crm.crm_lead_okc_convention"/>
             <field name="category_id" ref="patriot_base.category_pan"/>
             <field name="quantity">12</field>
             <field name="width">36.0</field>
@@ -144,7 +144,7 @@
 
         <record id="sign_type_okc_meeting" model="ps.sign.type">
             <field name="name">Meeting Room - 12x8</field>
-            <field name="lead_id" ref="patriot_crm.crm_lead_okc_convention"/>
+            <field name="opportunity_id" ref="patriot_crm.crm_lead_okc_convention"/>
             <field name="category_id" ref="patriot_base.category_pan"/>
             <field name="quantity">35</field>
             <field name="width">12.0</field>
@@ -154,7 +154,7 @@
 
         <record id="sign_type_okc_donor" model="ps.sign.type">
             <field name="name">Donor Recognition - 48x36</field>
-            <field name="lead_id" ref="patriot_crm.crm_lead_okc_convention"/>
+            <field name="opportunity_id" ref="patriot_crm.crm_lead_okc_convention"/>
             <field name="category_id" ref="patriot_base.category_plq"/>
             <field name="quantity">4</field>
             <field name="width">48.0</field>
@@ -164,7 +164,7 @@
 
         <record id="sign_type_okc_directory" model="ps.sign.type">
             <field name="name">Main Directory - 48x72</field>
-            <field name="lead_id" ref="patriot_crm.crm_lead_okc_convention"/>
+            <field name="opportunity_id" ref="patriot_crm.crm_lead_okc_convention"/>
             <field name="category_id" ref="patriot_base.category_pan"/>
             <field name="quantity">2</field>
             <field name="width">48.0</field>
@@ -178,7 +178,7 @@
 
         <record id="sign_type_ou_campus_donor" model="ps.sign.type">
             <field name="name">Donor Wall Panel - 24x18</field>
-            <field name="lead_id" ref="patriot_crm.crm_lead_ou_campus"/>
+            <field name="opportunity_id" ref="patriot_crm.crm_lead_ou_campus"/>
             <field name="category_id" ref="patriot_base.category_plq"/>
             <field name="quantity">6</field>
             <field name="width">24.0</field>
@@ -188,7 +188,7 @@
 
         <record id="sign_type_ou_campus_room" model="ps.sign.type">
             <field name="name">Classroom ID - 8x6</field>
-            <field name="lead_id" ref="patriot_crm.crm_lead_ou_campus"/>
+            <field name="opportunity_id" ref="patriot_crm.crm_lead_ou_campus"/>
             <field name="category_id" ref="patriot_base.category_pan"/>
             <field name="quantity">40</field>
             <field name="width">8.0</field>
@@ -198,7 +198,7 @@
 
         <record id="sign_type_ou_campus_wayfinding" model="ps.sign.type">
             <field name="name">Hall Wayfinding - 18x12</field>
-            <field name="lead_id" ref="patriot_crm.crm_lead_ou_campus"/>
+            <field name="opportunity_id" ref="patriot_crm.crm_lead_ou_campus"/>
             <field name="category_id" ref="patriot_base.category_wf"/>
             <field name="quantity">12</field>
             <field name="width">18.0</field>
@@ -212,7 +212,7 @@
 
         <record id="sign_type_childrens_room" model="ps.sign.type">
             <field name="name">Patient Room - 10x10</field>
-            <field name="lead_id" ref="patriot_crm.crm_lead_childrens_hospital"/>
+            <field name="opportunity_id" ref="patriot_crm.crm_lead_childrens_hospital"/>
             <field name="category_id" ref="patriot_base.category_pan"/>
             <field name="quantity">30</field>
             <field name="width">10.0</field>
@@ -222,7 +222,7 @@
 
         <record id="sign_type_childrens_wayfinding" model="ps.sign.type">
             <field name="name">Pediatric Wayfinding - 18x24</field>
-            <field name="lead_id" ref="patriot_crm.crm_lead_childrens_hospital"/>
+            <field name="opportunity_id" ref="patriot_crm.crm_lead_childrens_hospital"/>
             <field name="category_id" ref="patriot_base.category_wf"/>
             <field name="quantity">20</field>
             <field name="width">18.0</field>
@@ -232,7 +232,7 @@
 
         <record id="sign_type_childrens_ada" model="ps.sign.type">
             <field name="name">ADA Restroom - 6x9</field>
-            <field name="lead_id" ref="patriot_crm.crm_lead_childrens_hospital"/>
+            <field name="opportunity_id" ref="patriot_crm.crm_lead_childrens_hospital"/>
             <field name="category_id" ref="patriot_base.category_pan"/>
             <field name="quantity">15</field>
             <field name="width">6.0</field>
@@ -242,7 +242,7 @@
 
         <record id="sign_type_childrens_overhead" model="ps.sign.type">
             <field name="name">ED Overhead - 36x10</field>
-            <field name="lead_id" ref="patriot_crm.crm_lead_childrens_hospital"/>
+            <field name="opportunity_id" ref="patriot_crm.crm_lead_childrens_hospital"/>
             <field name="category_id" ref="patriot_base.category_wf"/>
             <field name="quantity">8</field>
             <field name="width">36.0</field>
