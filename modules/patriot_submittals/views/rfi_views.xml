@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- RFI Tree View -->
+    <record id="ps_rfi_tree" model="ir.ui.view">
+        <field name="name">ps.rfi.tree</field>
+        <field name="model">ps.rfi</field>
+        <field name="arch" type="xml">
+            <tree decoration-success="state == 'closed'"
+                  decoration-info="state == 'answered'"
+                  decoration-warning="state == 'submitted'">
+                <field name="name"/>
+                <field name="project_id"/>
+                <field name="subject"/>
+                <field name="addressed_to"/>
+                <field name="submitted_date"/>
+                <field name="needed_by"/>
+                <field name="state" widget="badge"/>
+                <field name="cost_impact"/>
+                <field name="schedule_impact"/>
+            </tree>
+        </field>
+    </record>
+
+    <!-- RFI Form View -->
+    <record id="ps_rfi_form" model="ir.ui.view">
+        <field name="name">ps.rfi.form</field>
+        <field name="model">ps.rfi</field>
+        <field name="arch" type="xml">
+            <form>
+                <header>
+                    <button name="action_submit" 
+                            string="Submit" 
+                            type="object"
+                            class="btn-primary"
+                            invisible="state != 'draft'"/>
+                    <button name="action_mark_answered" 
+                            string="Mark Answered" 
+                            type="object"
+                            class="btn-success"
+                            invisible="state != 'submitted'"/>
+                    <button name="action_close" 
+                            string="Close" 
+                            type="object"
+                            invisible="state != 'answered'"/>
+                    <field name="state" widget="statusbar"/>
+                </header>
+                <sheet>
+                    <div class="oe_title">
+                        <label for="name"/>
+                        <h1>
+                            <field name="name"/>
+                        </h1>
+                        <h3>
+                            <field name="subject"/>
+                        </h3>
+                    </div>
+                    
+                    <group>
+                        <group string="Project">
+                            <field name="project_id"/>
+                            <field name="spec_section"/>
+                            <field name="drawing_reference"/>
+                        </group>
+                        <group string="Addressed To">
+                            <field name="addressed_to"/>
+                            <field name="contact_id"/>
+                        </group>
+                    </group>
+                    
+                    <group>
+                        <group string="Dates">
+                            <field name="submitted_date"/>
+                            <field name="needed_by"/>
+                            <field name="response_date"/>
+                        </group>
+                        <group string="Impact">
+                            <field name="cost_impact"/>
+                            <field name="cost_amount" invisible="not cost_impact"/>
+                            <field name="schedule_impact"/>
+                            <field name="schedule_days" invisible="not schedule_impact"/>
+                        </group>
+                    </group>
+                    
+                    <notebook>
+                        <page string="Question">
+                            <field name="question"/>
+                        </page>
+                        <page string="Response">
+                            <field name="response"/>
+                            <field name="responded_by"/>
+                        </page>
+                        <page string="Related Sign Types">
+                            <field name="sign_type_ids"/>
+                        </page>
+                        <page string="Attachments">
+                            <field name="attachment_ids" widget="many2many_binary"/>
+                        </page>
+                    </notebook>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+
+    <!-- RFI Action -->
+    <record id="ps_rfi_action" model="ir.actions.act_window">
+        <field name="name">RFIs</field>
+        <field name="res_model">ps.rfi</field>
+        <field name="view_mode">tree,form</field>
+    </record>
+
+</odoo>

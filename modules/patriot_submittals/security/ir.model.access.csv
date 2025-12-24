@@ -1,0 +1,6 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_ps_submittal_user,ps.submittal.user,model_ps_submittal,base.group_user,1,1,1,0
+access_ps_submittal_manager,ps.submittal.manager,model_ps_submittal,base.group_system,1,1,1,1
+access_ps_submittal_item_user,ps.submittal.item.user,model_ps_submittal_item,base.group_user,1,1,1,1
+access_ps_rfi_user,ps.rfi.user,model_ps_rfi,base.group_user,1,1,1,0
+access_ps_rfi_manager,ps.rfi.manager,model_ps_rfi,base.group_system,1,1,1,1

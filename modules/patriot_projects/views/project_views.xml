@@ -1,0 +1,155 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Project Form Extension -->
+    <record id="project_project_form_inherit_patriot" model="ir.ui.view">
+        <field name="name">project.project.form.inherit.patriot</field>
+        <field name="model">project.project</field>
+        <field name="inherit_id" ref="project.edit_project"/>
+        <field name="arch" type="xml">
+            <field name="partner_id" position="after">
+                <field name="project_alias"/>
+                <field name="project_number"/>
+                <field name="opportunity_id"/>
+            </field>
+            
+            <page name="settings" position="before">
+                <page string="Sign Project" name="sign_project">
+                    <group>
+                        <group string="Project Parties">
+                            <field name="gc_partner_id"/>
+                            <field name="owner_partner_id"/>
+                            <field name="architect_partner_id"/>
+                        </group>
+                        <group string="Contract">
+                            <field name="contract_id"/>
+                            <field name="contract_amount"/>
+                            <field name="contract_date"/>
+                            <field name="po_number"/>
+                        </group>
+                    </group>
+                    <group>
+                        <group string="Project Location">
+                            <field name="project_address"/>
+                            <label for="project_city"/>
+                            <div class="o_row">
+                                <field name="project_city" placeholder="City"/>
+                                <field name="project_state_id" placeholder="State"/>
+                                <field name="project_zip" placeholder="ZIP"/>
+                            </div>
+                            <field name="project_type"/>
+                        </group>
+                        <group string="Key Dates">
+                            <field name="award_date"/>
+                            <field name="submittals_due"/>
+                            <field name="production_start"/>
+                            <field name="ship_date"/>
+                            <field name="install_start"/>
+                            <field name="install_complete"/>
+                        </group>
+                    </group>
+                    <group>
+                        <group string="Insurance (COI)">
+                            <field name="coi_received"/>
+                            <field name="coi_expiry" invisible="not coi_received"/>
+                            <field name="coi_attachment_id" invisible="not coi_received"/>
+                        </group>
+                        <group string="Project Status">
+                            <field name="project_stage" widget="radio"/>
+                        </group>
+                    </group>
+                </page>
+            </page>
+        </field>
+    </record>
+
+    <!-- Contract Tree View -->
+    <record id="ps_contract_tree" model="ir.ui.view">
+        <field name="name">ps.contract.tree</field>
+        <field name="model">ps.contract</field>
+        <field name="arch" type="xml">
+            <tree>
+                <field name="name"/>
+                <field name="project_id"/>
+                <field name="gc_partner_id"/>
+                <field name="contract_date"/>
+                <field name="contract_amount" sum="Total"/>
+                <field name="change_order_total"/>
+                <field name="revised_amount" sum="Total"/>
+                <field name="state" widget="badge"/>
+            </tree>
+        </field>
+    </record>
+
+    <!-- Contract Form View -->
+    <record id="ps_contract_form" model="ir.ui.view">
+        <field name="name">ps.contract.form</field>
+        <field name="model">ps.contract</field>
+        <field name="arch" type="xml">
+            <form>
+                <header>
+                    <field name="state" widget="statusbar"/>
+                </header>
+                <sheet>
+                    <div class="oe_title">
+                        <label for="name"/>
+                        <h1>
+                            <field name="name"/>
+                        </h1>
+                    </div>
+                    <group>
+                        <group string="Contract Details">
+                            <field name="project_id"/>
+                            <field name="gc_partner_id"/>
+                            <field name="contract_date"/>
+                            <field name="po_number"/>
+                        </group>
+                        <group string="Amounts">
+                            <field name="contract_amount"/>
+                            <field name="change_order_total" readonly="1"/>
+                            <field name="revised_amount" readonly="1"/>
+                        </group>
+                    </group>
+                    <group>
+                        <group string="Payment Terms">
+                            <field name="payment_terms"/>
+                            <field name="retainage_percent"/>
+                            <field name="retainage_amount" readonly="1"/>
+                        </group>
+                        <group string="Documents">
+                            <field name="contract_attachment_id"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Scope">
+                            <group>
+                                <field name="scope_description"/>
+                                <field name="exclusions"/>
+                            </group>
+                        </page>
+                        <page string="Change Orders">
+                            <field name="change_order_ids" mode="tree">
+                                <tree editable="bottom">
+                                    <field name="sequence" widget="handle"/>
+                                    <field name="name"/>
+                                    <field name="description"/>
+                                    <field name="reason"/>
+                                    <field name="amount" sum="Total"/>
+                                    <field name="state" widget="badge"/>
+                                </tree>
+                            </field>
+                        </page>
+                    </notebook>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+
+    <!-- Contract Action -->
+    <record id="ps_contract_action" model="ir.actions.act_window">
+        <field name="name">Contracts</field>
+        <field name="res_model">ps.contract</field>
+        <field name="view_mode">tree,form</field>
+    </record>
+
+</odoo>

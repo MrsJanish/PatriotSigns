@@ -1,6 +1,6 @@
 {
     'name': 'Construct Connect Opportunities',
-    'version': '19.0.3.0.0',
+    'version': '19.0.4.0.0',
     'summary': 'Automate ITB ingestion from ConstructConnect with PDF viewer and sign schedule extraction',
     'description': """
         This module monitors incoming emails for ConstructConnect ITB notifications,
@@ -13,10 +13,16 @@
         - Sign type management with bookmark navigation
         - Excel sign schedule export
         - Two theme options (Light & Aurora Borealis)
+        
+        Now integrated with:
+        - patriot_crm: CRM lead extensions
+        - patriot_signage: Sign type and instance management
     """,
     'category': 'Sales/CRM',
     'author': 'Patriot Signs',
-    'depends': ['mail', 'crm'],
+    'depends': [
+        'patriot_signage',  # Pulls in patriot_crm and patriot_base
+    ],
     'external_dependencies': {
         'python': ['xlsxwriter'],
     },
@@ -43,3 +49,4 @@
     'application': True,
     'license': 'LGPL-3',
 }
+

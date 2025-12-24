@@ -1,0 +1,126 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Pay Application Tree View -->
+    <record id="ps_pay_application_tree" model="ir.ui.view">
+        <field name="name">ps.pay.application.tree</field>
+        <field name="model">ps.pay.application</field>
+        <field name="arch" type="xml">
+            <tree decoration-success="state == 'paid'"
+                  decoration-info="state in ['approved', 'invoiced']">
+                <field name="application_number"/>
+                <field name="project_id"/>
+                <field name="period_end"/>
+                <field name="revised_contract"/>
+                <field name="total_completed_stored"/>
+                <field name="percent_complete" widget="progressbar"/>
+                <field name="retainage_amount"/>
+                <field name="current_payment_due" sum="Total Due"/>
+                <field name="state" widget="badge"/>
+            </tree>
+        </field>
+    </record>
+
+    <!-- Pay Application Form View -->
+    <record id="ps_pay_application_form" model="ir.ui.view">
+        <field name="name">ps.pay.application.form</field>
+        <field name="model">ps.pay.application</field>
+        <field name="arch" type="xml">
+            <form>
+                <header>
+                    <button name="action_submit" string="Submit" type="object"
+                            class="btn-secondary" invisible="state != 'draft'"/>
+                    <button name="action_approve" string="Approve" type="object"
+                            class="btn-primary" invisible="state != 'submitted'"/>
+                    <button name="action_create_invoice" string="Create Invoice" type="object"
+                            class="btn-success" invisible="state != 'approved'"/>
+                    <field name="state" widget="statusbar"/>
+                </header>
+                <sheet>
+                    <div class="oe_title">
+                        <h1>
+                            Application for Payment #<field name="application_number" class="oe_inline"/>
+                        </h1>
+                    </div>
+                    
+                    <group>
+                        <group string="Project">
+                            <field name="project_id"/>
+                            <field name="contract_id"/>
+                        </group>
+                        <group string="Period">
+                            <field name="period_start"/>
+                            <field name="period_end"/>
+                        </group>
+                    </group>
+                    
+                    <notebook>
+                        <page string="Line Items" name="lines">
+                            <field name="line_ids" mode="tree">
+                                <tree editable="bottom">
+                                    <field name="sequence" widget="handle"/>
+                                    <field name="description"/>
+                                    <field name="is_change_order"/>
+                                    <field name="scheduled_value" sum="Scheduled"/>
+                                    <field name="previous_completed" sum="Previous"/>
+                                    <field name="this_period_work" sum="Work"/>
+                                    <field name="this_period_materials" sum="Materials"/>
+                                    <field name="completed_to_date" sum="Total"/>
+                                    <field name="percent_complete" widget="progressbar"/>
+                                    <field name="balance_to_finish" sum="Balance"/>
+                                </tree>
+                            </field>
+                        </page>
+                        
+                        <page string="Summary" name="summary">
+                            <group>
+                                <group string="Contract Sum">
+                                    <field name="original_contract"/>
+                                    <field name="change_orders"/>
+                                    <field name="revised_contract"/>
+                                </group>
+                                <group string="This Period">
+                                    <field name="work_completed"/>
+                                    <field name="materials_stored"/>
+                                    <field name="this_period_total"/>
+                                </group>
+                            </group>
+                            <group>
+                                <group string="Total Progress">
+                                    <field name="total_completed_stored"/>
+                                    <field name="percent_complete"/>
+                                </group>
+                                <group string="Deductions">
+                                    <field name="retainage_percent"/>
+                                    <field name="retainage_amount"/>
+                                    <field name="previous_applications"/>
+                                </group>
+                            </group>
+                            <group>
+                                <group string="Current Payment">
+                                    <field name="current_payment_due" class="oe_subtotal_footer_separator"/>
+                                </group>
+                                <group string="Invoice">
+                                    <field name="invoice_id"/>
+                                    <field name="invoice_state"/>
+                                </group>
+                            </group>
+                        </page>
+                        
+                        <page string="Notes">
+                            <field name="notes"/>
+                        </page>
+                    </notebook>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+
+    <!-- Pay Application Action -->
+    <record id="ps_pay_application_action" model="ir.actions.act_window">
+        <field name="name">Pay Applications</field>
+        <field name="res_model">ps.pay.application</field>
+        <field name="view_mode">tree,form</field>
+    </record>
+
+</odoo>

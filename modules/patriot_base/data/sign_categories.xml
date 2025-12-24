@@ -1,0 +1,133 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+        <!-- Sign Categories from old x_sign_categories -->
+        
+        <!-- Panel Signs -->
+        <record id="category_pan" model="sign.category">
+            <field name="name">Panel / ADA</field>
+            <field name="code">PAN</field>
+            <field name="description">Interior panel signs, typically ADA compliant with tactile and braille</field>
+            <field name="color">9</field>
+            <field name="is_ada_default">True</field>
+            <field name="is_interior_default">True</field>
+            <field name="sequence">10</field>
+        </record>
+        
+        <record id="category_pan_bk" model="sign.category">
+            <field name="name">Panel Blank Backers</field>
+            <field name="code">PAN_Bk</field>
+            <field name="description">Blank backer panels for panel signs</field>
+            <field name="color">9</field>
+            <field name="is_ada_default">False</field>
+            <field name="sequence">11</field>
+        </record>
+        
+        <!-- Plaques -->
+        <record id="category_plq" model="sign.category">
+            <field name="name">Plaques</field>
+            <field name="code">PLQ</field>
+            <field name="description">Cast plaques, dedication plaques, donor recognition</field>
+            <field name="color">6</field>
+            <field name="is_ada_default">False</field>
+            <field name="sequence">20</field>
+        </record>
+        
+        <!-- Directional -->
+        <record id="category_dcha" model="sign.category">
+            <field name="name">Directional Channel Letters</field>
+            <field name="code">DCHA</field>
+            <field name="description">Directional signage with channel letters</field>
+            <field name="color">4</field>
+            <field name="is_ada_default">False</field>
+            <field name="sequence">30</field>
+        </record>
+        
+        <record id="category_dcas" model="sign.category">
+            <field name="name">Directional Cast</field>
+            <field name="code">DCAS</field>
+            <field name="description">Directional signage, cast construction</field>
+            <field name="color">4</field>
+            <field name="sequence">31</field>
+        </record>
+        
+        <!-- Wayfinding -->
+        <record id="category_wf" model="sign.category">
+            <field name="name">Wayfinding</field>
+            <field name="code">WF</field>
+            <field name="description">General wayfinding and directional signs</field>
+            <field name="color">5</field>
+            <field name="is_ada_default">False</field>
+            <field name="sequence">40</field>
+        </record>
+        
+        <!-- Exterior -->
+        <record id="category_ext" model="sign.category">
+            <field name="name">Exterior</field>
+            <field name="code">EXT</field>
+            <field name="description">Exterior building signage</field>
+            <field name="color">11</field>
+            <field name="is_interior_default">False</field>
+            <field name="sequence">50</field>
+        </record>
+        
+        <!-- Monument -->
+        <record id="category_mon" model="sign.category">
+            <field name="name">Monument</field>
+            <field name="code">MON</field>
+            <field name="description">Ground-mounted monument signs</field>
+            <field name="color">8</field>
+            <field name="is_interior_default">False</field>
+            <field name="sequence">60</field>
+        </record>
+        
+        <!-- Channel Letters -->
+        <record id="category_chl" model="sign.category">
+            <field name="name">Channel Letters</field>
+            <field name="code">CHL</field>
+            <field name="description">Dimensional channel letter signage</field>
+            <field name="color">7</field>
+            <field name="is_interior_default">False</field>
+            <field name="sequence">70</field>
+        </record>
+        
+        <!-- Regulatory -->
+        <record id="category_reg" model="sign.category">
+            <field name="name">Regulatory / Safety</field>
+            <field name="code">REG</field>
+            <field name="description">Code-required regulatory and safety signs</field>
+            <field name="color">1</field>
+            <field name="is_ada_default">False</field>
+            <field name="sequence">80</field>
+        </record>
+        
+        <!-- Parking -->
+        <record id="category_prk" model="sign.category">
+            <field name="name">Parking</field>
+            <field name="code">PRK</field>
+            <field name="description">Parking lot and traffic signage</field>
+            <field name="color">2</field>
+            <field name="is_interior_default">False</field>
+            <field name="sequence">90</field>
+        </record>
+        
+        <!-- Digital -->
+        <record id="category_dig" model="sign.category">
+            <field name="name">Digital / Electronic</field>
+            <field name="code">DIG</field>
+            <field name="description">Digital displays, electronic message centers</field>
+            <field name="color">3</field>
+            <field name="sequence">100</field>
+        </record>
+        
+        <!-- Flags -->
+        <record id="category_flg" model="sign.category">
+            <field name="name">Projecting / Flag</field>
+            <field name="code">FLG</field>
+            <field name="description">Projecting blade signs and flag mounts</field>
+            <field name="color">10</field>
+            <field name="sequence">110</field>
+        </record>
+        
+    </data>
+</odoo>

@@ -99,9 +99,11 @@ class CCOpsDashboard extends Component {
     // Data
     async loadProjects() {
         try {
+            // Use crm.lead with CC-specific filter
             const projects = await this.orm.searchRead(
-                "cc.opportunity", [],
-                ["id", "name", "project_number", "city", "state_id", "bid_date", "state", "document_count", "estimated_value", "gc_name", "owner_name"],
+                "crm.lead",
+                [["is_cc_opportunity", "=", true]],
+                ["id", "name", "cc_project_id", "project_city", "project_state_id", "bid_date", "stage_id", "document_count", "expected_revenue", "gc_partner_id", "owner_partner_id", "sign_type_count", "total_sign_quantity"],
                 { order: "bid_date asc" }
             );
             this.state.projects = projects;
@@ -117,8 +119,8 @@ class CCOpsDashboard extends Component {
         if (!q) return this.state.projects;
         return this.state.projects.filter(p =>
             (p.name || "").toLowerCase().includes(q) ||
-            (p.city || "").toLowerCase().includes(q) ||
-            (p.gc_name || "").toLowerCase().includes(q)
+            (p.project_city || "").toLowerCase().includes(q) ||
+            (p.gc_partner_id && p.gc_partner_id[1] || "").toLowerCase().includes(q)
         );
     }
 
@@ -139,7 +141,7 @@ class CCOpsDashboard extends Component {
     async openProject(id) {
         await this.action.doAction({
             type: "ir.actions.act_window",
-            res_model: "cc.opportunity",
+            res_model: "crm.lead",
             res_id: id,
             views: [[false, "form"]],
             target: "current",

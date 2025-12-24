@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- SOV Tree View -->
+    <record id="ps_sov_tree" model="ir.ui.view">
+        <field name="name">ps.sov.tree</field>
+        <field name="model">ps.sov</field>
+        <field name="arch" type="xml">
+            <tree>
+                <field name="project_id"/>
+                <field name="contract_id"/>
+                <field name="total_value" sum="Total"/>
+                <field name="state" widget="badge"/>
+            </tree>
+        </field>
+    </record>
+
+    <!-- SOV Form View -->
+    <record id="ps_sov_form" model="ir.ui.view">
+        <field name="name">ps.sov.form</field>
+        <field name="model">ps.sov</field>
+        <field name="arch" type="xml">
+            <form>
+                <header>
+                    <button name="action_populate_from_sign_types" 
+                            string="Populate from Sign Types" 
+                            type="object"
+                            class="btn-secondary"
+                            invisible="state != 'draft'"/>
+                    <field name="state" widget="statusbar"/>
+                </header>
+                <sheet>
+                    <div class="oe_title">
+                        <h1>
+                            <field name="name"/>
+                        </h1>
+                    </div>
+                    
+                    <group>
+                        <group>
+                            <field name="project_id"/>
+                            <field name="contract_id"/>
+                        </group>
+                        <group>
+                            <field name="total_value"/>
+                        </group>
+                    </group>
+                    
+                    <field name="line_ids" mode="tree">
+                        <tree editable="bottom">
+                            <field name="sequence" widget="handle"/>
+                            <field name="description"/>
+                            <field name="sign_type_id"/>
+                            <field name="is_change_order"/>
+                            <field name="change_order_number" invisible="not is_change_order"/>
+                            <field name="scheduled_value" sum="Total"/>
+                            <field name="billed_to_date"/>
+                            <field name="remaining"/>
+                        </tree>
+                    </field>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+
+    <!-- SOV Action -->
+    <record id="ps_sov_action" model="ir.actions.act_window">
+        <field name="name">Schedule of Values</field>
+        <field name="res_model">ps.sov</field>
+        <field name="view_mode">tree,form</field>
+    </record>
+
+</odoo>

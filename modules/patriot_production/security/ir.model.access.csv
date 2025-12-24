@@ -1,0 +1,4 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_ps_production_order_user,ps.production.order.user,model_ps_production_order,base.group_user,1,1,1,0
+access_ps_production_order_manager,ps.production.order.manager,model_ps_production_order,base.group_system,1,1,1,1
+access_ps_quality_check_user,ps.quality.check.user,model_ps_quality_check,base.group_user,1,1,1,1

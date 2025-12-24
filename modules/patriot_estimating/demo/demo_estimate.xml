@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+        <!--
+        DEMO ESTIMATE - Test Estimating Flow
+        =====================================
+        
+        Creates an estimate that links to the demo hospital project.
+        -->
+        
+        <record id="estimate_demo" model="ps.estimate">
+            <field name="name">EST-DEMO-001</field>
+            <field name="opportunity_id" ref="patriot_crm.lead_demo_hospital"/>
+            <field name="estimate_date" eval="DateTime.today().strftime('%Y-%m-%d')"/>
+            <field name="markup_percent">35.0</field>
+            <field name="state">draft</field>
+            <field name="notes">Demo estimate for OUMC Tower Addition project</field>
+        </record>
+        
+        <!-- Estimate Lines -->
+        <record id="estimate_line_a" model="ps.estimate.line">
+            <field name="estimate_id" ref="estimate_demo"/>
+            <field name="sequence">10</field>
+            <field name="sign_type_id" ref="patriot_signage.sign_type_a"/>
+            <field name="description">Type A - Room Number (ADA)</field>
+            <field name="quantity">85</field>
+            <field name="material_cost">25.00</field>
+            <field name="labor_cost">15.00</field>
+            <field name="installation_cost">12.00</field>
+        </record>
+        
+        <record id="estimate_line_b" model="ps.estimate.line">
+            <field name="estimate_id" ref="estimate_demo"/>
+            <field name="sequence">20</field>
+            <field name="sign_type_id" ref="patriot_signage.sign_type_b"/>
+            <field name="description">Type B - Room ID with Window</field>
+            <field name="quantity">42</field>
+            <field name="material_cost">40.00</field>
+            <field name="labor_cost">18.00</field>
+            <field name="installation_cost">15.00</field>
+        </record>
+        
+        <record id="estimate_line_c" model="ps.estimate.line">
+            <field name="estimate_id" ref="estimate_demo"/>
+            <field name="sequence">30</field>
+            <field name="sign_type_id" ref="patriot_signage.sign_type_c"/>
+            <field name="description">Type C - Restroom (ADA)</field>
+            <field name="quantity">24</field>
+            <field name="material_cost">32.00</field>
+            <field name="labor_cost">16.00</field>
+            <field name="installation_cost">12.00</field>
+        </record>
+        
+        <record id="estimate_line_d" model="ps.estimate.line">
+            <field name="estimate_id" ref="estimate_demo"/>
+            <field name="sequence">40</field>
+            <field name="sign_type_id" ref="patriot_signage.sign_type_d"/>
+            <field name="description">Type D - Overhead Directional (Illuminated)</field>
+            <field name="quantity">18</field>
+            <field name="material_cost">180.00</field>
+            <field name="labor_cost">120.00</field>
+            <field name="installation_cost">95.00</field>
+        </record>
+        
+        <record id="estimate_line_e" model="ps.estimate.line">
+            <field name="estimate_id" ref="estimate_demo"/>
+            <field name="sequence">50</field>
+            <field name="sign_type_id" ref="patriot_signage.sign_type_e"/>
+            <field name="description">Type E - Stair ID (ADA)</field>
+            <field name="quantity">16</field>
+            <field name="material_cost">28.00</field>
+            <field name="labor_cost">14.00</field>
+            <field name="installation_cost">10.00</field>
+        </record>
+        
+        <record id="estimate_line_f" model="ps.estimate.line">
+            <field name="estimate_id" ref="estimate_demo"/>
+            <field name="sequence">60</field>
+            <field name="sign_type_id" ref="patriot_signage.sign_type_f"/>
+            <field name="description">Type F - Evacuation Plan</field>
+            <field name="quantity">32</field>
+            <field name="material_cost">55.00</field>
+            <field name="labor_cost">20.00</field>
+            <field name="installation_cost">15.00</field>
+        </record>
+
+    </data>
+</odoo>

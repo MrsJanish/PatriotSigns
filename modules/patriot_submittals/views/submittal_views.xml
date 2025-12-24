@@ -1,0 +1,152 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Submittal Tree View -->
+    <record id="ps_submittal_tree" model="ir.ui.view">
+        <field name="name">ps.submittal.tree</field>
+        <field name="model">ps.submittal</field>
+        <field name="arch" type="xml">
+            <tree decoration-success="is_approved"
+                  decoration-warning="response == 'revise'"
+                  decoration-danger="response == 'rejected'">
+                <field name="name"/>
+                <field name="project_id"/>
+                <field name="submittal_type"/>
+                <field name="spec_section"/>
+                <field name="revision"/>
+                <field name="submitted_date"/>
+                <field name="response" widget="badge"/>
+                <field name="state" widget="badge"/>
+                <field name="is_approved" column_invisible="True"/>
+            </tree>
+        </field>
+    </record>
+
+    <!-- Submittal Form View -->
+    <record id="ps_submittal_form" model="ir.ui.view">
+        <field name="name">ps.submittal.form</field>
+        <field name="model">ps.submittal</field>
+        <field name="arch" type="xml">
+            <form>
+                <header>
+                    <button name="action_submit" 
+                            string="Submit" 
+                            type="object"
+                            class="btn-primary"
+                            invisible="state != 'ready'"/>
+                    <button name="action_mark_reviewed" 
+                            string="Mark Reviewed" 
+                            type="object"
+                            class="btn-success"
+                            invisible="state != 'submitted'"/>
+                    <button name="action_create_revision" 
+                            string="Create Revision" 
+                            type="object"
+                            class="btn-secondary"
+                            invisible="response != 'revise'"/>
+                    <field name="state" widget="statusbar"/>
+                </header>
+                <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <button class="oe_stat_button" icon="fa-list"
+                                type="object" name="action_view_sign_types"
+                                invisible="sign_type_count == 0">
+                            <div class="o_stat_info">
+                                <field name="sign_type_count" class="o_stat_value"/>
+                                <span class="o_stat_text">Sign Types</span>
+                            </div>
+                        </button>
+                    </div>
+                    
+                    <div class="oe_title">
+                        <label for="name"/>
+                        <h1>
+                            <field name="name"/>
+                        </h1>
+                    </div>
+                    
+                    <group>
+                        <group string="Project">
+                            <field name="project_id"/>
+                            <field name="submittal_type"/>
+                            <field name="spec_section"/>
+                            <field name="spec_title"/>
+                        </group>
+                        <group string="Revision">
+                            <field name="revision"/>
+                            <field name="previous_submittal_id"/>
+                        </group>
+                    </group>
+                    
+                    <group>
+                        <group string="Dates">
+                            <field name="submitted_date"/>
+                            <field name="due_date"/>
+                            <field name="response_date"/>
+                        </group>
+                        <group string="Response">
+                            <field name="response" widget="radio"/>
+                        </group>
+                    </group>
+                    
+                    <notebook>
+                        <page string="Description">
+                            <field name="description"/>
+                        </page>
+                        <page string="Sign Types">
+                            <field name="sign_type_ids" mode="tree">
+                                <tree>
+                                    <field name="name"/>
+                                    <field name="category_id"/>
+                                    <field name="dimensions_display"/>
+                                    <field name="quantity"/>
+                                </tree>
+                            </field>
+                        </page>
+                        <page string="Attachments">
+                            <field name="attachment_ids" widget="many2many_binary"/>
+                        </page>
+                        <page string="Response Notes">
+                            <field name="response_notes"/>
+                            <field name="revision_notes"/>
+                        </page>
+                    </notebook>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+
+    <!-- Submittal Kanban -->
+    <record id="ps_submittal_kanban" model="ir.ui.view">
+        <field name="name">ps.submittal.kanban</field>
+        <field name="model">ps.submittal</field>
+        <field name="arch" type="xml">
+            <kanban default_group_by="response">
+                <field name="name"/>
+                <field name="project_id"/>
+                <field name="response"/>
+                <field name="revision"/>
+                <templates>
+                    <t t-name="card">
+                        <strong><field name="name"/></strong>
+                        <div><field name="project_id"/></div>
+                        <div class="text-muted">Rev <field name="revision"/></div>
+                    </t>
+                </templates>
+            </kanban>
+        </field>
+    </record>
+
+    <!-- Submittal Action -->
+    <record id="ps_submittal_action" model="ir.actions.act_window">
+        <field name="name">Submittals</field>
+        <field name="res_model">ps.submittal</field>
+        <field name="view_mode">tree,kanban,form</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Create your first submittal
+            </p>
+        </field>
+    </record>
+
+</odoo>

@@ -1,0 +1,240 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+        <!-- Common sign dimensions from old x_dimensions -->
+        <!-- Ordered by square inches for logical grouping -->
+        
+        <!-- Small sizes -->
+        <record id="dim_2x2" model="sign.dimension">
+            <field name="width_in">2</field>
+            <field name="height_in">2</field>
+            <field name="sequence">10</field>
+        </record>
+        
+        <record id="dim_3x3" model="sign.dimension">
+            <field name="width_in">3</field>
+            <field name="height_in">3</field>
+            <field name="sequence">20</field>
+        </record>
+        
+        <record id="dim_4x2" model="sign.dimension">
+            <field name="width_in">4</field>
+            <field name="height_in">2</field>
+            <field name="sequence">30</field>
+        </record>
+        
+        <record id="dim_4x4" model="sign.dimension">
+            <field name="width_in">4</field>
+            <field name="height_in">4</field>
+            <field name="sequence">40</field>
+        </record>
+        
+        <!-- Common ADA sizes -->
+        <record id="dim_6x4" model="sign.dimension">
+            <field name="width_in">6</field>
+            <field name="height_in">4</field>
+            <field name="sequence">50</field>
+        </record>
+        
+        <record id="dim_6x6" model="sign.dimension">
+            <field name="width_in">6</field>
+            <field name="height_in">6</field>
+            <field name="sequence">60</field>
+        </record>
+        
+        <record id="dim_8x2" model="sign.dimension">
+            <field name="width_in">8</field>
+            <field name="height_in">2</field>
+            <field name="sequence">70</field>
+        </record>
+        
+        <record id="dim_8x4" model="sign.dimension">
+            <field name="width_in">8</field>
+            <field name="height_in">4</field>
+            <field name="sequence">80</field>
+        </record>
+        
+        <record id="dim_8x6" model="sign.dimension">
+            <field name="width_in">8</field>
+            <field name="height_in">6</field>
+            <field name="sequence">90</field>
+        </record>
+        
+        <record id="dim_8x8" model="sign.dimension">
+            <field name="width_in">8</field>
+            <field name="height_in">8</field>
+            <field name="sequence">100</field>
+        </record>
+        
+        <record id="dim_10x4" model="sign.dimension">
+            <field name="width_in">10</field>
+            <field name="height_in">4</field>
+            <field name="sequence">110</field>
+        </record>
+        
+        <record id="dim_10x6" model="sign.dimension">
+            <field name="width_in">10</field>
+            <field name="height_in">6</field>
+            <field name="sequence">120</field>
+        </record>
+        
+        <record id="dim_10x8" model="sign.dimension">
+            <field name="width_in">10</field>
+            <field name="height_in">8</field>
+            <field name="sequence">130</field>
+        </record>
+        
+        <record id="dim_10x10" model="sign.dimension">
+            <field name="width_in">10</field>
+            <field name="height_in">10</field>
+            <field name="sequence">140</field>
+        </record>
+        
+        <record id="dim_10x12" model="sign.dimension">
+            <field name="width_in">10</field>
+            <field name="height_in">12</field>
+            <field name="sequence">150</field>
+        </record>
+        
+        <!-- Medium sizes -->
+        <record id="dim_12x4" model="sign.dimension">
+            <field name="width_in">12</field>
+            <field name="height_in">4</field>
+            <field name="sequence">160</field>
+        </record>
+        
+        <record id="dim_12x6" model="sign.dimension">
+            <field name="width_in">12</field>
+            <field name="height_in">6</field>
+            <field name="sequence">170</field>
+        </record>
+        
+        <record id="dim_12x8" model="sign.dimension">
+            <field name="width_in">12</field>
+            <field name="height_in">8</field>
+            <field name="sequence">180</field>
+        </record>
+        
+        <record id="dim_12x10" model="sign.dimension">
+            <field name="width_in">12</field>
+            <field name="height_in">10</field>
+            <field name="sequence">190</field>
+        </record>
+        
+        <record id="dim_12x12" model="sign.dimension">
+            <field name="width_in">12</field>
+            <field name="height_in">12</field>
+            <field name="sequence">200</field>
+        </record>
+        
+        <record id="dim_14x8" model="sign.dimension">
+            <field name="width_in">14</field>
+            <field name="height_in">8</field>
+            <field name="sequence">210</field>
+        </record>
+        
+        <record id="dim_14x10" model="sign.dimension">
+            <field name="width_in">14</field>
+            <field name="height_in">10</field>
+            <field name="sequence">220</field>
+        </record>
+        
+        <record id="dim_16x4" model="sign.dimension">
+            <field name="width_in">16</field>
+            <field name="height_in">4</field>
+            <field name="sequence">230</field>
+        </record>
+        
+        <record id="dim_16x6" model="sign.dimension">
+            <field name="width_in">16</field>
+            <field name="height_in">6</field>
+            <field name="sequence">240</field>
+        </record>
+        
+        <record id="dim_16x8" model="sign.dimension">
+            <field name="width_in">16</field>
+            <field name="height_in">8</field>
+            <field name="sequence">250</field>
+        </record>
+        
+        <record id="dim_18x6" model="sign.dimension">
+            <field name="width_in">18</field>
+            <field name="height_in">6</field>
+            <field name="sequence">260</field>
+        </record>
+        
+        <record id="dim_18x12" model="sign.dimension">
+            <field name="width_in">18</field>
+            <field name="height_in">12</field>
+            <field name="sequence">270</field>
+        </record>
+        
+        <!-- Larger sizes -->
+        <record id="dim_24x6" model="sign.dimension">
+            <field name="width_in">24</field>
+            <field name="height_in">6</field>
+            <field name="sequence">280</field>
+        </record>
+        
+        <record id="dim_24x8" model="sign.dimension">
+            <field name="width_in">24</field>
+            <field name="height_in">8</field>
+            <field name="sequence">290</field>
+        </record>
+        
+        <record id="dim_24x12" model="sign.dimension">
+            <field name="width_in">24</field>
+            <field name="height_in">12</field>
+            <field name="sequence">300</field>
+        </record>
+        
+        <record id="dim_24x18" model="sign.dimension">
+            <field name="width_in">24</field>
+            <field name="height_in">18</field>
+            <field name="sequence">310</field>
+        </record>
+        
+        <record id="dim_24x24" model="sign.dimension">
+            <field name="width_in">24</field>
+            <field name="height_in">24</field>
+            <field name="sequence">320</field>
+        </record>
+        
+        <record id="dim_36x12" model="sign.dimension">
+            <field name="width_in">36</field>
+            <field name="height_in">12</field>
+            <field name="sequence">330</field>
+        </record>
+        
+        <record id="dim_36x24" model="sign.dimension">
+            <field name="width_in">36</field>
+            <field name="height_in">24</field>
+            <field name="sequence">340</field>
+        </record>
+        
+        <record id="dim_48x12" model="sign.dimension">
+            <field name="width_in">48</field>
+            <field name="height_in">12</field>
+            <field name="sequence">350</field>
+        </record>
+        
+        <record id="dim_48x24" model="sign.dimension">
+            <field name="width_in">48</field>
+            <field name="height_in">24</field>
+            <field name="sequence">360</field>
+        </record>
+        
+        <record id="dim_48x36" model="sign.dimension">
+            <field name="width_in">48</field>
+            <field name="height_in">36</field>
+            <field name="sequence">370</field>
+        </record>
+        
+        <record id="dim_48x48" model="sign.dimension">
+            <field name="width_in">48</field>
+            <field name="height_in">48</field>
+            <field name="sequence">380</field>
+        </record>
+        
+    </data>
+</odoo>

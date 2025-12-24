@@ -1,0 +1,137 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Estimate Tree View -->
+    <record id="ps_estimate_tree" model="ir.ui.view">
+        <field name="name">ps.estimate.tree</field>
+        <field name="model">ps.estimate</field>
+        <field name="arch" type="xml">
+            <tree decoration-success="state == 'won'"
+                  decoration-muted="state == 'lost'">
+                <field name="name"/>
+                <field name="opportunity_id"/>
+                <field name="gc_partner_id"/>
+                <field name="date"/>
+                <field name="subtotal"/>
+                <field name="markup_percent"/>
+                <field name="total" sum="Total"/>
+                <field name="state" widget="badge"/>
+            </tree>
+        </field>
+    </record>
+
+    <!-- Estimate Form View -->
+    <record id="ps_estimate_form" model="ir.ui.view">
+        <field name="name">ps.estimate.form</field>
+        <field name="model">ps.estimate</field>
+        <field name="arch" type="xml">
+            <form>
+                <header>
+                    <button name="action_populate_from_sign_types" 
+                            string="Populate from Sign Types" 
+                            type="object"
+                            class="btn-secondary"
+                            invisible="state != 'draft'"/>
+                    <button name="action_approve" 
+                            string="Approve" 
+                            type="object"
+                            class="btn-primary"
+                            invisible="state != 'draft'"/>
+                    <button name="action_submit" 
+                            string="Submit" 
+                            type="object"
+                            class="btn-success"
+                            invisible="state != 'approved'"/>
+                    <field name="state" widget="statusbar"/>
+                </header>
+                <sheet>
+                    <div class="oe_title">
+                        <label for="name"/>
+                        <h1>
+                            <field name="name"/>
+                        </h1>
+                        <h3>
+                            <field name="project_name" readonly="1"/>
+                        </h3>
+                    </div>
+                    <group>
+                        <group string="Project">
+                            <field name="opportunity_id"/>
+                            <field name="gc_partner_id"/>
+                        </group>
+                        <group string="Dates">
+                            <field name="date"/>
+                            <field name="valid_until"/>
+                        </group>
+                    </group>
+                    
+                    <notebook>
+                        <page string="Estimate Lines" name="lines">
+                            <field name="line_ids" mode="tree">
+                                <tree editable="bottom">
+                                    <field name="sequence" widget="handle"/>
+                                    <field name="sign_type_id"/>
+                                    <field name="description"/>
+                                    <field name="category_id" optional="show"/>
+                                    <field name="dimensions_display" optional="show"/>
+                                    <field name="quantity"/>
+                                    <field name="material_unit_cost"/>
+                                    <field name="material_extended" sum="Material"/>
+                                    <field name="labor_hours" optional="show"/>
+                                    <field name="labor_rate" optional="hide"/>
+                                    <field name="labor_extended" sum="Labor"/>
+                                    <field name="install_hours" optional="show"/>
+                                    <field name="install_rate" optional="hide"/>
+                                    <field name="install_extended" sum="Install"/>
+                                    <field name="line_total" sum="Total"/>
+                                </tree>
+                            </field>
+                            
+                            <group class="oe_subtotal_footer oe_right">
+                                <field name="material_total" widget="monetary" readonly="1"/>
+                                <field name="labor_total" widget="monetary" readonly="1"/>
+                                <field name="install_total" widget="monetary" readonly="1"/>
+                                <field name="subtotal" widget="monetary" readonly="1" class="oe_subtotal_footer_separator"/>
+                                <label for="markup_percent"/>
+                                <div class="o_row">
+                                    <field name="markup_percent" class="oe_inline"/>
+                                    <span>%</span>
+                                </div>
+                                <field name="markup_amount" widget="monetary" readonly="1"/>
+                                <field name="total" widget="monetary" readonly="1" class="oe_subtotal_footer_separator"/>
+                            </group>
+                        </page>
+                        
+                        <page string="Terms" name="terms">
+                            <group>
+                                <field name="terms"/>
+                                <field name="exclusions"/>
+                            </group>
+                        </page>
+                        
+                        <page string="Notes" name="notes">
+                            <field name="notes"/>
+                        </page>
+                    </notebook>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+
+    <!-- Estimate Action -->
+    <record id="ps_estimate_action" model="ir.actions.act_window">
+        <field name="name">Estimates</field>
+        <field name="res_model">ps.estimate</field>
+        <field name="view_mode">tree,form</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Create your first estimate
+            </p>
+            <p>
+                Estimates are created from CRM opportunities and contain
+                detailed cost breakdowns for each sign type.
+            </p>
+        </field>
+    </record>
+
+</odoo>

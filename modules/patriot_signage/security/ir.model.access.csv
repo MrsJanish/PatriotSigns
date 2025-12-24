@@ -1,0 +1,8 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_ps_sign_type_user,ps.sign.type.user,model_ps_sign_type,base.group_user,1,1,1,0
+access_ps_sign_type_manager,ps.sign.type.manager,model_ps_sign_type,base.group_system,1,1,1,1
+access_ps_sign_instance_user,ps.sign.instance.user,model_ps_sign_instance,base.group_user,1,1,1,0
+access_ps_sign_instance_manager,ps.sign.instance.manager,model_ps_sign_instance,base.group_system,1,1,1,1
+access_ps_location_user,ps.location.user,model_ps_location,base.group_user,1,1,1,0
+access_ps_location_manager,ps.location.manager,model_ps_location,base.group_system,1,1,1,1
+access_ps_sign_bookmark_user,ps.sign.bookmark.user,model_ps_sign_bookmark,base.group_user,1,1,1,1

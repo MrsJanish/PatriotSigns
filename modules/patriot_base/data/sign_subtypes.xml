@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+        <!-- Sign Subtype base data -->
+        <!-- These are common sign subtypes used across projects -->
+        
+        <!-- Panel/ADA Subtypes -->
+        <record id="subtype_room_num_insert" model="sign.subtype">
+            <field name="name">Room Num, Insert</field>
+            <field name="code">RNI</field>
+            <field name="category_id" ref="patriot_base.category_pan"/>
+            <field name="is_ada">True</field>
+            <field name="requires_braille">True</field>
+            <field name="description">Standard room number sign with replaceable insert for room number</field>
+        </record>
+        
+        <record id="subtype_room_num_applied" model="sign.subtype">
+            <field name="name">Room Num, Applied</field>
+            <field name="code">RNA</field>
+            <field name="category_id" ref="patriot_base.category_pan"/>
+            <field name="is_ada">True</field>
+            <field name="requires_braille">True</field>
+            <field name="description">Room number with applied tactile graphics and braille</field>
+        </record>
+        
+        <record id="subtype_room_id" model="sign.subtype">
+            <field name="name">Room ID</field>
+            <field name="code">RID</field>
+            <field name="category_id" ref="patriot_base.category_pan"/>
+            <field name="is_ada">True</field>
+            <field name="requires_braille">True</field>
+            <field name="description">Room identification with name and number</field>
+        </record>
+        
+        <record id="subtype_restroom" model="sign.subtype">
+            <field name="name">Restroom</field>
+            <field name="code">RR</field>
+            <field name="category_id" ref="patriot_base.category_pan"/>
+            <field name="is_ada">True</field>
+            <field name="requires_braille">True</field>
+            <field name="requires_pictogram">True</field>
+            <field name="description">ADA restroom signage with pictogram</field>
+        </record>
+        
+        <record id="subtype_stair" model="sign.subtype">
+            <field name="name">Stair ID</field>
+            <field name="code">STR</field>
+            <field name="category_id" ref="patriot_base.category_pan"/>
+            <field name="is_ada">True</field>
+            <field name="requires_braille">True</field>
+            <field name="description">Stair identification sign</field>
+        </record>
+        
+        <record id="subtype_exit" model="sign.subtype">
+            <field name="name">Exit</field>
+            <field name="code">EXT</field>
+            <field name="category_id" ref="patriot_base.category_pan"/>
+            <field name="is_ada">True</field>
+            <field name="requires_braille">True</field>
+            <field name="requires_pictogram">True</field>
+            <field name="description">Exit signage</field>
+        </record>
+        
+        <!-- Directional Subtypes -->
+        <record id="subtype_directional" model="sign.subtype">
+            <field name="name">Directional</field>
+            <field name="code">DIR</field>
+            <field name="category_id" ref="patriot_base.category_dcha"/>
+            <field name="description">Overhead or wall-mounted directional signage</field>
+        </record>
+        
+        <!-- Evacuation/Life Safety -->
+        <record id="subtype_evacuation" model="sign.subtype">
+            <field name="name">Evacuation Plan</field>
+            <field name="code">EVAC</field>
+            <field name="category_id" ref="patriot_base.category_evac"/>
+            <field name="description">Floor evacuation plan holder or printed sign</field>
+        </record>
+
+        <record id="subtype_fire_ext" model="sign.subtype">
+            <field name="name">Fire Extinguisher</field>
+            <field name="code">FE</field>
+            <field name="category_id" ref="patriot_base.category_life"/>
+            <field name="description">Fire extinguisher location signage</field>
+        </record>
+        
+        <!-- Plaques -->
+        <record id="subtype_donor_plaque" model="sign.subtype">
+            <field name="name">Donor Plaque</field>
+            <field name="code">DNR</field>
+            <field name="category_id" ref="patriot_base.category_plq"/>
+            <field name="description">Donor recognition plaque</field>
+        </record>
+        
+        <!-- Exterior -->
+        <record id="subtype_monument" model="sign.subtype">
+            <field name="name">Monument Sign</field>
+            <field name="code">MON</field>
+            <field name="category_id" ref="patriot_base.category_ext"/>
+            <field name="description">Ground-mounted monument sign</field>
+        </record>
+        
+        <record id="subtype_building_id" model="sign.subtype">
+            <field name="name">Building ID</field>
+            <field name="code">BID</field>
+            <field name="category_id" ref="patriot_base.category_ext"/>
+            <field name="description">Exterior building identification</field>
+        </record>
+
+    </data>
+</odoo>

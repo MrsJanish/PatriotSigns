@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Patriot Signs Configuration Menu -->
+    <menuitem id="menu_patriot_config_root"
+              name="Patriot Signs"
+              web_icon="patriot_base,static/description/icon.png"
+              groups="base.group_system"
+              sequence="100"/>
+
+    <!-- Configuration Submenu -->
+    <menuitem id="menu_patriot_config"
+              name="Configuration"
+              parent="menu_patriot_config_root"
+              sequence="90"/>
+
+    <!-- Sign Reference Tables -->
+    <menuitem id="menu_sign_reference_tables"
+              name="Sign Reference Tables"
+              parent="menu_patriot_config"
+              sequence="10"/>
+
+    <menuitem id="menu_sign_categories"
+              name="Sign Categories"
+              parent="menu_sign_reference_tables"
+              action="sign_category_action"
+              sequence="10"/>
+
+    <menuitem id="menu_sign_subtypes"
+              name="Sign Subtypes"
+              parent="menu_sign_reference_tables"
+              action="sign_subtype_action"
+              sequence="20"/>
+
+    <menuitem id="menu_sign_dimensions"
+              name="Dimensions"
+              parent="menu_sign_reference_tables"
+              action="sign_dimension_action"
+              sequence="30"/>
+
+</odoo>

@@ -1,0 +1,5 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_ps_contract_user,ps.contract.user,model_ps_contract,base.group_user,1,1,1,0
+access_ps_contract_manager,ps.contract.manager,model_ps_contract,base.group_system,1,1,1,1
+access_ps_change_order_user,ps.change.order.user,model_ps_change_order,base.group_user,1,1,1,0
+access_ps_change_order_manager,ps.change.order.manager,model_ps_change_order,base.group_system,1,1,1,1

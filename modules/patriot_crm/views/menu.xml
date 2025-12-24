@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Sign Projects Menu under CRM -->
+    <menuitem id="menu_crm_sign_projects"
+              name="Sign Projects"
+              parent="crm.crm_menu_root"
+              sequence="5"/>
+
+    <!-- Action for CC Opportunities -->
+    <record id="action_cc_opportunities" model="ir.actions.act_window">
+        <field name="name">CC Opportunities</field>
+        <field name="res_model">crm.lead</field>
+        <field name="view_mode">kanban,tree,form</field>
+        <field name="domain">[('is_cc_opportunity', '=', True)]</field>
+        <field name="context">{'default_type': 'opportunity'}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                No ConstructConnect opportunities yet
+            </p>
+            <p>
+                Opportunities from ConstructConnect will appear here when 
+                ITB emails are received and processed.
+            </p>
+        </field>
+    </record>
+
+    <menuitem id="menu_cc_opportunities"
+              name="CC Opportunities"
+              parent="menu_crm_sign_projects"
+              action="action_cc_opportunities"
+              sequence="10"/>
+
+    <!-- Action for Upcoming Bids -->
+    <record id="action_upcoming_bids" model="ir.actions.act_window">
+        <field name="name">Upcoming Bids</field>
+        <field name="res_model">crm.lead</field>
+        <field name="view_mode">tree,kanban,form</field>
+        <field name="domain">[('bid_date', '!=', False), ('bid_date', '>=', context_today().strftime('%Y-%m-%d'))]</field>
+        <field name="context">{'default_type': 'opportunity', 'search_default_groupby_bid_date': 1}</field>
+    </record>
+
+    <menuitem id="menu_upcoming_bids"
+              name="Upcoming Bids"
+              parent="menu_crm_sign_projects"
+              action="action_upcoming_bids"
+              sequence="20"/>
+
+</odoo>

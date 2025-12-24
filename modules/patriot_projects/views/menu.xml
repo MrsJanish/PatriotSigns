@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Projects menu is already provided by project module -->
+    <!-- Add Sign Contracts submenu -->
+    
+    <menuitem id="menu_sign_contracts"
+              name="Contracts"
+              parent="project.menu_main_pm"
+              action="ps_contract_action"
+              sequence="20"/>
+
+</odoo>

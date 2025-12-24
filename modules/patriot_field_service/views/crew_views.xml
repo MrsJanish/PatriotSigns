@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Crew Tree View -->
+    <record id="ps_crew_tree" model="ir.ui.view">
+        <field name="name">ps.crew.tree</field>
+        <field name="model">ps.crew</field>
+        <field name="arch" type="xml">
+            <tree>
+                <field name="code"/>
+                <field name="name"/>
+                <field name="lead_id"/>
+                <field name="member_count"/>
+                <field name="has_lift_cert"/>
+                <field name="vehicle"/>
+            </tree>
+        </field>
+    </record>
+
+    <!-- Crew Form View -->
+    <record id="ps_crew_form" model="ir.ui.view">
+        <field name="name">ps.crew.form</field>
+        <field name="model">ps.crew</field>
+        <field name="arch" type="xml">
+            <form>
+                <sheet>
+                    <div class="oe_title">
+                        <label for="name"/>
+                        <h1>
+                            <field name="name"/>
+                        </h1>
+                    </div>
+                    
+                    <group>
+                        <group string="Crew Info">
+                            <field name="code"/>
+                            <field name="lead_id"/>
+                            <field name="active"/>
+                        </group>
+                        <group string="Certifications">
+                            <field name="has_lift_cert"/>
+                            <field name="has_osha_cert"/>
+                        </group>
+                    </group>
+                    
+                    <group>
+                        <group string="Members">
+                            <field name="member_ids" widget="many2many_tags"/>
+                        </group>
+                        <group string="Vehicle">
+                            <field name="vehicle"/>
+                            <field name="vehicle_capacity"/>
+                        </group>
+                    </group>
+                    
+                    <group>
+                        <field name="notes"/>
+                    </group>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+
+    <!-- Crew Action -->
+    <record id="ps_crew_action" model="ir.actions.act_window">
+        <field name="name">Crews</field>
+        <field name="res_model">ps.crew</field>
+        <field name="view_mode">tree,form</field>
+    </record>
+
+</odoo>

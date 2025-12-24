@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+        <!-- Estimate Sequence -->
+        <record id="sequence_ps_estimate" model="ir.sequence">
+            <field name="name">Estimate Number</field>
+            <field name="code">ps.estimate</field>
+            <field name="prefix">EST-</field>
+            <field name="padding">4</field>
+            <field name="company_id" eval="False"/>
+        </record>
+    </data>
+</odoo>

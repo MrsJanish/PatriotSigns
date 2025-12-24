@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Billing menu under Accounting -->
+    <menuitem id="menu_sign_billing"
+              name="Sign Billing"
+              parent="account.menu_finance"
+              sequence="90"/>
+
+    <menuitem id="menu_pay_applications"
+              name="Pay Applications"
+              parent="menu_sign_billing"
+              action="ps_pay_application_action"
+              sequence="10"/>
+
+    <menuitem id="menu_sov"
+              name="Schedule of Values"
+              parent="menu_sign_billing"
+              action="ps_sov_action"
+              sequence="20"/>
+
+</odoo>

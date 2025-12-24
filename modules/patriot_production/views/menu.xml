@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Production menu under Manufacturing -->
+    <menuitem id="menu_sign_production"
+              name="Sign Production"
+              parent="mrp.menu_mrp_root"
+              sequence="5"/>
+
+    <menuitem id="menu_production_orders"
+              name="Production Orders"
+              parent="menu_sign_production"
+              action="ps_production_order_action"
+              sequence="10"/>
+
+    <menuitem id="menu_quality_checks"
+              name="Quality Checks"
+              parent="menu_sign_production"
+              action="ps_quality_check_action"
+              sequence="20"/>
+
+</odoo>

@@ -1,0 +1,192 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Sign Instance Tree View -->
+    <record id="ps_sign_instance_tree" model="ir.ui.view">
+        <field name="name">ps.sign.instance.tree</field>
+        <field name="model">ps.sign.instance</field>
+        <field name="arch" type="xml">
+            <tree editable="bottom"
+                  decoration-success="state == 'installed'"
+                  decoration-info="state in ['production', 'shipped']"
+                  decoration-muted="state == 'draft'">
+                <field name="install_sequence" widget="handle"/>
+                <field name="sign_type_id"/>
+                <field name="room_number_plans"/>
+                <field name="room_name_plans"/>
+                <field name="copy_line_1"/>
+                <field name="copy_line_2" optional="show"/>
+                <field name="arrow_direction" optional="hide"/>
+                <field name="building" optional="hide"/>
+                <field name="floor" optional="show"/>
+                <field name="bid_package" optional="hide"/>
+                <field name="state" widget="badge"
+                       decoration-success="state == 'installed'"
+                       decoration-info="state in ['approved', 'production', 'shipped']"
+                       decoration-warning="state == 'draft'"/>
+                <field name="approved" optional="show"/>
+                <field name="installed" optional="show"/>
+            </tree>
+        </field>
+    </record>
+
+    <!-- Sign Instance Form View -->
+    <record id="ps_sign_instance_form" model="ir.ui.view">
+        <field name="name">ps.sign.instance.form</field>
+        <field name="model">ps.sign.instance</field>
+        <field name="arch" type="xml">
+            <form>
+                <header>
+                    <button name="action_approve" string="Approve" type="object"
+                            class="btn-primary"
+                            invisible="state != 'draft'"/>
+                    <button name="action_mark_installed" string="Mark Installed" type="object"
+                            class="btn-success"
+                            invisible="state not in ['approved', 'shipped']"/>
+                    <field name="state" widget="statusbar"
+                           statusbar_visible="draft,approved,production,shipped,installed"/>
+                </header>
+                <sheet>
+                    <div class="oe_title">
+                        <label for="name"/>
+                        <h1>
+                            <field name="name" readonly="1"/>
+                        </h1>
+                    </div>
+                    
+                    <group>
+                        <group string="Sign Type">
+                            <field name="sign_type_id"/>
+                            <field name="opportunity_id" readonly="1"/>
+                            <field name="category_id" readonly="1"/>
+                            <field name="dimensions_display" readonly="1"/>
+                            <field name="mark_id"/>
+                        </group>
+                        <group string="Location">
+                            <field name="location_id"/>
+                            <field name="building"/>
+                            <field name="floor"/>
+                            <field name="room_number_plans"/>
+                            <field name="room_number_actual"/>
+                            <field name="room_name_plans"/>
+                            <field name="room_name_actual"/>
+                        </group>
+                    </group>
+                    
+                    <notebook>
+                        <page string="Copy Content" name="copy">
+                            <group>
+                                <group string="Copy Lines">
+                                    <field name="copy_line_1"/>
+                                    <field name="copy_line_2"/>
+                                    <field name="copy_line_3"/>
+                                    <field name="copy_line_4"/>
+                                    <field name="copy_line_5"/>
+                                    <field name="has_custom_copy"/>
+                                </group>
+                                <group string="Graphics">
+                                    <field name="arrow_direction"/>
+                                    <field name="pictogram_code"/>
+                                </group>
+                            </group>
+                        </page>
+                        
+                        <page string="Location Details" name="location">
+                            <group>
+                                <group string="Placement">
+                                    <field name="door_id"/>
+                                    <field name="wall_location"/>
+                                    <field name="location_notes"/>
+                                </group>
+                                <group string="Bid/Phase">
+                                    <field name="bid_package"/>
+                                    <field name="phase"/>
+                                    <field name="added_post_bid"/>
+                                </group>
+                            </group>
+                        </page>
+                        
+                        <page string="Status &amp; QC" name="status">
+                            <group>
+                                <group string="Approval">
+                                    <field name="approved"/>
+                                    <field name="approved_date"/>
+                                </group>
+                                <group string="Quality Check">
+                                    <field name="quality_checked"/>
+                                    <field name="qc_date"/>
+                                    <field name="qc_notes"/>
+                                </group>
+                            </group>
+                            <group>
+                                <group string="Installation">
+                                    <field name="install_sequence"/>
+                                    <field name="installed"/>
+                                    <field name="installed_date"/>
+                                    <field name="install_notes"/>
+                                </group>
+                                <group string="Backer">
+                                    <field name="needs_backer"/>
+                                    <field name="backer_instance_id" invisible="not needs_backer"/>
+                                </group>
+                            </group>
+                        </page>
+                        
+                        <page string="Notes" name="notes">
+                            <group>
+                                <field name="production_notes"/>
+                                <field name="remarks"/>
+                            </group>
+                        </page>
+                    </notebook>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+
+    <!-- Sign Instance Search View -->
+    <record id="ps_sign_instance_search" model="ir.ui.view">
+        <field name="name">ps.sign.instance.search</field>
+        <field name="model">ps.sign.instance</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="name"/>
+                <field name="sign_type_id"/>
+                <field name="opportunity_id"/>
+                <field name="room_number_plans"/>
+                <field name="room_name_plans"/>
+                <field name="copy_line_1"/>
+                <filter name="draft" string="Draft" domain="[('state', '=', 'draft')]"/>
+                <filter name="approved" string="Approved" domain="[('approved', '=', True)]"/>
+                <filter name="not_installed" string="Not Installed" domain="[('installed', '=', False)]"/>
+                <filter name="installed" string="Installed" domain="[('installed', '=', True)]"/>
+                <separator/>
+                <filter name="needs_backer" string="Needs Backer" domain="[('needs_backer', '=', True)]"/>
+                <filter name="post_bid" string="Added Post-Bid" domain="[('added_post_bid', '=', True)]"/>
+                <group expand="1" string="Group By">
+                    <filter name="group_project" string="Project" context="{'group_by': 'opportunity_id'}"/>
+                    <filter name="group_sign_type" string="Sign Type" context="{'group_by': 'sign_type_id'}"/>
+                    <filter name="group_floor" string="Floor" context="{'group_by': 'floor'}"/>
+                    <filter name="group_state" string="Status" context="{'group_by': 'state'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <!-- Sign Instance Action -->
+    <record id="ps_sign_instance_action" model="ir.actions.act_window">
+        <field name="name">Sign Instances</field>
+        <field name="res_model">ps.sign.instance</field>
+        <field name="view_mode">tree,form</field>
+        <field name="context">{'search_default_group_sign_type': 1}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                No sign instances yet
+            </p>
+            <p>
+                Each instance represents ONE physical sign at a specific location.
+                Create instances to track individual rooms, copy content, and installation status.
+            </p>
+        </field>
+    </record>
+</odoo>

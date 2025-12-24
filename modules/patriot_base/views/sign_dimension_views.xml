@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Sign Dimension Tree View -->
+    <record id="sign_dimension_tree" model="ir.ui.view">
+        <field name="name">sign.dimension.tree</field>
+        <field name="model">sign.dimension</field>
+        <field name="arch" type="xml">
+            <tree>
+                <field name="sequence" widget="handle"/>
+                <field name="name"/>
+                <field name="width_in"/>
+                <field name="height_in"/>
+                <field name="depth_in" optional="hide"/>
+                <field name="square_inches"/>
+                <field name="display_by_feet_inch" optional="show"/>
+                <field name="can_be_round" optional="hide"/>
+                <field name="usage_count" optional="show"/>
+                <field name="active" invisible="1"/>
+            </tree>
+        </field>
+    </record>
+
+    <!-- Sign Dimension Form View -->
+    <record id="sign_dimension_form" model="ir.ui.view">
+        <field name="name">sign.dimension.form</field>
+        <field name="model">sign.dimension</field>
+        <field name="arch" type="xml">
+            <form>
+                <sheet>
+                    <widget name="web_ribbon" title="Archived" bg_color="text-bg-danger" invisible="active"/>
+                    <div class="oe_title">
+                        <label for="name"/>
+                        <h1>
+                            <field name="name" readonly="1"/>
+                        </h1>
+                    </div>
+                    <group>
+                        <group string="Dimensions (inches)">
+                            <field name="width_in"/>
+                            <field name="height_in"/>
+                            <field name="depth_in"/>
+                        </group>
+                        <group string="Computed Values">
+                            <field name="square_inches" readonly="1"/>
+                            <field name="display_by_inch" readonly="1"/>
+                            <field name="display_by_feet_inch" readonly="1"/>
+                        </group>
+                    </group>
+                    <group>
+                        <group string="Round Signs">
+                            <field name="can_be_round"/>
+                            <field name="diameter" invisible="not can_be_round"/>
+                            <field name="display_diameter" readonly="1" invisible="not can_be_round"/>
+                        </group>
+                        <group string="Organization">
+                            <field name="sequence"/>
+                            <field name="active"/>
+                        </group>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- Sign Dimension Search View -->
+    <record id="sign_dimension_search" model="ir.ui.view">
+        <field name="name">sign.dimension.search</field>
+        <field name="model">sign.dimension</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="name"/>
+                <field name="width_in"/>
+                <field name="height_in"/>
+                <filter name="small" string="Small (&lt;50 sq in)" domain="[('square_inches', '&lt;', 50)]"/>
+                <filter name="medium" string="Medium (50-200 sq in)" domain="[('square_inches', '&gt;=', 50), ('square_inches', '&lt;', 200)]"/>
+                <filter name="large" string="Large (&gt;200 sq in)" domain="[('square_inches', '&gt;=', 200)]"/>
+                <filter name="round" string="Round" domain="[('can_be_round', '=', True)]"/>
+                <filter name="archived" string="Archived" domain="[('active', '=', False)]"/>
+            </search>
+        </field>
+    </record>
+
+    <!-- Sign Dimension Action -->
+    <record id="sign_dimension_action" model="ir.actions.act_window">
+        <field name="name">Sign Dimensions</field>
+        <field name="res_model">sign.dimension</field>
+        <field name="view_mode">tree,form</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Define standard sign dimensions
+            </p>
+            <p>
+                Dimensions are stored as structured data (width × height × depth) rather than 
+                free text to prevent inconsistencies like "6x8" vs "6 x 8".
+            </p>
+        </field>
+    </record>
+</odoo>

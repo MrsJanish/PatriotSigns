@@ -54,7 +54,8 @@ export class SignTally extends Component {
         this.state.isLoading = true;
         try {
             if (this.opportunityId) {
-                const opps = await this.orm.read("cc.opportunity", [this.opportunityId], ["name", "document_ids"]);
+                // Use crm.lead instead of cc.opportunity
+                const opps = await this.orm.read("crm.lead", [this.opportunityId], ["name", "document_ids"]);
                 if (opps.length > 0) {
                     this.state.opportunity = opps[0];
 
@@ -75,10 +76,11 @@ export class SignTally extends Component {
     }
 
     async loadSignTypes() {
+        // Use ps.sign.type instead of cc.sign.type
         const signTypes = await this.orm.searchRead(
-            "cc.sign.type",
+            "ps.sign.type",
             [["opportunity_id", "=", this.opportunityId]],
-            ["name", "quantity", "length", "width", "dimensions", "has_window", "material", "mounting", "notes"],
+            ["name", "quantity", "length", "width", "dimensions_display", "has_window", "material", "mounting", "notes", "category_id", "is_ada"],
             { order: "name ASC" }
         );
         this.state.signTypes = signTypes;
@@ -87,7 +89,7 @@ export class SignTally extends Component {
     // ==================== Quantity Controls ====================
 
     async incrementQuantity(signType) {
-        await this.orm.write("cc.sign.type", [signType.id], {
+        await this.orm.write("ps.sign.type", [signType.id], {
             quantity: (signType.quantity || 0) + 1
         });
         signType.quantity = (signType.quantity || 0) + 1;
@@ -95,7 +97,7 @@ export class SignTally extends Component {
 
     async decrementQuantity(signType) {
         if (signType.quantity > 0) {
-            await this.orm.write("cc.sign.type", [signType.id], {
+            await this.orm.write("ps.sign.type", [signType.id], {
                 quantity: signType.quantity - 1
             });
             signType.quantity = signType.quantity - 1;
@@ -157,7 +159,8 @@ export class SignTally extends Component {
         }
 
         try {
-            await this.orm.create("cc.sign.type", [{
+            // Use ps.sign.type instead of cc.sign.type
+            await this.orm.create("ps.sign.type", [{
                 name: this.state.newSignType.name.trim(),
                 length: this.state.newSignType.length,
                 width: this.state.newSignType.width,
@@ -223,7 +226,8 @@ export class SignTally extends Component {
         }
 
         try {
-            await this.orm.write("cc.sign.type", [this.state.editingSignType.id], {
+            // Use ps.sign.type instead of cc.sign.type
+            await this.orm.write("ps.sign.type", [this.state.editingSignType.id], {
                 name: this.state.editingSignType.name.trim(),
                 length: this.state.editingSignType.length,
                 width: this.state.editingSignType.width,
@@ -246,7 +250,8 @@ export class SignTally extends Component {
         if (!this.state.editingSignType) return;
 
         try {
-            await this.orm.unlink("cc.sign.type", [this.state.editingSignType.id]);
+            // Use ps.sign.type instead of cc.sign.type
+            await this.orm.unlink("ps.sign.type", [this.state.editingSignType.id]);
             this.notification.add("Sign type deleted", { type: "success" });
             this.closeEditModal();
             await this.loadSignTypes();
@@ -268,23 +273,21 @@ export class SignTally extends Component {
     async exportToExcel() {
         if (!this.opportunityId) return;
 
+        // Navigate to CRM lead form
         this.action.doAction({
             type: "ir.actions.act_window",
-            res_model: "cc.opportunity",
+            res_model: "crm.lead",
             res_id: this.opportunityId,
             views: [[false, "form"]],
             target: "current",
         });
-        // Trigger export from the opportunity
-        setTimeout(() => {
-            window.location.href = `/web/content/cc.opportunity/${this.opportunityId}/export_sign_schedule`;
-        }, 100);
     }
 
     goBack() {
+        // Use crm.lead instead of cc.opportunity
         this.action.doAction({
             type: "ir.actions.act_window",
-            res_model: "cc.opportunity",
+            res_model: "crm.lead",
             res_id: this.opportunityId,
             views: [[false, "form"]],
             target: "current",

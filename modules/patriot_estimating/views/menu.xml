@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Estimates menu under CRM or Signage -->
+    <menuitem id="menu_estimates"
+              name="Estimates"
+              parent="patriot_signage.menu_patriot_signage_root"
+              action="ps_estimate_action"
+              sequence="30"/>
+
+</odoo>

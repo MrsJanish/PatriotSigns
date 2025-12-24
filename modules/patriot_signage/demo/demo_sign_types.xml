@@ -1,0 +1,268 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+        <!--
+        DEMO SIGN TYPES - Test Sign Schedule
+        =====================================
+        
+        Creates sign types for the demo hospital project.
+        These link to the CRM lead and use reference tables from patriot_base.
+        -->
+        
+        <!-- ================================================================= -->
+        <!-- SIGN TYPE A - Room Number (ADA)                                   -->
+        <!-- ================================================================= -->
+        <record id="sign_type_a" model="ps.sign.type">
+            <field name="name">A</field>
+            <field name="opportunity_id" ref="patriot_crm.lead_demo_hospital"/>
+            <field name="category_id" ref="patriot_base.category_pan"/>
+            <field name="description">Room Number - ADA compliant with braille</field>
+            <field name="sequence">10</field>
+            
+            <!-- Dimensions -->
+            <field name="length">6</field>
+            <field name="width">8</field>
+            
+            <!-- Physical Specs -->
+            <field name="material">photopolymer</field>
+            <field name="finish">matte</field>
+            <field name="mounting">wall</field>
+            <field name="mounting_height">60</field>
+            
+            <!-- ADA -->
+            <field name="is_ada">True</field>
+            <field name="has_tactile">True</field>
+            <field name="has_braille">True</field>
+            
+            <!-- Quantity & Costing -->
+            <field name="quantity">85</field>
+            <field name="unit_cost">45.00</field>
+            <field name="unit_price">75.00</field>
+            
+            <field name="state">draft</field>
+        </record>
+        
+        <!-- ================================================================= -->
+        <!-- SIGN TYPE B - Room ID (ADA)                                       -->
+        <!-- ================================================================= -->
+        <record id="sign_type_b" model="ps.sign.type">
+            <field name="name">B</field>
+            <field name="opportunity_id" ref="patriot_crm.lead_demo_hospital"/>
+            <field name="category_id" ref="patriot_base.category_pan"/>
+            <field name="description">Room ID - Room name with number</field>
+            <field name="sequence">20</field>
+            
+            <field name="length">6</field>
+            <field name="width">10</field>
+            
+            <field name="material">photopolymer</field>
+            <field name="finish">matte</field>
+            <field name="mounting">wall</field>
+            <field name="mounting_height">60</field>
+            
+            <field name="is_ada">True</field>
+            <field name="has_tactile">True</field>
+            <field name="has_braille">True</field>
+            <field name="has_window">True</field>
+            <field name="window_width">5</field>
+            <field name="window_height">1</field>
+            
+            <field name="quantity">42</field>
+            <field name="unit_cost">65.00</field>
+            <field name="unit_price">110.00</field>
+            
+            <field name="state">draft</field>
+        </record>
+        
+        <!-- ================================================================= -->
+        <!-- SIGN TYPE C - Restroom (ADA)                                      -->
+        <!-- ================================================================= -->
+        <record id="sign_type_c" model="ps.sign.type">
+            <field name="name">C</field>
+            <field name="opportunity_id" ref="patriot_crm.lead_demo_hospital"/>
+            <field name="category_id" ref="patriot_base.category_pan"/>
+            <field name="description">Restroom - ADA with pictogram</field>
+            <field name="sequence">30</field>
+            
+            <field name="length">6</field>
+            <field name="width">9</field>
+            
+            <field name="material">photopolymer</field>
+            <field name="finish">matte</field>
+            <field name="mounting">wall</field>
+            
+            <field name="is_ada">True</field>
+            <field name="has_tactile">True</field>
+            <field name="has_braille">True</field>
+            <field name="has_pictogram">True</field>
+            <field name="pictogram_type">Restroom</field>
+            
+            <field name="quantity">24</field>
+            <field name="unit_cost">55.00</field>
+            <field name="unit_price">95.00</field>
+            
+            <field name="state">draft</field>
+        </record>
+        
+        <!-- ================================================================= -->
+        <!-- SIGN TYPE D - Directional (Overhead)                              -->
+        <!-- ================================================================= -->
+        <record id="sign_type_d" model="ps.sign.type">
+            <field name="name">D</field>
+            <field name="opportunity_id" ref="patriot_crm.lead_demo_hospital"/>
+            <field name="category_id" ref="patriot_base.category_dcha"/>
+            <field name="description">Overhead directional</field>
+            <field name="sequence">40</field>
+            
+            <field name="length">48</field>
+            <field name="width">12</field>
+            
+            <field name="material">aluminum</field>
+            <field name="finish">painted</field>
+            <field name="finish_color">PMS 287 Blue</field>
+            <field name="mounting">ceiling</field>
+            
+            <field name="is_ada">False</field>
+            <field name="is_illuminated">True</field>
+            <field name="illumination_type">internal</field>
+            
+            <field name="quantity">18</field>
+            <field name="unit_cost">350.00</field>
+            <field name="unit_price">650.00</field>
+            
+            <field name="state">draft</field>
+        </record>
+        
+        <!-- ================================================================= -->
+        <!-- SIGN TYPE E - Stair ID (ADA)                                      -->
+        <!-- ================================================================= -->
+        <record id="sign_type_e" model="ps.sign.type">
+            <field name="name">E</field>
+            <field name="opportunity_id" ref="patriot_crm.lead_demo_hospital"/>
+            <field name="category_id" ref="patriot_base.category_pan"/>
+            <field name="description">Stair identification</field>
+            <field name="sequence">50</field>
+            
+            <field name="length">8</field>
+            <field name="width">8</field>
+            
+            <field name="material">photopolymer</field>
+            <field name="is_ada">True</field>
+            <field name="has_tactile">True</field>
+            <field name="has_braille">True</field>
+            
+            <field name="quantity">16</field>
+            <field name="unit_cost">48.00</field>
+            <field name="unit_price">82.00</field>
+            
+            <field name="state">draft</field>
+        </record>
+        
+        <!-- ================================================================= -->
+        <!-- SIGN TYPE F - Evacuation Plan                                     -->
+        <!-- ================================================================= -->
+        <record id="sign_type_f" model="ps.sign.type">
+            <field name="name">F</field>
+            <field name="opportunity_id" ref="patriot_crm.lead_demo_hospital"/>
+            <field name="category_id" ref="patriot_base.category_evac"/>
+            <field name="description">Evacuation plan holder with insert</field>
+            <field name="sequence">60</field>
+            
+            <field name="length">11</field>
+            <field name="width">17</field>
+            
+            <field name="material">aluminum</field>
+            <field name="mounting">wall</field>
+            
+            <field name="quantity">32</field>
+            <field name="unit_cost">85.00</field>
+            <field name="unit_price">145.00</field>
+            
+            <field name="state">draft</field>
+        </record>
+        
+        <!-- ================================================================= -->
+        <!-- DEMO SIGN INSTANCES                                               -->
+        <!-- ================================================================= -->
+        
+        <!-- Type A instances (Room Numbers) -->
+        <record id="instance_a_101" model="ps.sign.instance">
+            <field name="sign_type_id" ref="sign_type_a"/>
+            <field name="sequence">1</field>
+            <field name="building">Tower</field>
+            <field name="floor">1</field>
+            <field name="room_number_plans">101</field>
+            <field name="copy_line_1">101</field>
+            <field name="state">draft</field>
+        </record>
+        
+        <record id="instance_a_102" model="ps.sign.instance">
+            <field name="sign_type_id" ref="sign_type_a"/>
+            <field name="sequence">2</field>
+            <field name="building">Tower</field>
+            <field name="floor">1</field>
+            <field name="room_number_plans">102</field>
+            <field name="copy_line_1">102</field>
+            <field name="state">draft</field>
+        </record>
+        
+        <record id="instance_a_103" model="ps.sign.instance">
+            <field name="sign_type_id" ref="sign_type_a"/>
+            <field name="sequence">3</field>
+            <field name="building">Tower</field>
+            <field name="floor">1</field>
+            <field name="room_number_plans">103</field>
+            <field name="copy_line_1">103</field>
+            <field name="state">draft</field>
+        </record>
+        
+        <!-- Type B instances (Room IDs) -->
+        <record id="instance_b_110" model="ps.sign.instance">
+            <field name="sign_type_id" ref="sign_type_b"/>
+            <field name="sequence">1</field>
+            <field name="building">Tower</field>
+            <field name="floor">1</field>
+            <field name="room_number_plans">110</field>
+            <field name="room_name_plans">Waiting Room</field>
+            <field name="copy_line_1">WAITING ROOM</field>
+            <field name="copy_line_2">110</field>
+            <field name="state">draft</field>
+        </record>
+        
+        <record id="instance_b_111" model="ps.sign.instance">
+            <field name="sign_type_id" ref="sign_type_b"/>
+            <field name="sequence">2</field>
+            <field name="building">Tower</field>
+            <field name="floor">1</field>
+            <field name="room_number_plans">111</field>
+            <field name="room_name_plans">Nurse Station</field>
+            <field name="copy_line_1">NURSE STATION</field>
+            <field name="copy_line_2">111</field>
+            <field name="state">draft</field>
+        </record>
+        
+        <!-- Type C instance (Restroom) -->
+        <record id="instance_c_m_1" model="ps.sign.instance">
+            <field name="sign_type_id" ref="sign_type_c"/>
+            <field name="sequence">1</field>
+            <field name="building">Tower</field>
+            <field name="floor">1</field>
+            <field name="room_number_plans">M-1</field>
+            <field name="copy_line_1">MEN</field>
+            <field name="pictogram_code">ISA-M</field>
+            <field name="state">draft</field>
+        </record>
+        
+        <record id="instance_c_w_1" model="ps.sign.instance">
+            <field name="sign_type_id" ref="sign_type_c"/>
+            <field name="sequence">2</field>
+            <field name="building">Tower</field>
+            <field name="floor">1</field>
+            <field name="room_number_plans">W-1</field>
+            <field name="copy_line_1">WOMEN</field>
+            <field name="pictogram_code">ISA-W</field>
+            <field name="state">draft</field>
+        </record>
+
+    </data>
+</odoo>

@@ -1,0 +1,139 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Location Tree View -->
+    <record id="ps_location_tree" model="ir.ui.view">
+        <field name="name">ps.location.tree</field>
+        <field name="model">ps.location</field>
+        <field name="arch" type="xml">
+            <tree>
+                <field name="sequence" widget="handle"/>
+                <field name="name"/>
+                <field name="location_type" widget="badge"/>
+                <field name="room_number"/>
+                <field name="room_name"/>
+                <field name="parent_id"/>
+                <field name="project_alias"/>
+                <field name="instance_count"/>
+            </tree>
+        </field>
+    </record>
+
+    <!-- Location Form View -->
+    <record id="ps_location_form" model="ir.ui.view">
+        <field name="name">ps.location.form</field>
+        <field name="model">ps.location</field>
+        <field name="arch" type="xml">
+            <form>
+                <sheet>
+                    <div class="oe_title">
+                        <label for="name"/>
+                        <h1>
+                            <field name="name"/>
+                        </h1>
+                    </div>
+                    
+                    <group>
+                        <group string="Classification">
+                            <field name="project_id"/>
+                            <field name="location_type" widget="radio"/>
+                            <field name="parent_id"/>
+                            <field name="sequence"/>
+                        </group>
+                        <group string="Room Details" 
+                               invisible="location_type != 'room'">
+                            <field name="room_number"/>
+                            <field name="room_name"/>
+                            <field name="room_number_arch"/>
+                            <field name="room_name_arch"/>
+                        </group>
+                    </group>
+                    
+                    <group invisible="location_type != 'room'">
+                        <group string="Revisions">
+                            <field name="is_revised"/>
+                            <field name="original_room_number" invisible="not is_revised"/>
+                            <field name="original_room_name" invisible="not is_revised"/>
+                            <field name="revision_of_id" invisible="not is_revised"/>
+                        </group>
+                    </group>
+                    
+                    <group invisible="location_type != 'site'">
+                        <group string="Address">
+                            <field name="address"/>
+                            <label for="city"/>
+                            <div class="o_row">
+                                <field name="city" placeholder="City"/>
+                                <field name="state_id" placeholder="State" options="{'no_create': True}"/>
+                                <field name="zip_code" placeholder="ZIP"/>
+                            </div>
+                        </group>
+                    </group>
+                    
+                    <group>
+                        <field name="notes"/>
+                    </group>
+                    
+                    <!-- Sub-locations -->
+                    <group string="Sub-Locations" invisible="child_count == 0">
+                        <field name="child_ids" nolabel="1" mode="tree">
+                            <tree>
+                                <field name="name"/>
+                                <field name="location_type"/>
+                                <field name="room_number"/>
+                            </tree>
+                        </field>
+                    </group>
+                    
+                    <!-- Sign instances at this location -->
+                    <group string="Signs at this Location" invisible="instance_count == 0">
+                        <field name="instance_ids" nolabel="1" mode="tree" readonly="1">
+                            <tree>
+                                <field name="sign_type_id"/>
+                                <field name="copy_line_1"/>
+                                <field name="state"/>
+                            </tree>
+                        </field>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- Location Search View -->
+    <record id="ps_location_search" model="ir.ui.view">
+        <field name="name">ps.location.search</field>
+        <field name="model">ps.location</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="name"/>
+                <field name="room_number"/>
+                <field name="room_name"/>
+                <field name="project_id"/>
+                <filter name="rooms" string="Rooms Only" domain="[('location_type', '=', 'room')]"/>
+                <filter name="revised" string="Revised" domain="[('is_revised', '=', True)]"/>
+                <group expand="1" string="Group By">
+                    <filter name="group_project" string="Project" context="{'group_by': 'project_id'}"/>
+                    <filter name="group_type" string="Type" context="{'group_by': 'location_type'}"/>
+                    <filter name="group_parent" string="Parent" context="{'group_by': 'parent_id'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <!-- Location Action -->
+    <record id="ps_location_action" model="ir.actions.act_window">
+        <field name="name">Locations</field>
+        <field name="res_model">ps.location</field>
+        <field name="view_mode">tree,form</field>
+        <field name="context">{'search_default_group_project': 1}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Define project locations
+            </p>
+            <p>
+                Create a hierarchical structure: Jobsite → Building → Floor → Room
+                to organize sign installations.
+            </p>
+        </field>
+    </record>
+</odoo>

@@ -1,0 +1,189 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- CRM Lead Form Extension -->
+    <record id="crm_lead_form_inherit_patriot" model="ir.ui.view">
+        <field name="name">crm.lead.form.inherit.patriot</field>
+        <field name="model">crm.lead</field>
+        <field name="inherit_id" ref="crm.crm_lead_view_form"/>
+        <field name="arch" type="xml">
+            <!-- Add stat buttons for sign types and documents -->
+            <div name="button_box" position="inside">
+                <button name="action_view_sign_types" type="object"
+                        class="oe_stat_button" icon="fa-list-ul"
+                        invisible="sign_type_count == 0">
+                    <div class="o_stat_info">
+                        <field name="sign_type_count" class="o_stat_value"/>
+                        <span class="o_stat_text">Sign Types</span>
+                    </div>
+                </button>
+                <button name="action_view_documents" type="object"
+                        class="oe_stat_button" icon="fa-file-pdf-o"
+                        invisible="document_count == 0">
+                    <div class="o_stat_info">
+                        <field name="document_count" class="o_stat_value"/>
+                        <span class="o_stat_text">Documents</span>
+                    </div>
+                </button>
+            </div>
+            
+            <!-- Add CC badge next to name -->
+            <field name="name" position="after">
+                <span class="badge text-bg-info ms-2" invisible="not is_cc_opportunity">
+                    CC Import
+                </span>
+            </field>
+            
+            <!-- Add Sign Project page -->
+            <page name="extra" position="after">
+                <page string="Sign Project" name="sign_project">
+                    <group>
+                        <group string="Project Parties">
+                            <field name="gc_partner_id" context="{'default_is_gc': True}"/>
+                            <field name="owner_partner_id" context="{'default_is_owner': True}"/>
+                            <field name="architect_partner_id" context="{'default_is_architect': True}"/>
+                        </group>
+                        <group string="Bid Details">
+                            <field name="bid_date"/>
+                            <field name="bid_time"/>
+                            <field name="bid_type"/>
+                            <field name="prebid_date"/>
+                            <field name="prebid_mandatory" invisible="not prebid_date"/>
+                        </group>
+                    </group>
+                    <group>
+                        <group string="Project Location">
+                            <field name="project_alias" placeholder="e.g., OKC Hospital"/>
+                            <field name="project_type"/>
+                            <field name="project_address"/>
+                            <label for="project_city"/>
+                            <div class="o_row">
+                                <field name="project_city" placeholder="City"/>
+                                <field name="project_state_id" placeholder="State" options="{'no_create': True}"/>
+                                <field name="project_zip" placeholder="ZIP"/>
+                            </div>
+                        </group>
+                        <group string="Workflow Status">
+                            <field name="docs_fetched"/>
+                            <field name="docs_fetched_date" invisible="not docs_fetched"/>
+                            <field name="schedule_extracted"/>
+                            <field name="estimate_created"/>
+                            <field name="bid_submitted"/>
+                            <field name="bid_submitted_date" invisible="not bid_submitted"/>
+                            <field name="bid_amount" invisible="not bid_submitted"/>
+                        </group>
+                    </group>
+                    <group string="Signage Scope">
+                        <field name="project_scope" nolabel="1" placeholder="Describe the signage scope..."/>
+                    </group>
+                    
+                    <!-- Sign Schedule Summary -->
+                    <group string="Sign Schedule" invisible="sign_type_count == 0">
+                        <field name="sign_type_ids" nolabel="1" mode="tree">
+                            <tree editable="bottom" create="0" delete="0">
+                                <field name="name"/>
+                                <field name="category_id"/>
+                                <field name="dimensions_display"/>
+                                <field name="quantity" sum="Total"/>
+                                <field name="state" widget="badge"/>
+                            </tree>
+                        </field>
+                    </group>
+                </page>
+                
+                <!-- ConstructConnect Integration page -->
+                <page string="CC Integration" name="cc_integration" 
+                      invisible="not is_cc_opportunity">
+                    <group>
+                        <group string="ConstructConnect Data">
+                            <field name="cc_project_id"/>
+                            <field name="cc_access_code"/>
+                            <field name="cc_source_url" widget="url"/>
+                        </group>
+                        <group string="Legacy Fields (Migration)">
+                            <field name="gc_name_legacy"/>
+                            <field name="owner_name_legacy"/>
+                            <field name="architect_name_legacy"/>
+                        </group>
+                    </group>
+                    <group>
+                        <field name="cc_data_json" widget="text" readonly="1"/>
+                    </group>
+                </page>
+                
+                <!-- Documents page -->
+                <page string="Documents" name="documents">
+                    <field name="document_ids" widget="many2many_binary"/>
+                </page>
+            </page>
+        </field>
+    </record>
+
+    <!-- CRM Lead Tree Extension -->
+    <record id="crm_lead_tree_inherit_patriot" model="ir.ui.view">
+        <field name="name">crm.lead.tree.inherit.patriot</field>
+        <field name="model">crm.lead</field>
+        <field name="inherit_id" ref="crm.crm_case_tree_view_leads"/>
+        <field name="arch" type="xml">
+            <field name="partner_id" position="after">
+                <field name="gc_partner_id" optional="show"/>
+                <field name="bid_date" optional="show"/>
+                <field name="sign_type_count" optional="show"/>
+                <field name="total_sign_quantity" optional="show"/>
+            </field>
+        </field>
+    </record>
+
+    <!-- Also extend opportunity tree view -->
+    <record id="crm_opportunity_tree_inherit_patriot" model="ir.ui.view">
+        <field name="name">crm.lead.tree.inherit.patriot.opp</field>
+        <field name="model">crm.lead</field>
+        <field name="inherit_id" ref="crm.crm_case_tree_view_oppor"/>
+        <field name="arch" type="xml">
+            <field name="partner_id" position="after">
+                <field name="gc_partner_id" optional="show"/>
+                <field name="bid_date" optional="show"/>
+                <field name="project_type" optional="hide"/>
+            </field>
+        </field>
+    </record>
+
+    <!-- CRM Lead Search Extension -->
+    <record id="crm_lead_search_inherit_patriot" model="ir.ui.view">
+        <field name="name">crm.lead.search.inherit.patriot</field>
+        <field name="model">crm.lead</field>
+        <field name="inherit_id" ref="crm.view_crm_case_opportunities_filter"/>
+        <field name="arch" type="xml">
+            <filter name="inactive" position="before">
+                <separator/>
+                <filter name="cc_opportunities" string="CC Opportunities" 
+                        domain="[('is_cc_opportunity', '=', True)]"/>
+                <filter name="has_sign_types" string="Has Sign Types" 
+                        domain="[('sign_type_count', '>', 0)]"/>
+                <filter name="bid_this_week" string="Bid This Week"
+                        domain="[('bid_date', '>=', (context_today() - datetime.timedelta(days=context_today().weekday())).strftime('%Y-%m-%d')),
+                                 ('bid_date', '&lt;', (context_today() + datetime.timedelta(days=7-context_today().weekday())).strftime('%Y-%m-%d'))]"/>
+                <separator/>
+            </filter>
+            <filter name="groupby_user" position="after">
+                <filter name="groupby_gc" string="GC" context="{'group_by': 'gc_partner_id'}"/>
+                <filter name="groupby_project_type" string="Project Type" context="{'group_by': 'project_type'}"/>
+                <filter name="groupby_bid_date" string="Bid Date" context="{'group_by': 'bid_date:week'}"/>
+            </filter>
+        </field>
+    </record>
+
+    <!-- Kanban view extension for CC badge -->
+    <record id="crm_lead_kanban_inherit_patriot" model="ir.ui.view">
+        <field name="name">crm.lead.kanban.inherit.patriot</field>
+        <field name="model">crm.lead</field>
+        <field name="inherit_id" ref="crm.crm_case_kanban_view_leads"/>
+        <field name="arch" type="xml">
+            <field name="partner_id" position="after">
+                <field name="is_cc_opportunity"/>
+                <field name="bid_date"/>
+                <field name="gc_partner_id"/>
+            </field>
+        </field>
+    </record>
+
+</odoo>
