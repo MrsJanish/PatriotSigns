@@ -131,20 +131,19 @@
         <field name="model">crm.lead</field>
         <field name="inherit_id" ref="crm.view_crm_case_opportunities_filter"/>
         <field name="arch" type="xml">
-            <filter name="inactive" position="before">
+            <!-- Add Patriot-specific filters at the end -->
+            <xpath expr="//search" position="inside">
                 <separator/>
                 <filter name="cc_opportunities" string="CC Opportunities" 
                         domain="[('is_cc_opportunity', '=', True)]"/>
                 <filter name="bid_this_week" string="Bid This Week"
-                        domain="[('bid_date', '>=', (context_today() - datetime.timedelta(days=context_today().weekday())).strftime('%Y-%m-%d')),
+                        domain="[('bid_date', '&gt;=', (context_today() - datetime.timedelta(days=context_today().weekday())).strftime('%Y-%m-%d')),
                                  ('bid_date', '&lt;', (context_today() + datetime.timedelta(days=7-context_today().weekday())).strftime('%Y-%m-%d'))]"/>
                 <separator/>
-            </filter>
-            <filter name="groupby_user" position="after">
                 <filter name="groupby_gc" string="GC" context="{'group_by': 'gc_partner_id'}"/>
                 <filter name="groupby_project_type" string="Project Type" context="{'group_by': 'project_type'}"/>
                 <filter name="groupby_bid_date" string="Bid Date" context="{'group_by': 'bid_date:week'}"/>
-            </filter>
+            </xpath>
         </field>
     </record>
 
