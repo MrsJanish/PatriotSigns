@@ -5,7 +5,7 @@
         <field name="name">ps.sign.type.tree</field>
         <field name="model">ps.sign.type</field>
         <field name="arch" type="xml">
-            <tree decoration-muted="state == 'canceled'"
+            <list decoration-muted="state == 'canceled'"
                   decoration-success="state == 'complete'"
                   decoration-info="state == 'production'">
                 <field name="sequence" widget="handle"/>
@@ -23,7 +23,7 @@
                        decoration-warning="state == 'draft'"
                        decoration-danger="state == 'canceled'"/>
                 <field name="supplier_id" optional="show"/>
-            </tree>
+            </list>
         </field>
     </record>
 
@@ -179,14 +179,14 @@
                         
                         <page string="Instances" name="instances">
                             <field name="instance_ids" mode="tree">
-                                <tree editable="bottom">
+                                <list editable="bottom">
                                     <field name="sequence" widget="handle"/>
                                     <field name="room_number_plans"/>
                                     <field name="room_name_plans"/>
                                     <field name="copy_line_1"/>
                                     <field name="copy_line_2"/>
                                     <field name="state" widget="badge"/>
-                                </tree>
+                                </list>
                             </field>
                         </page>
                         

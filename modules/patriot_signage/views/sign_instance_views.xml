@@ -5,7 +5,7 @@
         <field name="name">ps.sign.instance.tree</field>
         <field name="model">ps.sign.instance</field>
         <field name="arch" type="xml">
-            <tree editable="bottom"
+            <list editable="bottom"
                   decoration-success="state == 'installed'"
                   decoration-info="state in ['production', 'shipped']"
                   decoration-muted="state == 'draft'">
@@ -25,7 +25,7 @@
                        decoration-warning="state == 'draft'"/>
                 <field name="approved" optional="show"/>
                 <field name="installed" optional="show"/>
-            </tree>
+            </list>
         </field>
     </record>
 

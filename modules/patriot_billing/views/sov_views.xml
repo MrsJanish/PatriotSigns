@@ -5,12 +5,12 @@
         <field name="name">ps.sov.tree</field>
         <field name="model">ps.sov</field>
         <field name="arch" type="xml">
-            <tree>
+            <list>
                 <field name="project_id"/>
                 <field name="contract_id"/>
                 <field name="total_value" sum="Total"/>
                 <field name="state" widget="badge"/>
-            </tree>
+            </list>
         </field>
     </record>
 
@@ -46,7 +46,7 @@
                     </group>
                     
                     <field name="line_ids" mode="tree">
-                        <tree editable="bottom">
+                        <list editable="bottom">
                             <field name="sequence" widget="handle"/>
                             <field name="description"/>
                             <field name="sign_type_id"/>
@@ -55,7 +55,7 @@
                             <field name="scheduled_value" sum="Total"/>
                             <field name="billed_to_date"/>
                             <field name="remaining"/>
-                        </tree>
+                        </list>
                     </field>
                 </sheet>
                 <chatter/>

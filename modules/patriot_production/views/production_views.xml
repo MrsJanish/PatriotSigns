@@ -5,7 +5,7 @@
         <field name="name">ps.production.order.tree</field>
         <field name="model">ps.production.order</field>
         <field name="arch" type="xml">
-            <tree decoration-info="state in ['design', 'fabrication', 'assembly']"
+            <list decoration-info="state in ['design', 'fabrication', 'assembly']"
                   decoration-success="state == 'complete'"
                   decoration-warning="state == 'qc'">
                 <field name="name"/>
@@ -16,7 +16,7 @@
                 <field name="workcenter_id" optional="show"/>
                 <field name="priority" widget="priority"/>
                 <field name="state" widget="badge"/>
-            </tree>
+            </list>
         </field>
     </record>
 
@@ -78,12 +78,12 @@
                     <notebook>
                         <page string="Sign Instances">
                             <field name="instance_ids" mode="tree">
-                                <tree>
+                                <list>
                                     <field name="sign_type_id"/>
                                     <field name="room_number_plans"/>
                                     <field name="copy_line_1"/>
                                     <field name="state" widget="badge"/>
-                                </tree>
+                                </list>
                             </field>
                         </page>
                         <page string="Notes">
@@ -137,7 +137,7 @@
         <field name="name">ps.quality.check.tree</field>
         <field name="model">ps.quality.check</field>
         <field name="arch" type="xml">
-            <tree decoration-success="result == 'pass'"
+            <list decoration-success="result == 'pass'"
                   decoration-danger="result == 'fail'"
                   decoration-warning="result == 'rework'">
                 <field name="production_order_id"/>
@@ -146,7 +146,7 @@
                 <field name="check_date"/>
                 <field name="checked_by"/>
                 <field name="result" widget="badge"/>
-            </tree>
+            </list>
         </field>
     </record>
 

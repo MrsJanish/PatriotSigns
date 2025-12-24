@@ -5,7 +5,7 @@
         <field name="name">sign.subtype.tree</field>
         <field name="model">sign.subtype</field>
         <field name="arch" type="xml">
-            <tree>
+            <list>
                 <field name="sequence" widget="handle"/>
                 <field name="name"/>
                 <field name="display_name_custom"/>
@@ -16,7 +16,7 @@
                        decoration-success="setup_status == 'completed'"
                        decoration-warning="setup_status == 'draft'"/>
                 <field name="active" invisible="1"/>
-            </tree>
+            </list>
         </field>
     </record>
 

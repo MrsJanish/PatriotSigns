@@ -5,7 +5,7 @@
         <field name="name">sign.category.tree</field>
         <field name="model">sign.category</field>
         <field name="arch" type="xml">
-            <tree>
+            <list>
                 <field name="sequence" widget="handle"/>
                 <field name="code"/>
                 <field name="name"/>
@@ -14,7 +14,7 @@
                 <field name="subtype_count"/>
                 <field name="color" widget="color_picker"/>
                 <field name="active" invisible="1"/>
-            </tree>
+            </list>
         </field>
     </record>
 

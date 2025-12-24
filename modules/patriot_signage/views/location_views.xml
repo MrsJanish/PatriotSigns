@@ -5,7 +5,7 @@
         <field name="name">ps.location.tree</field>
         <field name="model">ps.location</field>
         <field name="arch" type="xml">
-            <tree>
+            <list>
                 <field name="sequence" widget="handle"/>
                 <field name="name"/>
                 <field name="location_type" widget="badge"/>
@@ -14,7 +14,7 @@
                 <field name="parent_id"/>
                 <field name="project_alias"/>
                 <field name="instance_count"/>
-            </tree>
+            </list>
         </field>
     </record>
 
@@ -76,22 +76,22 @@
                     <!-- Sub-locations -->
                     <group string="Sub-Locations" invisible="child_count == 0">
                         <field name="child_ids" nolabel="1" mode="tree">
-                            <tree>
+                            <list>
                                 <field name="name"/>
                                 <field name="location_type"/>
                                 <field name="room_number"/>
-                            </tree>
+                            </list>
                         </field>
                     </group>
                     
                     <!-- Sign instances at this location -->
                     <group string="Signs at this Location" invisible="instance_count == 0">
                         <field name="instance_ids" nolabel="1" mode="tree" readonly="1">
-                            <tree>
+                            <list>
                                 <field name="sign_type_id"/>
                                 <field name="copy_line_1"/>
                                 <field name="state"/>
-                            </tree>
+                            </list>
                         </field>
                     </group>
                 </sheet>

@@ -5,14 +5,14 @@
         <field name="name">ps.crew.tree</field>
         <field name="model">ps.crew</field>
         <field name="arch" type="xml">
-            <tree>
+            <list>
                 <field name="code"/>
                 <field name="name"/>
                 <field name="lead_id"/>
                 <field name="member_count"/>
                 <field name="has_lift_cert"/>
                 <field name="vehicle"/>
-            </tree>
+            </list>
         </field>
     </record>
 

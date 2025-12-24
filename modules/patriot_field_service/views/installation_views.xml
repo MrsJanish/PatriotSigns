@@ -5,7 +5,7 @@
         <field name="name">ps.installation.tree</field>
         <field name="model">ps.installation</field>
         <field name="arch" type="xml">
-            <tree decoration-success="state == 'complete'"
+            <list decoration-success="state == 'complete'"
                   decoration-info="state == 'in_progress'"
                   decoration-warning="state == 'partial'">
                 <field name="name"/>
@@ -15,7 +15,7 @@
                 <field name="instance_count"/>
                 <field name="installed_count"/>
                 <field name="state" widget="badge"/>
-            </tree>
+            </list>
         </field>
     </record>
 
@@ -73,13 +73,13 @@
                     <notebook>
                         <page string="Signs to Install">
                             <field name="instance_ids" mode="tree">
-                                <tree>
+                                <list>
                                     <field name="sign_type_id"/>
                                     <field name="room_number_plans"/>
                                     <field name="copy_line_1"/>
                                     <field name="installed"/>
                                     <field name="state" widget="badge"/>
-                                </tree>
+                                </list>
                             </field>
                         </page>
                         
@@ -101,13 +101,13 @@
                         
                         <page string="Punchlist" name="punchlist">
                             <field name="punchlist_ids" mode="tree">
-                                <tree editable="bottom">
+                                <list editable="bottom">
                                     <field name="sequence" widget="handle"/>
                                     <field name="instance_id"/>
                                     <field name="issue_type"/>
                                     <field name="description"/>
                                     <field name="state" widget="badge"/>
-                                </tree>
+                                </list>
                             </field>
                         </page>
                         

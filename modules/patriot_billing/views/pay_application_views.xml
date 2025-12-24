@@ -5,7 +5,7 @@
         <field name="name">ps.pay.application.tree</field>
         <field name="model">ps.pay.application</field>
         <field name="arch" type="xml">
-            <tree decoration-success="state == 'paid'"
+            <list decoration-success="state == 'paid'"
                   decoration-info="state in ['approved', 'invoiced']">
                 <field name="application_number"/>
                 <field name="project_id"/>
@@ -16,7 +16,7 @@
                 <field name="retainage_amount"/>
                 <field name="current_payment_due" sum="Total Due"/>
                 <field name="state" widget="badge"/>
-            </tree>
+            </list>
         </field>
     </record>
 
@@ -56,7 +56,7 @@
                     <notebook>
                         <page string="Line Items" name="lines">
                             <field name="line_ids" mode="tree">
-                                <tree editable="bottom">
+                                <list editable="bottom">
                                     <field name="sequence" widget="handle"/>
                                     <field name="description"/>
                                     <field name="is_change_order"/>
@@ -67,7 +67,7 @@
                                     <field name="completed_to_date" sum="Total"/>
                                     <field name="percent_complete" widget="progressbar"/>
                                     <field name="balance_to_finish" sum="Balance"/>
-                                </tree>
+                                </list>
                             </field>
                         </page>
                         

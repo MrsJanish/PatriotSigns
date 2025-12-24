@@ -67,7 +67,7 @@
         <field name="name">ps.contract.tree</field>
         <field name="model">ps.contract</field>
         <field name="arch" type="xml">
-            <tree>
+            <list>
                 <field name="name"/>
                 <field name="project_id"/>
                 <field name="gc_partner_id"/>
@@ -76,7 +76,7 @@
                 <field name="change_order_total"/>
                 <field name="revised_amount" sum="Total"/>
                 <field name="state" widget="badge"/>
-            </tree>
+            </list>
         </field>
     </record>
 
@@ -128,14 +128,14 @@
                         </page>
                         <page string="Change Orders">
                             <field name="change_order_ids" mode="tree">
-                                <tree editable="bottom">
+                                <list editable="bottom">
                                     <field name="sequence" widget="handle"/>
                                     <field name="name"/>
                                     <field name="description"/>
                                     <field name="reason"/>
                                     <field name="amount" sum="Total"/>
                                     <field name="state" widget="badge"/>
-                                </tree>
+                                </list>
                             </field>
                         </page>
                     </notebook>

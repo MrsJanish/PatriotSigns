@@ -5,7 +5,7 @@
         <field name="name">sign.dimension.tree</field>
         <field name="model">sign.dimension</field>
         <field name="arch" type="xml">
-            <tree>
+            <list>
                 <field name="sequence" widget="handle"/>
                 <field name="name"/>
                 <field name="width_in"/>
@@ -16,7 +16,7 @@
                 <field name="can_be_round" optional="hide"/>
                 <field name="usage_count" optional="show"/>
                 <field name="active" invisible="1"/>
-            </tree>
+            </list>
         </field>
     </record>
 

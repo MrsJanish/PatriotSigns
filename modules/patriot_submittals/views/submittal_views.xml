@@ -5,7 +5,7 @@
         <field name="name">ps.submittal.tree</field>
         <field name="model">ps.submittal</field>
         <field name="arch" type="xml">
-            <tree decoration-success="is_approved"
+            <list decoration-success="is_approved"
                   decoration-warning="response == 'revise'"
                   decoration-danger="response == 'rejected'">
                 <field name="name"/>
@@ -17,7 +17,7 @@
                 <field name="response" widget="badge"/>
                 <field name="state" widget="badge"/>
                 <field name="is_approved" column_invisible="True"/>
-            </tree>
+            </list>
         </field>
     </record>
 
@@ -94,12 +94,12 @@
                         </page>
                         <page string="Sign Types">
                             <field name="sign_type_ids" mode="tree">
-                                <tree>
+                                <list>
                                     <field name="name"/>
                                     <field name="category_id"/>
                                     <field name="dimensions_display"/>
                                     <field name="quantity"/>
-                                </tree>
+                                </list>
                             </field>
                         </page>
                         <page string="Attachments">
