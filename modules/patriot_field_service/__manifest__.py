@@ -23,6 +23,7 @@ Manages all field activities after signs leave the shop.
     ],
     'data': [
         'security/ir.model.access.csv',
+        'data/default_crew.xml',
         'views/installation_views.xml',
         'views/crew_views.xml',
         'views/menu.xml',

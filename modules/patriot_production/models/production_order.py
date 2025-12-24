@@ -201,10 +201,19 @@ class ProductionOrder(models.Model):
         from datetime import timedelta
         install_date = fields.Date.today() + timedelta(days=7)
         
+        # Get default crew
+        default_crew = self.env.ref('patriot_field_service.crew_install_a', raise_if_not_found=False)
+        
+        # Get travel cost from opportunity
+        travel_cost = 0.0
+        if self.project_id.opportunity_id:
+            travel_cost = self.project_id.opportunity_id.travel_cost or 0.0
+        
         installation = Installation.create({
             'name': f"INST-{self.project_id.name}",
             'project_id': self.project_id.id,
             'scheduled_date': install_date,
+            'crew_id': default_crew.id if default_crew else False,
             'instance_ids': [(6, 0, self.instance_ids.ids)] if self.instance_ids else [],
             'state': 'scheduled',
         })
