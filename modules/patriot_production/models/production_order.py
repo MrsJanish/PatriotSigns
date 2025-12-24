@@ -168,7 +168,7 @@ class ProductionOrder(models.Model):
             'type': 'ir.actions.act_window',
             'name': f'Manufacturing Orders - {self.name}',
             'res_model': 'mrp.production',
-            'view_mode': 'tree,form',
+            'view_mode': 'list,form',
             'domain': [('ps_production_order_id', '=', self.id)],
             'context': {'default_ps_production_order_id': self.id},
         }

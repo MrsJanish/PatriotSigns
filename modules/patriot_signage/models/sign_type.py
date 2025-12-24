@@ -456,7 +456,7 @@ class SignType(models.Model):
             'type': 'ir.actions.act_window',
             'name': f'Instances - {self.name}',
             'res_model': 'ps.sign.instance',
-            'view_mode': 'tree,form',
+            'view_mode': 'list,form',
             'domain': [('sign_type_id', '=', self.id)],
             'context': {'default_sign_type_id': self.id},
         }

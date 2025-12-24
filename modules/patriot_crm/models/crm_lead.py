@@ -221,7 +221,7 @@ class CrmLead(models.Model):
             'type': 'ir.actions.act_window',
             'name': f'Sign Types - {self.name}',
             'res_model': 'ps.sign.type',
-            'view_mode': 'tree,form',
+            'view_mode': 'list,form',
             'domain': [('opportunity_id', '=', self.id)],
             'context': {'default_opportunity_id': self.id},
         }
