@@ -173,6 +173,44 @@ class ProductionOrder(models.Model):
             'context': {'default_ps_production_order_id': self.id},
         }
 
+    def action_ship(self):
+        """Mark as shipped and create installation"""
+        for order in self:
+            order.write({'state': 'shipped'})
+            # Update project stage
+            if order.project_id:
+                order.project_id.write({'project_stage': 'shipping'})
+            # Create installation record
+            order._create_installation()
+        
+    def _create_installation(self):
+        """Create installation record when production ships"""
+        self.ensure_one()
+        Installation = self.env.get('ps.installation')
+        if not Installation:
+            return False
+        
+        # Check if installation already exists
+        existing = Installation.search([
+            ('project_id', '=', self.project_id.id)
+        ], limit=1)
+        if existing:
+            return existing
+        
+        # Calculate install date (1 week from now by default)
+        from datetime import timedelta
+        install_date = fields.Date.today() + timedelta(days=7)
+        
+        installation = Installation.create({
+            'name': f"INST-{self.project_id.name}",
+            'project_id': self.project_id.id,
+            'scheduled_date': install_date,
+            'instance_ids': [(6, 0, self.instance_ids.ids)] if self.instance_ids else [],
+            'state': 'scheduled',
+        })
+        return installation
+
+
 
 class QualityCheck(models.Model):
     """

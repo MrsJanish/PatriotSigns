@@ -231,7 +231,7 @@ class Installation(models.Model):
         })
 
     def action_complete(self):
-        """Complete installation"""
+        """Complete installation and trigger billing"""
         self.write({
             'state': 'complete',
             'actual_end': fields.Datetime.now(),
@@ -242,6 +242,35 @@ class Installation(models.Model):
             'installed_date': fields.Date.today(),
             'state': 'installed',
         })
+        # Update project stage
+        for install in self:
+            if install.project_id:
+                install.project_id.write({'project_stage': 'punchlist'})
+            # Create pay application
+            install._create_pay_application()
+
+    def _create_pay_application(self):
+        """Create pay application when installation completes"""
+        self.ensure_one()
+        PayApp = self.env.get('ps.pay.application')
+        if not PayApp:
+            return False
+        
+        # Get existing pay apps for this project
+        existing = PayApp.search([
+            ('project_id', '=', self.project_id.id)
+        ], order='application_number desc', limit=1)
+        next_number = (existing.application_number + 1) if existing else 1
+        
+        # Create pay application
+        pay_app = PayApp.create({
+            'application_number': next_number,
+            'project_id': self.project_id.id,
+            'period_start': fields.Date.today(),
+            'period_end': fields.Date.today(),
+            'state': 'draft',
+        })
+        return pay_app
 
 
 class PunchlistItem(models.Model):

@@ -25,6 +25,7 @@ Integrates with Odoo Accounting for invoicing.
     ],
     'data': [
         'security/ir.model.access.csv',
+        'data/sov_template.xml',
         'views/pay_application_views.xml',
         'views/sov_views.xml',
         'views/menu.xml',

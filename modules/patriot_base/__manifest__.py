@@ -20,6 +20,8 @@ This module must be installed before other Patriot Signs modules.
     'depends': [
         'base',
         'contacts',
+        'product',
+        'uom',
     ],
     'data': [
         'security/ir.model.access.csv',
@@ -27,6 +29,8 @@ This module must be installed before other Patriot Signs modules.
         'data/sign_categories.xml',
         'data/sign_subtypes.xml',
         'data/sign_dimensions.xml',
+        'data/sign_products.xml',
+        'data/labor_rates.xml',
         'views/sign_category_views.xml',
         'views/sign_subtype_views.xml',
         'views/sign_dimension_views.xml',

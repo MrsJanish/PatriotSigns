@@ -334,3 +334,86 @@ class CrmLead(models.Model):
                     vals['architect_partner_id'] = partner.id
         
         return super().create(vals_list)
+
+    # =========================================================================
+    # WORKFLOW AUTOMATIONS
+    # =========================================================================
+    
+    def action_set_won_rainbowman(self):
+        """
+        Override Won action to trigger project creation workflow.
+        
+        When opportunity is marked as Won:
+        1. Create a Project record
+        2. Create initial Submittal record
+        3. Copy over sign types and project data
+        """
+        # Call parent method first
+        result = super().action_set_won_rainbowman()
+        
+        # Trigger project creation for each won opportunity
+        for lead in self:
+            lead._create_project_from_won()
+        
+        return result
+
+    def _create_project_from_won(self):
+        """Create project and related records when opportunity is won"""
+        self.ensure_one()
+        
+        # Check if project already exists
+        Project = self.env['project.project']
+        existing = Project.search([('opportunity_id', '=', self.id)], limit=1)
+        if existing:
+            _logger.info(f"Project already exists for opportunity {self.name}")
+            return existing
+        
+        # Create the project
+        project = Project.create_from_opportunity(self)
+        _logger.info(f"Created project {project.name} from opportunity {self.name}")
+        
+        # Create initial submittal
+        self._create_initial_submittal(project)
+        
+        # Create production order placeholder
+        self._create_production_order(project)
+        
+        return project
+
+    def _create_initial_submittal(self, project):
+        """Create the initial shop drawing submittal for a new project"""
+        Submittal = self.env.get('ps.submittal')
+        if not Submittal:
+            return False
+        
+        # Get sign types from this opportunity
+        sign_types = self.env['ps.sign.type'].search([
+            ('opportunity_id', '=', self.id)
+        ])
+        
+        submittal = Submittal.create({
+            'name': f"{project.name} - Shop Drawings",
+            'project_id': project.id,
+            'submittal_type': 'shop',
+            'spec_section': '10 14 00',
+            'spec_title': 'Interior Signage',
+            'sign_type_ids': [(6, 0, sign_types.ids)] if sign_types else [],
+            'state': 'draft',
+        })
+        _logger.info(f"Created submittal {submittal.name} for project {project.name}")
+        return submittal
+
+    def _create_production_order(self, project):
+        """Create a production order placeholder for the project"""
+        ProductionOrder = self.env.get('ps.production.order')
+        if not ProductionOrder:
+            return False
+        
+        production = ProductionOrder.create({
+            'name': f"PO-{project.name}",
+            'project_id': project.id,
+            'opportunity_id': self.id,
+            'state': 'draft',
+        })
+        _logger.info(f"Created production order {production.name} for project {project.name}")
+        return production

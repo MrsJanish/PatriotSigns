@@ -1,0 +1,320 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+        <!-- 
+            Sign Product Catalog
+            These are template products for quoting and sales orders.
+            Prices are placeholders - update with actual pricing.
+        -->
+
+        <!-- Product Category: Signs -->
+        <record id="product_category_signs" model="product.category">
+            <field name="name">Signs</field>
+        </record>
+
+        <record id="product_category_ada" model="product.category">
+            <field name="name">ADA Signs</field>
+            <field name="parent_id" ref="product_category_signs"/>
+        </record>
+
+        <record id="product_category_wayfinding" model="product.category">
+            <field name="name">Wayfinding Signs</field>
+            <field name="parent_id" ref="product_category_signs"/>
+        </record>
+
+        <record id="product_category_directory" model="product.category">
+            <field name="name">Directory Signs</field>
+            <field name="parent_id" ref="product_category_signs"/>
+        </record>
+
+        <record id="product_category_monument" model="product.category">
+            <field name="name">Monument Signs</field>
+            <field name="parent_id" ref="product_category_signs"/>
+        </record>
+
+        <record id="product_category_parking" model="product.category">
+            <field name="name">Parking Signs</field>
+            <field name="parent_id" ref="product_category_signs"/>
+        </record>
+
+        <record id="product_category_installation" model="product.category">
+            <field name="name">Installation Services</field>
+            <field name="parent_id" ref="product_category_signs"/>
+        </record>
+
+        <!-- ================================================================= -->
+        <!-- ADA SIGN PRODUCTS -->
+        <!-- ================================================================= -->
+
+        <record id="product_ada_room_id" model="product.template">
+            <field name="name">ADA Room ID Sign</field>
+            <field name="categ_id" ref="product_category_ada"/>
+            <field name="type">consu</field>
+            <field name="list_price">150.00</field>
+            <field name="standard_price">45.00</field>
+            <field name="description_sale">ADA compliant room identification sign with raised text and Grade 2 Braille. Standard 6"x8" size.</field>
+            <field name="default_code">ADA-RID</field>
+        </record>
+
+        <record id="product_ada_restroom" model="product.template">
+            <field name="name">ADA Restroom Sign</field>
+            <field name="categ_id" ref="product_category_ada"/>
+            <field name="type">consu</field>
+            <field name="list_price">175.00</field>
+            <field name="standard_price">55.00</field>
+            <field name="description_sale">ADA compliant restroom sign with pictogram, raised text, and Grade 2 Braille.</field>
+            <field name="default_code">ADA-REST</field>
+        </record>
+
+        <record id="product_ada_exit" model="product.template">
+            <field name="name">ADA Exit Sign</field>
+            <field name="categ_id" ref="product_category_ada"/>
+            <field name="type">consu</field>
+            <field name="list_price">125.00</field>
+            <field name="standard_price">35.00</field>
+            <field name="description_sale">ADA compliant exit sign with raised text and Grade 2 Braille.</field>
+            <field name="default_code">ADA-EXIT</field>
+        </record>
+
+        <record id="product_ada_stair" model="product.template">
+            <field name="name">ADA Stair Sign</field>
+            <field name="categ_id" ref="product_category_ada"/>
+            <field name="type">consu</field>
+            <field name="list_price">165.00</field>
+            <field name="standard_price">50.00</field>
+            <field name="description_sale">ADA compliant stair identification with raised floor numbers and Grade 2 Braille.</field>
+            <field name="default_code">ADA-STAIR</field>
+        </record>
+
+        <record id="product_ada_elevator" model="product.template">
+            <field name="name">ADA Elevator Sign</field>
+            <field name="categ_id" ref="product_category_ada"/>
+            <field name="type">consu</field>
+            <field name="list_price">185.00</field>
+            <field name="standard_price">60.00</field>
+            <field name="description_sale">ADA compliant elevator jamb sign with raised floor designation and Grade 2 Braille.</field>
+            <field name="default_code">ADA-ELEV</field>
+        </record>
+
+        <!-- ================================================================= -->
+        <!-- WAYFINDING PRODUCTS -->
+        <!-- ================================================================= -->
+
+        <record id="product_wf_overhead" model="product.template">
+            <field name="name">Overhead Directional Sign</field>
+            <field name="categ_id" ref="product_category_wayfinding"/>
+            <field name="type">consu</field>
+            <field name="list_price">450.00</field>
+            <field name="standard_price">150.00</field>
+            <field name="description_sale">Double-sided overhead directional sign with ceiling mount hardware. 24"x6" standard size.</field>
+            <field name="default_code">WF-OVER</field>
+        </record>
+
+        <record id="product_wf_wall" model="product.template">
+            <field name="name">Wall-Mount Directional Sign</field>
+            <field name="categ_id" ref="product_category_wayfinding"/>
+            <field name="type">consu</field>
+            <field name="list_price">275.00</field>
+            <field name="standard_price">85.00</field>
+            <field name="description_sale">Wall-mounted directional sign with arrows and department listings.</field>
+            <field name="default_code">WF-WALL</field>
+        </record>
+
+        <record id="product_wf_flag" model="product.template">
+            <field name="name">Flag Mount Projecting Sign</field>
+            <field name="categ_id" ref="product_category_wayfinding"/>
+            <field name="type">consu</field>
+            <field name="list_price">350.00</field>
+            <field name="standard_price">120.00</field>
+            <field name="description_sale">Double-sided projecting sign with flag mount bracket.</field>
+            <field name="default_code">WF-FLAG</field>
+        </record>
+
+        <record id="product_wf_pylon" model="product.template">
+            <field name="name">Interior Pylon Sign</field>
+            <field name="categ_id" ref="product_category_wayfinding"/>
+            <field name="type">consu</field>
+            <field name="list_price">1200.00</field>
+            <field name="standard_price">450.00</field>
+            <field name="description_sale">Freestanding interior pylon/totem directional sign.</field>
+            <field name="default_code">WF-PYLON</field>
+        </record>
+
+        <!-- ================================================================= -->
+        <!-- DIRECTORY PRODUCTS -->
+        <!-- ================================================================= -->
+
+        <record id="product_dir_wall" model="product.template">
+            <field name="name">Wall Directory - Small</field>
+            <field name="categ_id" ref="product_category_directory"/>
+            <field name="type">consu</field>
+            <field name="list_price">1500.00</field>
+            <field name="standard_price">550.00</field>
+            <field name="description_sale">Wall-mounted directory with changeable nameplates. Up to 20 listings. 24"x36".</field>
+            <field name="default_code">DIR-SM</field>
+        </record>
+
+        <record id="product_dir_wall_lg" model="product.template">
+            <field name="name">Wall Directory - Large</field>
+            <field name="categ_id" ref="product_category_directory"/>
+            <field name="type">consu</field>
+            <field name="list_price">2500.00</field>
+            <field name="standard_price">950.00</field>
+            <field name="description_sale">Large wall-mounted directory with changeable nameplates. Up to 50 listings. 36"x48".</field>
+            <field name="default_code">DIR-LG</field>
+        </record>
+
+        <record id="product_dir_floor" model="product.template">
+            <field name="name">Floor-Standing Directory</field>
+            <field name="categ_id" ref="product_category_directory"/>
+            <field name="type">consu</field>
+            <field name="list_price">3500.00</field>
+            <field name="standard_price">1350.00</field>
+            <field name="description_sale">Freestanding lobby directory with building map and tenant listings.</field>
+            <field name="default_code">DIR-FLOOR</field>
+        </record>
+
+        <record id="product_dir_digital" model="product.template">
+            <field name="name">Digital Directory Display</field>
+            <field name="categ_id" ref="product_category_directory"/>
+            <field name="type">consu</field>
+            <field name="list_price">8500.00</field>
+            <field name="standard_price">4500.00</field>
+            <field name="description_sale">Interactive digital directory with touchscreen and wayfinding. 42" display.</field>
+            <field name="default_code">DIR-DIGI</field>
+        </record>
+
+        <!-- ================================================================= -->
+        <!-- MONUMENT PRODUCTS -->
+        <!-- ================================================================= -->
+
+        <record id="product_mon_small" model="product.template">
+            <field name="name">Monument Sign - Small</field>
+            <field name="categ_id" ref="product_category_monument"/>
+            <field name="type">consu</field>
+            <field name="list_price">8500.00</field>
+            <field name="standard_price">3500.00</field>
+            <field name="description_sale">Exterior monument sign, single-sided. Up to 4' x 6'. Includes foundation.</field>
+            <field name="default_code">MON-SM</field>
+        </record>
+
+        <record id="product_mon_medium" model="product.template">
+            <field name="name">Monument Sign - Medium</field>
+            <field name="categ_id" ref="product_category_monument"/>
+            <field name="type">consu</field>
+            <field name="list_price">15000.00</field>
+            <field name="standard_price">6500.00</field>
+            <field name="description_sale">Exterior monument sign, double-sided. Up to 6' x 8'. Includes foundation and illumination.</field>
+            <field name="default_code">MON-MD</field>
+        </record>
+
+        <record id="product_mon_large" model="product.template">
+            <field name="name">Monument Sign - Large</field>
+            <field name="categ_id" ref="product_category_monument"/>
+            <field name="type">consu</field>
+            <field name="list_price">35000.00</field>
+            <field name="standard_price">15000.00</field>
+            <field name="description_sale">Large exterior monument/pylon sign. Up to 15' height. Includes foundation, illumination, and electrical.</field>
+            <field name="default_code">MON-LG</field>
+        </record>
+
+        <!-- ================================================================= -->
+        <!-- PARKING PRODUCTS -->
+        <!-- ================================================================= -->
+
+        <record id="product_pkg_post" model="product.template">
+            <field name="name">Parking Post Sign</field>
+            <field name="categ_id" ref="product_category_parking"/>
+            <field name="type">consu</field>
+            <field name="list_price">225.00</field>
+            <field name="standard_price">75.00</field>
+            <field name="description_sale">Exterior parking sign on post. 12"x18" aluminum with reflective finish.</field>
+            <field name="default_code">PKG-POST</field>
+        </record>
+
+        <record id="product_pkg_wall" model="product.template">
+            <field name="name">Parking Wall Sign</field>
+            <field name="categ_id" ref="product_category_parking"/>
+            <field name="type">consu</field>
+            <field name="list_price">150.00</field>
+            <field name="standard_price">45.00</field>
+            <field name="description_sale">Wall-mounted parking sign. 12"x18" aluminum.</field>
+            <field name="default_code">PKG-WALL</field>
+        </record>
+
+        <record id="product_pkg_ada" model="product.template">
+            <field name="name">ADA Parking Sign</field>
+            <field name="categ_id" ref="product_category_parking"/>
+            <field name="type">consu</field>
+            <field name="list_price">275.00</field>
+            <field name="standard_price">95.00</field>
+            <field name="description_sale">ADA accessible parking sign with R7-8 symbol and state-specific text. On post.</field>
+            <field name="default_code">PKG-ADA</field>
+        </record>
+
+        <record id="product_pkg_garage" model="product.template">
+            <field name="name">Parking Garage Directional</field>
+            <field name="categ_id" ref="product_category_parking"/>
+            <field name="type">consu</field>
+            <field name="list_price">350.00</field>
+            <field name="standard_price">125.00</field>
+            <field name="description_sale">Interior parking garage directional sign with arrows. Ceiling or wall mount.</field>
+            <field name="default_code">PKG-DIR</field>
+        </record>
+
+        <!-- ================================================================= -->
+        <!-- INSTALLATION SERVICES -->
+        <!-- ================================================================= -->
+
+        <record id="product_install_interior" model="product.template">
+            <field name="name">Interior Sign Installation</field>
+            <field name="categ_id" ref="product_category_installation"/>
+            <field name="type">service</field>
+            <field name="list_price">45.00</field>
+            <field name="standard_price">25.00</field>
+            <field name="description_sale">Installation of interior sign. Price per sign. Includes hardware.</field>
+            <field name="default_code">INST-INT</field>
+        </record>
+
+        <record id="product_install_exterior" model="product.template">
+            <field name="name">Exterior Sign Installation</field>
+            <field name="categ_id" ref="product_category_installation"/>
+            <field name="type">service</field>
+            <field name="list_price">125.00</field>
+            <field name="standard_price">65.00</field>
+            <field name="description_sale">Installation of exterior sign. Price per sign. Includes hardware and sealant.</field>
+            <field name="default_code">INST-EXT</field>
+        </record>
+
+        <record id="product_install_monument" model="product.template">
+            <field name="name">Monument Sign Installation</field>
+            <field name="categ_id" ref="product_category_installation"/>
+            <field name="type">service</field>
+            <field name="list_price">2500.00</field>
+            <field name="standard_price">1200.00</field>
+            <field name="description_sale">Monument sign installation including foundation prep, setting, and electrical hookup.</field>
+            <field name="default_code">INST-MON</field>
+        </record>
+
+        <record id="product_install_lift" model="product.template">
+            <field name="name">Lift Rental - Per Day</field>
+            <field name="categ_id" ref="product_category_installation"/>
+            <field name="type">service</field>
+            <field name="list_price">350.00</field>
+            <field name="standard_price">200.00</field>
+            <field name="description_sale">Scissor lift or boom lift rental for sign installation access.</field>
+            <field name="default_code">INST-LIFT</field>
+        </record>
+
+        <record id="product_install_travel" model="product.template">
+            <field name="name">Travel/Mobilization</field>
+            <field name="categ_id" ref="product_category_installation"/>
+            <field name="type">service</field>
+            <field name="list_price">1.50</field>
+            <field name="standard_price">0.75</field>
+            <field name="description_sale">Travel and mobilization charge. Price per mile.</field>
+            <field name="default_code">INST-TRAV</field>
+        </record>
+
+    </data>
+</odoo>
