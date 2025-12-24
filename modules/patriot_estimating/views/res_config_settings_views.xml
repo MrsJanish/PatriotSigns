@@ -54,15 +54,11 @@
             <field name="context">{'module' : 'patriot_estimating'}</field>
         </record>
 
-        <menuitem id="menu_pricing_settings"
-            name="Configuration"
-            parent="menu_estimations_root"
-            sequence="100"/>
-
         <menuitem id="menu_pricing_settings_action"
-            name="Settings"
-            parent="menu_pricing_settings"
+            name="Estimating Settings"
+            parent="patriot_base.menu_configuration"
             action="action_pricing_config_settings"
+            sequence="20"
             groups="base.group_system"/>
     </data>
 </odoo>
