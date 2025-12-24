@@ -12,7 +12,7 @@
             <field name="work_email">brysont8@gmail.com</field>
             <field name="work_phone">+1 405-658-7304</field>
             <field name="mobile_phone">+1 405-658-7304</field>
-            <field name="job_title">Installer</field>
+            <field name="job_title">Production / Installer</field>
         </record>
 
         <!-- Darrell Janish -->
@@ -39,7 +39,7 @@
             <field name="work_email">robert@omegalaserdesign.com</field>
             <field name="work_phone">+1 405-202-3211</field>
             <field name="mobile_phone">+1 405-202-3211</field>
-            <field name="job_title">Installer</field>
+            <field name="job_title">Production / Installer</field>
         </record>
 
         <!-- Robert L. Barcum -->
