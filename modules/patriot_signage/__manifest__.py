@@ -27,6 +27,7 @@ bid intake through production and installation.
         'views/sign_type_views.xml',
         'views/sign_instance_views.xml',
         'views/location_views.xml',
+        'views/crm_lead_views.xml',
         'views/menu.xml',
     ],
     'installable': True,

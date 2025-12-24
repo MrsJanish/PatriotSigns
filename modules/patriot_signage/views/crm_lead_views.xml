@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- 
+        CRM Lead view extensions for sign types.
+        These views are in patriot_signage (not patriot_crm) because
+        they reference ps.sign.type which is defined in this module.
+    -->
+    
+    <!-- Add Sign Types stat button to CRM Lead form -->
+    <record id="crm_lead_form_inherit_signage" model="ir.ui.view">
+        <field name="name">crm.lead.form.inherit.signage</field>
+        <field name="model">crm.lead</field>
+        <field name="inherit_id" ref="crm.crm_lead_view_form"/>
+        <field name="priority">20</field>
+        <field name="arch" type="xml">
+            <!-- Add stat button for sign types -->
+            <div name="button_box" position="inside">
+                <button name="action_view_sign_types" type="object"
+                        class="oe_stat_button" icon="fa-list-ul"
+                        invisible="sign_type_count == 0">
+                    <div class="o_stat_info">
+                        <field name="sign_type_count" class="o_stat_value"/>
+                        <span class="o_stat_text">Sign Types</span>
+                    </div>
+                </button>
+            </div>
+            
+            <!-- Add Sign Schedule page within Sign Project page -->
+            <xpath expr="//page[@name='sign_project']//group[@string='Signage Scope']" position="after">
+                <group string="Sign Schedule" invisible="sign_type_count == 0">
+                    <field name="sign_type_ids" nolabel="1" mode="tree">
+                        <list editable="bottom" create="0" delete="0">
+                            <field name="name"/>
+                            <field name="category_id"/>
+                            <field name="dimensions_display"/>
+                            <field name="quantity" sum="Total"/>
+                            <field name="state" widget="badge"/>
+                        </list>
+                    </field>
+                </group>
+            </xpath>
+        </field>
+    </record>
+
+    <!-- Add sign_type_count to leads tree view -->
+    <record id="crm_lead_tree_inherit_signage" model="ir.ui.view">
+        <field name="name">crm.lead.tree.inherit.signage</field>
+        <field name="model">crm.lead</field>
+        <field name="inherit_id" ref="crm.crm_case_tree_view_leads"/>
+        <field name="priority">20</field>
+        <field name="arch" type="xml">
+            <xpath expr="//list" position="inside">
+                <field name="sign_type_count" optional="show"/>
+                <field name="total_sign_quantity" optional="show"/>
+            </xpath>
+        </field>
+    </record>
+
+    <!-- Add sign types filter to search view -->
+    <record id="crm_lead_search_inherit_signage" model="ir.ui.view">
+        <field name="name">crm.lead.search.inherit.signage</field>
+        <field name="model">crm.lead</field>
+        <field name="inherit_id" ref="crm.view_crm_case_opportunities_filter"/>
+        <field name="priority">20</field>
+        <field name="arch" type="xml">
+            <xpath expr="//search" position="inside">
+                <filter name="has_sign_types" string="Has Sign Types" 
+                        domain="[('sign_type_count', '&gt;', 0)]"/>
+            </xpath>
+        </field>
+    </record>
+
+</odoo>
