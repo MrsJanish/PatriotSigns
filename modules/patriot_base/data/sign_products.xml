@@ -16,34 +16,6 @@
         -->
 
         <!-- ================================================================= -->
-        <!-- UNITS OF MEASURE - Custom UoMs -->
-        <!-- ================================================================= -->
-        
-        <record id="uom_category_sheet" model="uom.category">
-            <field name="name">Sheet Material</field>
-        </record>
-
-        <record id="uom_sheet" model="uom.uom">
-            <field name="name">Sheet</field>
-            <field name="category_id" ref="uom_category_sheet"/>
-            <field name="factor">1</field>
-            <field name="uom_type">reference</field>
-            <field name="rounding">0.001</field>
-        </record>
-
-        <record id="uom_category_fluid" model="uom.category">
-            <field name="name">Fluid Volume</field>
-        </record>
-
-        <record id="uom_oz" model="uom.uom">
-            <field name="name">oz</field>
-            <field name="category_id" ref="uom_category_fluid"/>
-            <field name="factor">1</field>
-            <field name="uom_type">reference</field>
-            <field name="rounding">0.01</field>
-        </record>
-
-        <!-- ================================================================= -->
         <!-- PRODUCT CATEGORIES -->
         <!-- ================================================================= -->
         
@@ -87,8 +59,8 @@
             <field name="type">consu</field>
             <field name="standard_price">211.30</field>
             <field name="list_price">580.00</field>
-            <field name="uom_id" ref="uom_sheet"/>
-            <field name="uom_po_id" ref="uom_sheet"/>
+            <field name="uom_id" ref="uom.product_uom_unit"/>
+            <field name="uom_po_id" ref="uom.product_uom_unit"/>
             <field name="description_sale">High Pressure Laminate sheet, 49" x 97". Standard for panel sign face.</field>
             <field name="default_code">MAT-PIONITE</field>
         </record>
@@ -104,8 +76,8 @@
             <field name="type">consu</field>
             <field name="standard_price">80.00</field>
             <field name="list_price">220.00</field>
-            <field name="uom_id" ref="uom_sheet"/>
-            <field name="uom_po_id" ref="uom_sheet"/>
+            <field name="uom_id" ref="uom.product_uom_unit"/>
+            <field name="uom_po_id" ref="uom.product_uom_unit"/>
             <field name="description_sale">ABS plastic substrate, 1/8" thick, 48" x 96" sheet.</field>
             <field name="default_code">MAT-ABS-18</field>
         </record>
@@ -117,8 +89,8 @@
             <field name="type">consu</field>
             <field name="standard_price">130.00</field>
             <field name="list_price">360.00</field>
-            <field name="uom_id" ref="uom_sheet"/>
-            <field name="uom_po_id" ref="uom_sheet"/>
+            <field name="uom_id" ref="uom.product_uom_unit"/>
+            <field name="uom_po_id" ref="uom.product_uom_unit"/>
             <field name="description_sale">ABS plastic substrate, 3/16" thick, 48" x 96" sheet.</field>
             <field name="default_code">MAT-ABS-316</field>
         </record>
@@ -130,8 +102,8 @@
             <field name="type">consu</field>
             <field name="standard_price">110.00</field>
             <field name="list_price">305.00</field>
-            <field name="uom_id" ref="uom_sheet"/>
-            <field name="uom_po_id" ref="uom_sheet"/>
+            <field name="uom_id" ref="uom.product_uom_unit"/>
+            <field name="uom_po_id" ref="uom.product_uom_unit"/>
             <field name="description_sale">Cast acrylic substrate, 1/8" thick, 48" x 96" sheet.</field>
             <field name="default_code">MAT-ACRY-18</field>
         </record>
@@ -143,8 +115,8 @@
             <field name="type">consu</field>
             <field name="standard_price">75.00</field>
             <field name="list_price">205.00</field>
-            <field name="uom_id" ref="uom_sheet"/>
-            <field name="uom_po_id" ref="uom_sheet"/>
+            <field name="uom_id" ref="uom.product_uom_unit"/>
+            <field name="uom_po_id" ref="uom.product_uom_unit"/>
             <field name="description_sale">Clear acrylic for windowed signs, 24" x 48" sheet.</field>
             <field name="default_code">MAT-WINDOW</field>
         </record>
