@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 from odoo import models, fields, api
+from odoo.exceptions import UserError
 import logging
 
 _logger = logging.getLogger(__name__)
@@ -180,6 +181,71 @@ class CrmLead(models.Model):
         for lead in self:
             # Round trip calculation
             lead.travel_cost = (lead.distance_miles or 0) * 2 * (lead.mileage_rate or 0.67)
+    
+    def action_calculate_distance(self):
+        """Calculate distance from shop to project using Google Maps API"""
+        import requests
+        
+        self.ensure_one()
+        
+        # Get API key from system parameters
+        api_key = self.env['ir.config_parameter'].sudo().get_param('google_maps_api_key', '')
+        
+        if not api_key:
+            raise UserError("Google Maps API key not configured. Go to Settings > Technical > Parameters > System Parameters and add 'google_maps_api_key'")
+        
+        # Build origin address (shop location)
+        origin = self.shop_address or '1234 Industrial Blvd, Oklahoma City, OK 73108'
+        
+        # Build destination from project address fields
+        dest_parts = [
+            self.project_address or '',
+            self.project_city or '',
+            self.project_state_id.name if self.project_state_id else '',
+            self.project_zip or ''
+        ]
+        destination = ', '.join([p for p in dest_parts if p])
+        
+        if not destination:
+            raise UserError("Please enter the project address first.")
+        
+        # Call Google Distance Matrix API
+        url = 'https://maps.googleapis.com/maps/api/distancematrix/json'
+        params = {
+            'origins': origin,
+            'destinations': destination,
+            'units': 'imperial',  # Get miles
+            'key': api_key
+        }
+        
+        try:
+            response = requests.get(url, params=params, timeout=10)
+            data = response.json()
+            
+            if data.get('status') == 'OK':
+                element = data['rows'][0]['elements'][0]
+                if element.get('status') == 'OK':
+                    # Distance is returned in meters, convert to miles
+                    distance_meters = element['distance']['value']
+                    distance_miles = distance_meters * 0.000621371
+                    self.distance_miles = round(distance_miles, 1)
+                else:
+                    raise UserError(f"Could not calculate distance: {element.get('status')}")
+            else:
+                raise UserError(f"Google Maps API error: {data.get('status')}")
+                
+        except requests.RequestException as e:
+            raise UserError(f"Network error calling Google Maps: {str(e)}")
+    
+    @api.onchange('project_zip')
+    def _onchange_project_zip(self):
+        """Auto-calculate distance when ZIP is entered"""
+        if self.project_zip and len(self.project_zip) >= 5:
+            try:
+                self.action_calculate_distance()
+            except Exception:
+                # Silently fail - user can manually trigger if needed
+                pass
     
     # =========================================================================
     # DOCUMENTS
