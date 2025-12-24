@@ -2,6 +2,7 @@
 from odoo import models, fields, api
 from odoo.exceptions import UserError
 import logging
+import re
 
 _logger = logging.getLogger(__name__)
 
@@ -41,6 +42,33 @@ class CrmLead(models.Model):
         store=True,
         help='Indicates this lead came from ConstructConnect'
     )
+
+    # =========================================================================
+    # SIGN TYPES (linked from patriot_signage)
+    # =========================================================================
+    sign_type_ids = fields.One2many(
+        'ps.sign.type',
+        'opportunity_id',
+        string='Sign Types',
+        help='Sign types for this project'
+    )
+    sign_type_count = fields.Integer(
+        string='Sign Type Count',
+        compute='_compute_sign_type_stats',
+        store=True
+    )
+    total_sign_quantity = fields.Integer(
+        string='Total Sign Quantity',
+        compute='_compute_sign_type_stats',
+        store=True,
+        help='Sum of all sign type quantities'
+    )
+
+    @api.depends('sign_type_ids', 'sign_type_ids.quantity')
+    def _compute_sign_type_stats(self):
+        for lead in self:
+            lead.sign_type_count = len(lead.sign_type_ids)
+            lead.total_sign_quantity = sum(lead.sign_type_ids.mapped('quantity'))
 
     # =========================================================================
     # BID INFORMATION
@@ -589,3 +617,233 @@ class CrmLead(models.Model):
         })
         _logger.info(f"Created production order {production.name} for project {project.name}")
         return production
+
+    # =========================================================================
+    # EMAIL INGESTION (Migrated from cc.opportunity)
+    # =========================================================================
+    @api.model
+    def message_new(self, msg_dict, custom_values=None):
+        """
+        Called when an email is received that creates a new record.
+        Parses iSqFt ITB email format to extract project details.
+        
+        Merged from cc.opportunity - now goes directly to CRM pipeline.
+        """
+        if custom_values is None:
+            custom_values = {}
+
+        subject = msg_dict.get('subject', 'New ITB')
+        body = msg_dict.get('body', '') or ''
+        
+        # --- PARSE iSqFt EMAIL FORMAT ---
+        
+        # Project Name (from "You have been invited to bid:" section)
+        project_name = subject.replace('Invitation to Bid -', '').replace(': Main Trades', '').strip()
+        name_match = re.search(r'You have been invited to bid:</p>\s*</td>\s*</tr>\s*<tr>.*?<p[^>]*>([^<]+)</p>', body, re.DOTALL | re.IGNORECASE)
+        if name_match:
+            project_name = name_match.group(1).strip()
+        custom_values['name'] = f"ITB: {project_name}"
+
+        # Access URL and Project ID
+        url_match = re.search(r'https?://app\.isqft\.com/services/Access/GetUserQANAccess[^"\'\<\>\s]+', body)
+        if url_match:
+            custom_values['cc_source_url'] = url_match.group(0).replace('&amp;', '&')
+        
+        id_match = re.search(r'ProjectID[=:](\d+)', body, re.IGNORECASE)
+        if id_match:
+            custom_values['cc_project_id'] = id_match.group(1)
+        
+        access_match = re.search(r'Id[=:]([A-Z0-9]+)', body, re.IGNORECASE)
+        if access_match:
+            custom_values['cc_access_code'] = access_match.group(1)
+
+        # Bid Date
+        bid_match = re.search(r'Bid Due Date:</p>.*?<p[^>]*>([^<]+)</p>', body, re.DOTALL | re.IGNORECASE)
+        if bid_match:
+            bid_str = bid_match.group(1).strip()
+            custom_values['bid_time'] = bid_str
+            date_match = re.search(r'(\w+),\s+(\w+)\s+(\d+),\s+(\d{4})', bid_str)
+            if date_match:
+                from datetime import datetime
+                try:
+                    month_str = date_match.group(2)
+                    day = int(date_match.group(3))
+                    year = int(date_match.group(4))
+                    months = {'January': 1, 'February': 2, 'March': 3, 'April': 4, 'May': 5, 'June': 6,
+                              'July': 7, 'August': 8, 'September': 9, 'October': 10, 'November': 11, 'December': 12}
+                    month = months.get(month_str, 1)
+                    custom_values['bid_date'] = f"{year}-{month:02d}-{day:02d}"
+                except:
+                    pass
+
+        # Location
+        loc_match = re.search(r'Project Location:</p>.*?<p[^>]*>([^<]+)</p>', body, re.DOTALL | re.IGNORECASE)
+        if loc_match:
+            location = loc_match.group(1).strip()
+            parts = location.split(',')
+            if len(parts) >= 2:
+                custom_values['project_address'] = parts[0].strip()
+                if len(parts) >= 3:
+                    last = parts[-1].strip()
+                    state_zip = last.split()
+                    if len(state_zip) >= 2:
+                        custom_values['project_zip'] = state_zip[-1]
+                    custom_values['project_city'] = parts[1].strip()
+
+        # General Contractor (From: field in email)
+        gc_match = re.search(r'From:</p>.*?<p[^>]*>([^<]+)</p>', body, re.DOTALL | re.IGNORECASE)
+        if gc_match:
+            custom_values['gc_name_legacy'] = gc_match.group(1).strip()
+
+        custom_values['type'] = 'opportunity'
+        
+        # Auto-assign to Tiffany for bidding stage
+        tiffany = self.env.ref('patriot_base.employee_tiffany_janish', raise_if_not_found=False)
+        if tiffany and tiffany.user_id:
+            custom_values['user_id'] = tiffany.user_id.id
+        
+        record = super(CrmLead, self).message_new(msg_dict, custom_values)
+        
+        _logger.info(f"Created CRM Lead from ITB email: {record.name}")
+        
+        # Auto-trigger GitHub Action if we have a CC Project ID
+        if record.cc_project_id:
+            record.trigger_github_fetch()
+        
+        return record
+
+    def trigger_github_fetch(self):
+        """
+        Triggers GitHub Actions workflow to fetch documents.
+        Migrated from cc.opportunity.
+        """
+        self.ensure_one()
+        if not self.cc_project_id:
+            _logger.warning("No CC Project ID, cannot trigger fetch")
+            return
+        
+        import requests
+        
+        # Get GitHub token from config
+        github_token = self.env['ir.config_parameter'].sudo().get_param('cc_ops.github_token', '')
+        if not github_token:
+            _logger.warning("GitHub token not configured. Set 'cc_ops.github_token' in System Parameters.")
+            self.message_post(body="GitHub token not configured. Cannot auto-fetch documents.")
+            return
+        
+        # Trigger GitHub Actions workflow
+        repo = "MrsJanish/PatriotSigns"
+        workflow = "fetch_cc_docs.yml"
+        url = f"https://api.github.com/repos/{repo}/actions/workflows/{workflow}/dispatches"
+        
+        headers = {
+            "Authorization": f"token {github_token}",
+            "Accept": "application/vnd.github.v3+json",
+        }
+        
+        data = {
+            "ref": "master",
+            "inputs": {
+                "project_id": str(self.cc_project_id),
+                "lead_id": str(self.id),  # Changed from opportunity_id
+                "source_url": self.cc_source_url or "",
+            }
+        }
+        
+        try:
+            # Update stage to Fetching
+            stage_fetching = self.env.ref('patriot_crm.stage_fetching_docs', raise_if_not_found=False)
+            if stage_fetching:
+                self.stage_id = stage_fetching.id
+            
+            response = requests.post(url, headers=headers, json=data, timeout=30)
+            if response.status_code == 204:
+                _logger.info(f"GitHub Action triggered for project {self.cc_project_id}")
+                self.message_post(body="Document fetch started via GitHub Actions...")
+                self.docs_fetched = False
+            else:
+                _logger.error(f"GitHub API error: {response.status_code} - {response.text}")
+                self.message_post(body=f"Failed to trigger document fetch: {response.status_code}")
+        except Exception as e:
+            _logger.error(f"Error triggering GitHub Action: {e}")
+            self.message_post(body=f"Error triggering fetch: {e}")
+
+    def action_export_sign_schedule(self):
+        """
+        Exports sign types to an Excel sign schedule.
+        Migrated from cc.opportunity.
+        """
+        self.ensure_one()
+        import io
+        import base64
+        
+        try:
+            import xlsxwriter
+        except ImportError:
+            self.message_post(body="xlsxwriter not installed. Please install it to export schedules.")
+            return {'type': 'ir.actions.act_window_close'}
+        
+        # Get sign types for this lead
+        sign_types = self.env['ps.sign.type'].search([('opportunity_id', '=', self.id)])
+        
+        output = io.BytesIO()
+        workbook = xlsxwriter.Workbook(output, {'in_memory': True})
+        worksheet = workbook.add_worksheet('Sign Schedule')
+        
+        # Formats
+        header_format = workbook.add_format({
+            'bold': True,
+            'bg_color': '#1e293b',
+            'font_color': 'white',
+            'border': 1,
+            'align': 'center',
+        })
+        cell_format = workbook.add_format({'border': 1, 'align': 'left'})
+        
+        # Headers
+        headers = ['Sign Type', 'Quantity', 'Dimensions', 'Material', 'Mounting', 'Category', 'Status']
+        for col, header in enumerate(headers):
+            worksheet.write(0, col, header, header_format)
+        
+        # Data rows
+        for row, st in enumerate(sign_types, start=1):
+            worksheet.write(row, 0, st.name or '', cell_format)
+            worksheet.write(row, 1, st.quantity or 0, cell_format)
+            worksheet.write(row, 2, st.dimensions_display or '', cell_format)
+            worksheet.write(row, 3, st.material or '', cell_format)
+            worksheet.write(row, 4, st.mounting or '', cell_format)
+            worksheet.write(row, 5, st.category_id.name if st.category_id else '', cell_format)
+            worksheet.write(row, 6, st.state or '', cell_format)
+        
+        # Column widths
+        for col in range(len(headers)):
+            worksheet.set_column(col, col, 15)
+        
+        workbook.close()
+        
+        # Create attachment
+        file_data = base64.b64encode(output.getvalue())
+        filename = f"Sign_Schedule_{self.name or 'Export'}_{fields.Date.today()}.xlsx".replace(' ', '_')
+        
+        attachment = self.env['ir.attachment'].create({
+            'name': filename,
+            'type': 'binary',
+            'datas': file_data,
+            'res_model': self._name,
+            'res_id': self.id,
+            'mimetype': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        })
+        
+        return {
+            'type': 'ir.actions.act_url',
+            'url': f'/web/content/{attachment.id}?download=true',
+            'target': 'self',
+        }
+
+    def action_mark_lost_archive(self):
+        """Mark opportunity as lost and archive it"""
+        self.ensure_one()
+        self.action_set_lost()
+        self.active = False
+        return {'type': 'ir.actions.act_window_close'}
+

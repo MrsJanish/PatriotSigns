@@ -60,5 +60,13 @@
             <field name="job_title">Project Manager</field>
         </record>
 
+
+        <!-- Tiffany Janish - Signs / Bidding / Estimating -->
+        <record id="employee_tiffany_janish" model="hr.employee">
+            <field name="name">Tiffany Janish</field>
+            <field name="work_email">tiffany@omegasignsco.com</field>
+            <field name="job_title">Estimator / Bidding</field>
+        </record>
+
     </data>
 </odoo>

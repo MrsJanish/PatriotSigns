@@ -39,9 +39,10 @@ This module must be installed before other Patriot Signs modules.
         'views/sign_dimension_views.xml',
         'views/res_partner_views.xml',
         'views/menu.xml',
+        'views/menu_unified.xml',
     ],
     'installable': True,
-    'application': False,
+    'application': True,
     'auto_install': False,
     'license': 'LGPL-3',
 }

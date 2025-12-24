@@ -28,7 +28,7 @@
     },
     'data': [
         'security/ir.model.access.csv',
-        'views/cc_opportunity_views.xml',
+        # NOTE: cc_opportunity_views.xml removed - using crm.lead views now
         'views/menus.xml',
         'data/ir_config_parameter.xml',
     ],
