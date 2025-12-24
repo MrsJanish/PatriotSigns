@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="0">
+        <!-- 
+            Mock CRM Opportunities / Projects for Patriot Signs
+            Sample projects for testing and demonstration
+        -->
+
+        <!-- Project 1: OU Health Tower Expansion -->
+        <record id="crm_lead_ou_health_tower" model="crm.lead">
+            <field name="name">OU Health - North Tower Expansion</field>
+            <field name="type">opportunity</field>
+            <field name="partner_id" ref="patriot_base.partner_gc_mccarthy"/>
+            <field name="expected_revenue">45000.00</field>
+            <field name="probability">75</field>
+            <field name="description">Interior wayfinding and ADA signage package for the new North Tower expansion. Approximately 150 signs including directories, room IDs, and code-required ADA signage.</field>
+        </record>
+
+        <!-- Project 2: INTEGRIS Edmond -->
+        <record id="crm_lead_integris_edmond" model="crm.lead">
+            <field name="name">INTEGRIS Edmond - Medical Office Building</field>
+            <field name="type">opportunity</field>
+            <field name="partner_id" ref="patriot_base.partner_gc_flintco"/>
+            <field name="expected_revenue">28000.00</field>
+            <field name="probability">60</field>
+            <field name="description">Complete signage package for new 3-story medical office building. Includes exterior monument sign, interior directories, and suite signage.</field>
+        </record>
+
+        <!-- Project 3: Norman Regional Moore -->
+        <record id="crm_lead_norman_regional" model="crm.lead">
+            <field name="name">Norman Regional - Moore Campus Renovation</field>
+            <field name="type">opportunity</field>
+            <field name="partner_id" ref="patriot_base.partner_gc_crossland"/>
+            <field name="expected_revenue">18500.00</field>
+            <field name="probability">90</field>
+            <field name="description">Renovation signage update for the Moore campus. Replace existing wayfinding with new brand standards. 75 signs total.</field>
+        </record>
+
+        <!-- Project 4: Oklahoma City Convention Center -->
+        <record id="crm_lead_okc_convention" model="crm.lead">
+            <field name="name">OKC Convention Center - Meeting Room Signage</field>
+            <field name="type">opportunity</field>
+            <field name="partner_id" ref="patriot_base.partner_gc_mccarthy"/>
+            <field name="expected_revenue">65000.00</field>
+            <field name="probability">40</field>
+            <field name="description">Large-scale meeting room and ballroom identification system. Digital directory integration. Premium materials and finishes.</field>
+        </record>
+
+        <!-- Project 5: University of Oklahoma Campus -->
+        <record id="crm_lead_ou_campus" model="crm.lead">
+            <field name="name">OU Campus - Gaylord Hall Renovation</field>
+            <field name="type">opportunity</field>
+            <field name="partner_id" ref="patriot_base.partner_gc_flintco"/>
+            <field name="expected_revenue">22000.00</field>
+            <field name="probability">85</field>
+            <field name="description">Interior signage refresh for Gaylord Hall journalism building. Donor recognition, room IDs, and wayfinding.</field>
+        </record>
+
+        <!-- Project 6: Children's Hospital -->
+        <record id="crm_lead_childrens_hospital" model="crm.lead">
+            <field name="name">Children's Hospital - Emergency Dept Expansion</field>
+            <field name="type">opportunity</field>
+            <field name="partner_id" ref="patriot_base.partner_gc_crossland"/>
+            <field name="expected_revenue">35000.00</field>
+            <field name="probability">70</field>
+            <field name="description">Pediatric-themed wayfinding and room identification for new ED wing. Custom graphics and durable materials for high-traffic areas.</field>
+        </record>
+
+    </data>
+</odoo>

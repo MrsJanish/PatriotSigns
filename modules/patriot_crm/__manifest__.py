@@ -26,6 +26,7 @@ This module integrates the CC Ops dashboard with Odoo's native CRM pipeline.
     'data': [
         'security/ir.model.access.csv',
         'data/crm_stages.xml',
+        'data/mock_projects.xml',
         'views/crm_lead_views.xml',
         'views/menu.xml',
     ],

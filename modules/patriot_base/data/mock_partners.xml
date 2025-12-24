@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="0">
+        <!-- 
+            Mock Projects for Patriot Signs
+            Sample projects for testing and demonstration
+        -->
+
+        <!-- Sample General Contractors -->
+        <record id="partner_gc_mccarthy" model="res.partner">
+            <field name="name">McCarthy Building Companies</field>
+            <field name="is_company">True</field>
+            <field name="email">contact@mccarthy.com</field>
+            <field name="phone">+1 405-555-0100</field>
+            <field name="category_id" eval="[(4, ref('patriot_base.partner_category_gc'))]"/>
+        </record>
+
+        <record id="partner_gc_flintco" model="res.partner">
+            <field name="name">Flintco</field>
+            <field name="is_company">True</field>
+            <field name="email">bid@flintco.com</field>
+            <field name="phone">+1 918-555-0200</field>
+            <field name="category_id" eval="[(4, ref('patriot_base.partner_category_gc'))]"/>
+        </record>
+
+        <record id="partner_gc_crossland" model="res.partner">
+            <field name="name">Crossland Construction</field>
+            <field name="is_company">True</field>
+            <field name="email">bids@crossland.com</field>
+            <field name="phone">+1 918-555-0300</field>
+            <field name="category_id" eval="[(4, ref('patriot_base.partner_category_gc'))]"/>
+        </record>
+
+        <!-- Sample Owners -->
+        <record id="partner_owner_ou_health" model="res.partner">
+            <field name="name">OU Health</field>
+            <field name="is_company">True</field>
+            <field name="email">facilities@ouhealth.com</field>
+            <field name="phone">+1 405-555-1000</field>
+            <field name="category_id" eval="[(4, ref('patriot_base.partner_category_owner'))]"/>
+        </record>
+
+        <record id="partner_owner_integris" model="res.partner">
+            <field name="name">INTEGRIS Health</field>
+            <field name="is_company">True</field>
+            <field name="email">construction@integrisok.com</field>
+            <field name="phone">+1 405-555-2000</field>
+            <field name="category_id" eval="[(4, ref('patriot_base.partner_category_owner'))]"/>
+        </record>
+
+        <record id="partner_owner_norman_regional" model="res.partner">
+            <field name="name">Norman Regional Health System</field>
+            <field name="is_company">True</field>
+            <field name="email">facilities@nrhs.com</field>
+            <field name="phone">+1 405-555-3000</field>
+            <field name="category_id" eval="[(4, ref('patriot_base.partner_category_owner'))]"/>
+        </record>
+
+    </data>
+</odoo>

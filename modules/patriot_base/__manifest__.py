@@ -22,6 +22,7 @@ This module must be installed before other Patriot Signs modules.
         'contacts',
         'product',
         'uom',
+        'hr',
     ],
     'data': [
         'security/ir.model.access.csv',
@@ -31,6 +32,8 @@ This module must be installed before other Patriot Signs modules.
         'data/sign_dimensions.xml',
         'data/sign_products.xml',
         'data/labor_rates.xml',
+        'data/employees.xml',
+        'data/mock_partners.xml',
         'views/sign_category_views.xml',
         'views/sign_subtype_views.xml',
         'views/sign_dimension_views.xml',

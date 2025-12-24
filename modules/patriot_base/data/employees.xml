@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="0">
+        <!-- 
+            Patriot Signs Employees
+            Created: 2024-12-24
+        -->
+
+        <!-- Bryson Tate -->
+        <record id="employee_bryson_tate" model="hr.employee">
+            <field name="name">Bryson Tate</field>
+            <field name="work_email">brysont8@gmail.com</field>
+            <field name="work_phone">+1 405-658-7304</field>
+            <field name="mobile_phone">+1 405-658-7304</field>
+            <field name="job_title">Production</field>
+        </record>
+
+        <!-- Darrell Janish -->
+        <record id="employee_darrell_janish" model="hr.employee">
+            <field name="name">Darrell Janish</field>
+            <field name="work_email">darrell@omegalaserdesign.com</field>
+            <field name="work_phone">+1 405-996-8770</field>
+            <field name="mobile_phone">+1 405-996-8770</field>
+            <field name="job_title">Owner</field>
+        </record>
+
+        <!-- Carter Janish -->
+        <record id="employee_carter_janish" model="hr.employee">
+            <field name="name">Carter Janish</field>
+            <field name="work_email">carter@sentral.systems</field>
+            <field name="work_phone">+1 405-658-7915</field>
+            <field name="mobile_phone">+1 405-658-7915</field>
+            <field name="job_title">Technology</field>
+        </record>
+
+        <!-- Robert S. Barcum -->
+        <record id="employee_robert_s_barcum" model="hr.employee">
+            <field name="name">Robert S. Barcum</field>
+            <field name="work_email">robert@omegalaserdesign.com</field>
+            <field name="work_phone">+1 405-202-3211</field>
+            <field name="mobile_phone">+1 405-202-3211</field>
+            <field name="job_title">Production Manager</field>
+        </record>
+
+        <!-- Robert L. Barcum -->
+        <record id="employee_robert_l_barcum" model="hr.employee">
+            <field name="name">Robert L. Barcum</field>
+            <field name="work_email">rbarcum@tpg-partners.com</field>
+            <field name="work_phone">+1 405-850-9301</field>
+            <field name="mobile_phone">+1 405-850-9301</field>
+            <field name="job_title">Partner</field>
+        </record>
+
+        <!-- Lexi Tate -->
+        <record id="employee_lexi_tate" model="hr.employee">
+            <field name="name">Lexi Tate</field>
+            <field name="work_email">lexi@omegasignsco.com</field>
+            <field name="work_phone">+1 405-738-3298</field>
+            <field name="mobile_phone">+1 405-738-3298</field>
+            <field name="job_title">Office Manager</field>
+        </record>
+
+    </data>
+</odoo>
