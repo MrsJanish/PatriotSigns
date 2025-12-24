@@ -25,13 +25,6 @@
         <field name="arch" type="xml">
             <form>
                 <sheet>
-                    <div class="oe_button_box" name="button_box">
-                        <button name="%(patriot_base.sign_subtype_action)d" type="action"
-                                class="oe_stat_button" icon="fa-tags"
-                                context="{'search_default_category_id': id}">
-                            <field name="subtype_count" widget="statinfo" string="Subtypes"/>
-                        </button>
-                    </div>
                     <widget name="web_ribbon" title="Archived" bg_color="text-bg-danger" invisible="active"/>
                     <div class="oe_title">
                         <label for="code"/>
