@@ -16,7 +16,7 @@
             <field name="category_id" ref="patriot_base.category_pan"/>
             <field name="quantity">75</field>
             <field name="width">8.0</field>
-            <field name="height">8.0</field>
+            <field name="length">8.0</field>
             <field name="unit_price">45.00</field>
         </record>
 
@@ -26,7 +26,7 @@
             <field name="category_id" ref="patriot_base.category_pan"/>
             <field name="quantity">8</field>
             <field name="width">24.0</field>
-            <field name="height">36.0</field>
+            <field name="length">36.0</field>
             <field name="unit_price">350.00</field>
         </record>
 
@@ -36,7 +36,7 @@
             <field name="category_id" ref="patriot_base.category_wf"/>
             <field name="quantity">40</field>
             <field name="width">12.0</field>
-            <field name="height">18.0</field>
+            <field name="length">18.0</field>
             <field name="unit_price">85.00</field>
         </record>
 
@@ -46,7 +46,7 @@
             <field name="category_id" ref="patriot_base.category_pan"/>
             <field name="quantity">25</field>
             <field name="width">6.0</field>
-            <field name="height">9.0</field>
+            <field name="length">9.0</field>
             <field name="unit_price">55.00</field>
         </record>
 
@@ -60,7 +60,7 @@
             <field name="category_id" ref="patriot_base.category_mon"/>
             <field name="quantity">1</field>
             <field name="width">96.0</field>
-            <field name="height">48.0</field>
+            <field name="length">48.0</field>
             <field name="unit_price">8500.00</field>
         </record>
 
@@ -70,7 +70,7 @@
             <field name="category_id" ref="patriot_base.category_pan"/>
             <field name="quantity">45</field>
             <field name="width">4.0</field>
-            <field name="height">10.0</field>
+            <field name="length">10.0</field>
             <field name="unit_price">35.00</field>
         </record>
 
@@ -80,7 +80,7 @@
             <field name="category_id" ref="patriot_base.category_pan"/>
             <field name="quantity">3</field>
             <field name="width">30.0</field>
-            <field name="height">48.0</field>
+            <field name="length">48.0</field>
             <field name="unit_price">550.00</field>
         </record>
 
@@ -90,7 +90,7 @@
             <field name="category_id" ref="patriot_base.category_wf"/>
             <field name="quantity">9</field>
             <field name="width">18.0</field>
-            <field name="height">6.0</field>
+            <field name="length">6.0</field>
             <field name="unit_price">75.00</field>
         </record>
 
@@ -104,7 +104,7 @@
             <field name="category_id" ref="patriot_base.category_pan"/>
             <field name="quantity">50</field>
             <field name="width">8.0</field>
-            <field name="height">8.0</field>
+            <field name="length">8.0</field>
             <field name="unit_price">45.00</field>
         </record>
 
@@ -114,7 +114,7 @@
             <field name="category_id" ref="patriot_base.category_wf"/>
             <field name="quantity">15</field>
             <field name="width">24.0</field>
-            <field name="height">8.0</field>
+            <field name="length">8.0</field>
             <field name="unit_price">125.00</field>
         </record>
 
@@ -124,7 +124,7 @@
             <field name="category_id" ref="patriot_base.category_pan"/>
             <field name="quantity">10</field>
             <field name="width">6.0</field>
-            <field name="height">8.0</field>
+            <field name="length">8.0</field>
             <field name="unit_price">50.00</field>
         </record>
 
@@ -138,7 +138,7 @@
             <field name="category_id" ref="patriot_base.category_pan"/>
             <field name="quantity">12</field>
             <field name="width">36.0</field>
-            <field name="height">12.0</field>
+            <field name="length">12.0</field>
             <field name="unit_price">275.00</field>
         </record>
 
@@ -148,7 +148,7 @@
             <field name="category_id" ref="patriot_base.category_pan"/>
             <field name="quantity">35</field>
             <field name="width">12.0</field>
-            <field name="height">8.0</field>
+            <field name="length">8.0</field>
             <field name="unit_price">85.00</field>
         </record>
 
@@ -158,7 +158,7 @@
             <field name="category_id" ref="patriot_base.category_plq"/>
             <field name="quantity">4</field>
             <field name="width">48.0</field>
-            <field name="height">36.0</field>
+            <field name="length">36.0</field>
             <field name="unit_price">1200.00</field>
         </record>
 
@@ -168,7 +168,7 @@
             <field name="category_id" ref="patriot_base.category_pan"/>
             <field name="quantity">2</field>
             <field name="width">48.0</field>
-            <field name="height">72.0</field>
+            <field name="length">72.0</field>
             <field name="unit_price">1800.00</field>
         </record>
 
@@ -182,7 +182,7 @@
             <field name="category_id" ref="patriot_base.category_plq"/>
             <field name="quantity">6</field>
             <field name="width">24.0</field>
-            <field name="height">18.0</field>
+            <field name="length">18.0</field>
             <field name="unit_price">325.00</field>
         </record>
 
@@ -192,7 +192,7 @@
             <field name="category_id" ref="patriot_base.category_pan"/>
             <field name="quantity">40</field>
             <field name="width">8.0</field>
-            <field name="height">6.0</field>
+            <field name="length">6.0</field>
             <field name="unit_price">40.00</field>
         </record>
 
@@ -202,7 +202,7 @@
             <field name="category_id" ref="patriot_base.category_wf"/>
             <field name="quantity">12</field>
             <field name="width">18.0</field>
-            <field name="height">12.0</field>
+            <field name="length">12.0</field>
             <field name="unit_price">95.00</field>
         </record>
 
@@ -216,7 +216,7 @@
             <field name="category_id" ref="patriot_base.category_pan"/>
             <field name="quantity">30</field>
             <field name="width">10.0</field>
-            <field name="height">10.0</field>
+            <field name="length">10.0</field>
             <field name="unit_price">65.00</field>
         </record>
 
@@ -226,7 +226,7 @@
             <field name="category_id" ref="patriot_base.category_wf"/>
             <field name="quantity">20</field>
             <field name="width">18.0</field>
-            <field name="height">24.0</field>
+            <field name="length">24.0</field>
             <field name="unit_price">145.00</field>
         </record>
 
@@ -236,7 +236,7 @@
             <field name="category_id" ref="patriot_base.category_pan"/>
             <field name="quantity">15</field>
             <field name="width">6.0</field>
-            <field name="height">9.0</field>
+            <field name="length">9.0</field>
             <field name="unit_price">55.00</field>
         </record>
 
@@ -246,7 +246,7 @@
             <field name="category_id" ref="patriot_base.category_wf"/>
             <field name="quantity">8</field>
             <field name="width">36.0</field>
-            <field name="height">10.0</field>
+            <field name="length">10.0</field>
             <field name="unit_price">185.00</field>
         </record>
 
