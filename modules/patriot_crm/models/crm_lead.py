@@ -43,32 +43,8 @@ class CrmLead(models.Model):
         help='Indicates this lead came from ConstructConnect'
     )
 
-    # =========================================================================
-    # SIGN TYPES (linked from patriot_signage)
-    # =========================================================================
-    sign_type_ids = fields.One2many(
-        'ps.sign.type',
-        'opportunity_id',
-        string='Sign Types',
-        help='Sign types for this project'
-    )
-    sign_type_count = fields.Integer(
-        string='Sign Type Count',
-        compute='_compute_sign_type_stats',
-        store=True
-    )
-    total_sign_quantity = fields.Integer(
-        string='Total Sign Quantity',
-        compute='_compute_sign_type_stats',
-        store=True,
-        help='Sum of all sign type quantities'
-    )
-
-    @api.depends('sign_type_ids', 'sign_type_ids.quantity')
-    def _compute_sign_type_stats(self):
-        for lead in self:
-            lead.sign_type_count = len(lead.sign_type_ids)
-            lead.total_sign_quantity = sum(lead.sign_type_ids.mapped('quantity'))
+    # NOTE: sign_type_ids, sign_type_count, total_sign_quantity are defined
+    # in patriot_signage/models/crm_lead.py because ps.sign.type is in that module
 
     # =========================================================================
     # BID INFORMATION
