@@ -67,7 +67,7 @@
     <record id="ps_sov_action" model="ir.actions.act_window">
         <field name="name">Schedule of Values</field>
         <field name="res_model">ps.sov</field>
-        <field name="view_mode">tree,form</field>
+        <field name="view_mode">list,form</field>
     </record>
 
 </odoo>

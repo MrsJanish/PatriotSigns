@@ -143,7 +143,7 @@
     <record id="ps_installation_action" model="ir.actions.act_window">
         <field name="name">Installations</field>
         <field name="res_model">ps.installation</field>
-        <field name="view_mode">tree,calendar,form</field>
+        <field name="view_mode">list,calendar,form</field>
         <field name="context">{'search_default_upcoming': 1}</field>
     </record>
 

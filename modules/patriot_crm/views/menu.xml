@@ -10,7 +10,7 @@
     <record id="action_cc_opportunities" model="ir.actions.act_window">
         <field name="name">CC Opportunities</field>
         <field name="res_model">crm.lead</field>
-        <field name="view_mode">kanban,tree,form</field>
+        <field name="view_mode">kanban,list,form</field>
         <field name="domain">[('is_cc_opportunity', '=', True)]</field>
         <field name="context">{'default_type': 'opportunity'}</field>
         <field name="help" type="html">
@@ -34,7 +34,7 @@
     <record id="action_upcoming_bids" model="ir.actions.act_window">
         <field name="name">Upcoming Bids</field>
         <field name="res_model">crm.lead</field>
-        <field name="view_mode">tree,kanban,form</field>
+        <field name="view_mode">list,kanban,form</field>
         <field name="domain">[('bid_date', '!=', False), ('bid_date', '>=', context_today().strftime('%Y-%m-%d'))]</field>
         <field name="context">{'default_type': 'opportunity', 'search_default_groupby_bid_date': 1}</field>
     </record>
