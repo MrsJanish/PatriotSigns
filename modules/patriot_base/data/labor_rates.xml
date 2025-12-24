@@ -24,7 +24,7 @@
             <field name="list_price">75.00</field>
             <field name="standard_price">45.00</field>
             <field name="uom_id" ref="uom.product_uom_hour"/>
-            <field name="uom_po_id" ref="uom.product_uom_hour"/>
+
             <field name="description_sale">Shop labor for sign fabrication. Rate: $75.00/hour.</field>
             <field name="default_code">LABOR-SHOP</field>
         </record>
@@ -36,7 +36,7 @@
             <field name="list_price">75.00</field>
             <field name="standard_price">45.00</field>
             <field name="uom_id" ref="uom.product_uom_hour"/>
-            <field name="uom_po_id" ref="uom.product_uom_hour"/>
+
             <field name="description_sale">Design and layout labor. Rate: $75.00/hour.</field>
             <field name="default_code">LABOR-DESIGN</field>
         </record>
@@ -48,7 +48,7 @@
             <field name="list_price">75.00</field>
             <field name="standard_price">45.00</field>
             <field name="uom_id" ref="uom.product_uom_hour"/>
-            <field name="uom_po_id" ref="uom.product_uom_hour"/>
+
             <field name="description_sale">CNC routing and cutting labor. Rate: $75.00/hour.</field>
             <field name="default_code">LABOR-CNC</field>
         </record>
@@ -60,7 +60,7 @@
             <field name="list_price">75.00</field>
             <field name="standard_price">45.00</field>
             <field name="uom_id" ref="uom.product_uom_hour"/>
-            <field name="uom_po_id" ref="uom.product_uom_hour"/>
+
             <field name="description_sale">Painting and finishing labor. Rate: $75.00/hour.</field>
             <field name="default_code">LABOR-PAINT</field>
         </record>
@@ -72,7 +72,7 @@
             <field name="list_price">75.00</field>
             <field name="standard_price">45.00</field>
             <field name="uom_id" ref="uom.product_uom_hour"/>
-            <field name="uom_po_id" ref="uom.product_uom_hour"/>
+
             <field name="description_sale">Sign assembly labor. Rate: $75.00/hour.</field>
             <field name="default_code">LABOR-ASSY</field>
         </record>
@@ -88,7 +88,7 @@
             <field name="list_price">100.00</field>
             <field name="standard_price">55.00</field>
             <field name="uom_id" ref="uom.product_uom_hour"/>
-            <field name="uom_po_id" ref="uom.product_uom_hour"/>
+
             <field name="description_sale">Field installation labor. Rate: $100.00/hour.</field>
             <field name="default_code">LABOR-INST</field>
         </record>

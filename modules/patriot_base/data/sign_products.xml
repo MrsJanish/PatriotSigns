@@ -60,7 +60,7 @@
             <field name="standard_price">211.30</field>
             <field name="list_price">580.00</field>
             <field name="uom_id" ref="uom.product_uom_unit"/>
-            <field name="uom_po_id" ref="uom.product_uom_unit"/>
+
             <field name="description_sale">High Pressure Laminate sheet, 49" x 97". Standard for panel sign face.</field>
             <field name="default_code">MAT-PIONITE</field>
         </record>
@@ -77,7 +77,7 @@
             <field name="standard_price">80.00</field>
             <field name="list_price">220.00</field>
             <field name="uom_id" ref="uom.product_uom_unit"/>
-            <field name="uom_po_id" ref="uom.product_uom_unit"/>
+
             <field name="description_sale">ABS plastic substrate, 1/8" thick, 48" x 96" sheet.</field>
             <field name="default_code">MAT-ABS-18</field>
         </record>
@@ -90,7 +90,7 @@
             <field name="standard_price">130.00</field>
             <field name="list_price">360.00</field>
             <field name="uom_id" ref="uom.product_uom_unit"/>
-            <field name="uom_po_id" ref="uom.product_uom_unit"/>
+
             <field name="description_sale">ABS plastic substrate, 3/16" thick, 48" x 96" sheet.</field>
             <field name="default_code">MAT-ABS-316</field>
         </record>
@@ -103,7 +103,7 @@
             <field name="standard_price">110.00</field>
             <field name="list_price">305.00</field>
             <field name="uom_id" ref="uom.product_uom_unit"/>
-            <field name="uom_po_id" ref="uom.product_uom_unit"/>
+
             <field name="description_sale">Cast acrylic substrate, 1/8" thick, 48" x 96" sheet.</field>
             <field name="default_code">MAT-ACRY-18</field>
         </record>
@@ -116,7 +116,7 @@
             <field name="standard_price">75.00</field>
             <field name="list_price">205.00</field>
             <field name="uom_id" ref="uom.product_uom_unit"/>
-            <field name="uom_po_id" ref="uom.product_uom_unit"/>
+
             <field name="description_sale">Clear acrylic for windowed signs, 24" x 48" sheet.</field>
             <field name="default_code">MAT-WINDOW</field>
         </record>
@@ -133,7 +133,7 @@
             <field name="standard_price">0.33</field>
             <field name="list_price">1.00</field>
             <field name="uom_id" ref="uom.product_uom_unit"/>
-            <field name="uom_po_id" ref="uom.product_uom_unit"/>
+
             <field name="description_sale">UV curable ink cost allocation per sign.</field>
             <field name="default_code">CONS-INK</field>
         </record>
@@ -146,7 +146,7 @@
             <field name="standard_price">0.60</field>
             <field name="list_price">1.65</field>
             <field name="uom_id" ref="uom.product_uom_unit"/>
-            <field name="uom_po_id" ref="uom.product_uom_unit"/>
+
             <field name="description_sale">Paint cost allocation per sign.</field>
             <field name="default_code">CONS-PAINT</field>
         </record>
@@ -159,7 +159,7 @@
             <field name="standard_price">0.02</field>
             <field name="list_price">0.05</field>
             <field name="uom_id" ref="uom.product_uom_unit"/>
-            <field name="uom_po_id" ref="uom.product_uom_unit"/>
+
             <field name="description_sale">Hotstamp foil cost per sign.</field>
             <field name="default_code">CONS-STAMP</field>
         </record>
@@ -172,7 +172,7 @@
             <field name="standard_price">0.25</field>
             <field name="list_price">0.70</field>
             <field name="uom_id" ref="uom.product_uom_unit"/>
-            <field name="uom_po_id" ref="uom.product_uom_unit"/>
+
             <field name="description_sale">Masking tape cost per mold.</field>
             <field name="default_code">CONS-TAPE</field>
         </record>
@@ -189,7 +189,7 @@
             <field name="standard_price">0.50</field>
             <field name="list_price">1.40</field>
             <field name="uom_id" ref="uom.product_uom_unit"/>
-            <field name="uom_po_id" ref="uom.product_uom_unit"/>
+
             <field name="description_sale">McLube mold release agent cost per mold.</field>
             <field name="default_code">CONS-MCLUBE</field>
         </record>
@@ -237,7 +237,7 @@
             <field name="standard_price">40.00</field>
             <field name="list_price">100.00</field>
             <field name="uom_id" ref="uom.product_uom_unit"/>
-            <field name="uom_po_id" ref="uom.product_uom_unit"/>
+
             <field name="description_sale">Mold setup and processing labor per mold. Best case: $40, Worst case: $100.</field>
             <field name="default_code">LABOR-MOLD</field>
         </record>
