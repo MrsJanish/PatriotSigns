@@ -408,7 +408,7 @@ class EstimateLine(models.Model):
     install_hours = fields.Float(string='Install Hours')
     install_rate = fields.Float(string='Install Rate', default=100.0)
 
-    unit_price = fields.Float(string='Unit Price (Sell)')
+    unit_price = fields.Float(string='Unit Price (Sell)', compute='_compute_sell_price', store=True)
     
     material_extended = fields.Float(string='Material Ext.', compute='_compute_extended', store=True)
     labor_extended = fields.Float(string='Labor Ext.', compute='_compute_extended', store=True)
@@ -526,6 +526,21 @@ class EstimateLine(models.Model):
                                       (company.pricing_overhead_pct / 100.0)
                                       
             line.total_unit_cost = line.material_unit_cost + line.labor_unit_cost + line.overhead_unit_cost
+
+    @api.depends('total_unit_cost', 'calculate_dynamic')
+    def _compute_sell_price(self):
+        """Calculate sell price: Total Cost × Markup, rounded to nearest $5"""
+        company = self.env.company
+        markup = company.pricing_markup_mult or 2.4
+        round_to = 5.0  # TODO: Make configurable via settings
+        
+        for line in self:
+            if line.calculate_dynamic and line.total_unit_cost:
+                raw_price = line.total_unit_cost * markup
+                # Round to nearest increment (e.g., $5)
+                line.unit_price = round(raw_price / round_to) * round_to
+            else:
+                line.unit_price = 0.0
 
     @api.depends('quantity', 'unit_price', 'material_unit_cost', 'labor_unit_cost', 'install_hours', 'install_rate')
     def _compute_extended(self):
