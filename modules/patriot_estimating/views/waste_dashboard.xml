@@ -14,23 +14,19 @@
                 <field name="estimate_id"/>
                 <field name="sign_type_id"/>
                 <field name="category_id"/>
+                
                 <separator/>
                 <filter name="last_30_days" string="Last 30 Days"
                     domain="[('create_date', '&gt;=', (context_today() - relativedelta(days=30)).strftime('%Y-%m-%d'))]"/>
                 <filter name="last_90_days" string="Last 90 Days"
                     domain="[('create_date', '&gt;=', (context_today() - relativedelta(days=90)).strftime('%Y-%m-%d'))]"/>
-                <filter name="last_6_months" string="Last 6 Months"
-                    domain="[('create_date', '&gt;=', (context_today() - relativedelta(months=6)).strftime('%Y-%m-%d'))]"/>
-                <filter name="this_year" string="This Year"
-                    domain="[('create_date', '&gt;=', time.strftime('%Y-01-01'))]"/>
+                
                 <separator/>
                 <filter name="high_waste" string="High Waste (&gt;50%)" domain="[('waste_percent', '&gt;', 50)]"/>
-                <filter name="has_stock" string="Generated Stock" domain="[('stock_generated', '&gt;', 0)]"/>
-                <separator/>
+                
                 <group string="Group By">
                     <filter name="group_by_estimate" string="Estimate" context="{'group_by': 'estimate_id'}"/>
                     <filter name="group_by_category" string="Category" context="{'group_by': 'category_id'}"/>
-                    <filter name="group_by_month" string="Month" context="{'group_by': 'create_date:month'}"/>
                 </group>
             </search>
         </field>

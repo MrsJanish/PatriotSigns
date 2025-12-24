@@ -33,7 +33,7 @@ bid intake through production and installation.
         'views/menu.xml',
     ],
     'installable': True,
-    'application': True,
+    'application': False,
     'auto_install': False,
     'license': 'LGPL-3',
     'demo': [
