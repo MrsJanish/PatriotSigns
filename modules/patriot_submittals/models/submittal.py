@@ -211,6 +211,18 @@ class Submittal(models.Model):
             'target': 'current',
         }
 
+    def action_view_sign_types(self):
+        """View sign types included in this submittal"""
+        self.ensure_one()
+        return {
+            'type': 'ir.actions.act_window',
+            'name': f'Sign Types - {self.name}',
+            'res_model': 'ps.sign.type',
+            'view_mode': 'list,form',
+            'domain': [('id', 'in', self.sign_type_ids.ids)],
+            'context': {'default_project_id': self.project_id.id},
+        }
+
 
 class SubmittalItem(models.Model):
     """
