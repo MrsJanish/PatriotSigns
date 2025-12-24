@@ -211,7 +211,7 @@
             <field name="standard_price">45.00</field>
             <field name="list_price">75.00</field>
             <field name="uom_id" ref="uom.product_uom_hour"/>
-            <field name="uom_po_id" ref="uom.product_uom_hour"/>
+
             <field name="description_sale">Shop fabrication labor - $75.00/hour.</field>
             <field name="default_code">LABOR-SHOP</field>
         </record>
@@ -224,7 +224,7 @@
             <field name="standard_price">55.00</field>
             <field name="list_price">100.00</field>
             <field name="uom_id" ref="uom.product_uom_hour"/>
-            <field name="uom_po_id" ref="uom.product_uom_hour"/>
+
             <field name="description_sale">Field installation labor - $100.00/hour.</field>
             <field name="default_code">LABOR-INST</field>
         </record>

@@ -100,7 +100,7 @@
             <field name="list_price">100.00</field>
             <field name="standard_price">55.00</field>
             <field name="uom_id" ref="uom.product_uom_hour"/>
-            <field name="uom_po_id" ref="uom.product_uom_hour"/>
+
             <field name="description_sale">On-site survey and measurement. Rate: $100.00/hour.</field>
             <field name="default_code">LABOR-SURV</field>
         </record>
@@ -112,7 +112,7 @@
             <field name="list_price">100.00</field>
             <field name="standard_price">55.00</field>
             <field name="uom_id" ref="uom.product_uom_hour"/>
-            <field name="uom_po_id" ref="uom.product_uom_hour"/>
+
             <field name="description_sale">Punchlist and service call labor. Rate: $100.00/hour.</field>
             <field name="default_code">LABOR-PUNCH</field>
         </record>
@@ -128,7 +128,7 @@
             <field name="list_price">85.00</field>
             <field name="standard_price">50.00</field>
             <field name="uom_id" ref="uom.product_uom_hour"/>
-            <field name="uom_po_id" ref="uom.product_uom_hour"/>
+
             <field name="description_sale">Project management and coordination. Rate: $85.00/hour.</field>
             <field name="default_code">LABOR-PM</field>
         </record>
