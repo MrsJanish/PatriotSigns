@@ -257,12 +257,11 @@
                 <filter name="draft" string="Draft" domain="[('state', '=', 'draft')]"/>
                 <filter name="production" string="In Production" domain="[('state', '=', 'production')]"/>
                 <filter name="complete" string="Complete" domain="[('state', '=', 'complete')]"/>
-                <group expand="1" string="Group By">
-                    <filter name="group_project" string="Project" context="{'group_by': 'opportunity_id'}"/>
-                    <filter name="group_category" string="Category" context="{'group_by': 'category_id'}"/>
-                    <filter name="group_state" string="Status" context="{'group_by': 'state'}"/>
-                    <filter name="group_supplier" string="Supplier" context="{'group_by': 'supplier_id'}"/>
-                </group>
+                <separator/>
+                <filter name="group_project" string="Project" context="{'group_by': 'opportunity_id'}"/>
+                <filter name="group_category" string="Category" context="{'group_by': 'category_id'}"/>
+                <filter name="group_state" string="Status" context="{'group_by': 'state'}"/>
+                <filter name="group_supplier" string="Supplier" context="{'group_by': 'supplier_id'}"/>
             </search>
         </field>
     </record>
@@ -271,7 +270,7 @@
     <record id="ps_sign_type_action" model="ir.actions.act_window">
         <field name="name">Sign Types</field>
         <field name="res_model">ps.sign.type</field>
-        <field name="view_mode">tree,kanban,form</field>
+        <field name="view_mode">list,kanban,form</field>
         <field name="context">{'search_default_group_project': 1}</field>
         <field name="help" type="html">
             <p class="o_view_nocontent_smiling_face">
