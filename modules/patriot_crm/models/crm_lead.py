@@ -146,25 +146,6 @@ class CrmLead(models.Model):
         string='Signage Scope',
         help='Description of signage scope for this project'
     )
-
-    # =========================================================================
-    # SIGN SCHEDULE SUMMARY
-    # =========================================================================
-    sign_type_ids = fields.One2many(
-        'ps.sign.type',
-        'opportunity_id',
-        string='Sign Types'
-    )
-    sign_type_count = fields.Integer(
-        string='Sign Types',
-        compute='_compute_sign_counts',
-        store=True
-    )
-    total_sign_quantity = fields.Integer(
-        string='Total Signs',
-        compute='_compute_sign_counts',
-        store=True
-    )
     
     # =========================================================================
     # DOCUMENTS
@@ -224,12 +205,6 @@ class CrmLead(models.Model):
     def _compute_is_cc_opportunity(self):
         for lead in self:
             lead.is_cc_opportunity = bool(lead.cc_project_id)
-
-    @api.depends('sign_type_ids', 'sign_type_ids.quantity')
-    def _compute_sign_counts(self):
-        for lead in self:
-            lead.sign_type_count = len(lead.sign_type_ids)
-            lead.total_sign_quantity = sum(lead.sign_type_ids.mapped('quantity'))
 
     def _compute_document_count(self):
         for lead in self:

@@ -22,7 +22,6 @@ This module integrates the CC Ops dashboard with Odoo's native CRM pipeline.
     'depends': [
         'crm',
         'patriot_base',
-        'patriot_signage',
     ],
     'data': [
         'security/ir.model.access.csv',
