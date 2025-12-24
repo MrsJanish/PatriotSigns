@@ -148,6 +148,40 @@ class CrmLead(models.Model):
     )
     
     # =========================================================================
+    # MILEAGE & TRAVEL TRACKING
+    # =========================================================================
+    shop_address = fields.Char(
+        string='Shop Address',
+        default='1234 Industrial Blvd, Oklahoma City, OK 73108',
+        help='Starting address for distance calculation'
+    )
+    distance_miles = fields.Float(
+        string='Distance (Miles)',
+        help='One-way distance from shop to project site'
+    )
+    mileage_rate = fields.Float(
+        string='Mileage Rate ($/mile)',
+        default=0.67,
+        help='IRS standard mileage rate or custom rate'
+    )
+    travel_cost = fields.Float(
+        string='Travel Cost',
+        compute='_compute_travel_cost',
+        store=True,
+        help='Round-trip travel cost (distance × 2 × rate)'
+    )
+    estimated_install_hours = fields.Float(
+        string='Est. Install Hours',
+        help='Estimated hours for installation'
+    )
+    
+    @api.depends('distance_miles', 'mileage_rate')
+    def _compute_travel_cost(self):
+        for lead in self:
+            # Round trip calculation
+            lead.travel_cost = (lead.distance_miles or 0) * 2 * (lead.mileage_rate or 0.67)
+    
+    # =========================================================================
     # DOCUMENTS
     # =========================================================================
     document_ids = fields.Many2many(

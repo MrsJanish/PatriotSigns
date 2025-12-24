@@ -532,8 +532,12 @@ class EstimateLine(models.Model):
             if line.quantity:
                 line.material_unit_cost = total_material / line.quantity
             
-            # Labor Cost (from product catalog)
-            total_labor = line.molds_needed * mold_labor_cost
+            # Labor Cost (80 min per mold at $10/hr employee wage)
+            # 80 min × ($10/hr / 60) = $13.33 labor cost per mold
+            EMPLOYEE_WAGE = 10.0  # $10/hr
+            MOLD_TIME_MINUTES = 80  # worst case per mold
+            labor_cost_per_mold = (MOLD_TIME_MINUTES / 60.0) * EMPLOYEE_WAGE  # $13.33
+            total_labor = line.molds_needed * labor_cost_per_mold
             
             if line.quantity:
                 line.labor_unit_cost = total_labor / line.quantity
