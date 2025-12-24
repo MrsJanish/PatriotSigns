@@ -314,3 +314,238 @@ class EstimateLine(models.Model):
             self.quantity = self.sign_type_id.quantity
             if self.sign_type_id.unit_cost:
                 self.material_unit_cost = self.sign_type_id.unit_cost
+
+
+class EstimateLine(models.Model):
+    """
+    Estimate Line - Individual line item in an estimate.
+    
+    Includes detailed cost calculation engine for panel signs:
+    - Batch optimization (signs per sheet)
+    - Waste calculation
+    - Mold setup labor
+    """
+    _name = 'ps.estimate.line'
+    _description = 'Estimate Line'
+    _order = 'sequence, id'
+
+    estimate_id = fields.Many2one(
+        'ps.estimate',
+        string='Estimate',
+        required=True,
+        ondelete='cascade'
+    )
+    sequence = fields.Integer(
+        string='Sequence',
+        default=10
+    )
+    
+    # =========================================================================
+    # SIGN TYPE REFERENCE
+    # =========================================================================
+    sign_type_id = fields.Many2one(
+        'ps.sign.type',
+        string='Sign Type'
+    )
+    description = fields.Char(
+        string='Description'
+    )
+    
+    # From sign type
+    category_id = fields.Many2one(
+        related='sign_type_id.category_id',
+        string='Category'
+    )
+    dimensions_display = fields.Char(
+        related='sign_type_id.dimensions_display',
+        string='Size'
+    )
+    
+    # Dimension inputs for calc
+    sign_width = fields.Float(string='Width (in)')
+    sign_height = fields.Float(string='Height (in)')
+    
+    # =========================================================================
+    # QUANTITY & UOM
+    # =========================================================================
+    quantity = fields.Integer(string='Qty', default=1)
+    uom = fields.Selection([
+        ('ea', 'Each'),
+        ('sf', 'Sq Ft'),
+        ('lf', 'Lin Ft'),
+        ('set', 'Set'),
+    ], string='UoM', default='ea')
+    
+    # =========================================================================
+    # COST CALCULATION ENGINE
+    # =========================================================================
+    
+    # Batch details
+    signs_per_mold = fields.Float(string='Signs/Mold', compute='_compute_batch_size', store=True)
+    molds_needed = fields.Float(string='Molds Needed', compute='_compute_batch_size', store=True)
+    signs_produced = fields.Float(string='Signs Produced', compute='_compute_batch_size', store=True)
+    stock_generated = fields.Float(string='Stock Gain', compute='_compute_batch_size', store=True)
+    
+    # Material Usage
+    sheets_needed = fields.Float(string='Sheets Needed', compute='_compute_material_usage', store=True)
+    waste_percent = fields.Float(string='Waste %', compute='_compute_material_usage', store=True)
+    
+    # Cost Details
+    material_unit_cost = fields.Float(string='Mat. Cost/Unit', compute='_compute_costs', store=True)
+    labor_unit_cost = fields.Float(string='Labor Cost/Unit', compute='_compute_costs', store=True)
+    overhead_unit_cost = fields.Float(string='Overhead/Unit', compute='_compute_costs', store=True)
+    total_unit_cost = fields.Float(string='Total Cost/Unit', compute='_compute_costs', store=True)
+    
+    calculate_dynamic = fields.Boolean(string='Dynamic Costing', default=True)
+    
+    # =========================================================================
+    # PRICING
+    # =========================================================================
+    
+    unit_price = fields.Float(string='Unit Price (Sell)')
+    
+    material_extended = fields.Float(string='Material Ext.', compute='_compute_extended', store=True)
+    labor_extended = fields.Float(string='Labor Ext.', compute='_compute_extended', store=True)
+    install_extended = fields.Float(string='Install Ext.', compute='_compute_extended', store=True)
+    line_total = fields.Float(string='Line Total', compute='_compute_extended', store=True)
+    
+    profit_margin = fields.Float(string='Margin %', compute='_compute_margin', store=True)
+
+    # =========================================================================
+    # COMPUTATIONS
+    # =========================================================================
+
+    @api.depends('sign_width', 'sign_height')
+    def _compute_batch_size(self):
+        """Calculate optimization of signs on standard press sheet (13x19)"""
+        PRESS_W, PRESS_H = 13.0, 19.0
+        
+        for line in self:
+            if not line.sign_width or not line.sign_height:
+                line.signs_per_mold = 1.0
+                continue
+                
+            w, h = line.sign_width, line.sign_height
+            
+            # Optimization logic
+            fit1 = int(PRESS_W // w) * int(PRESS_H // h)
+            fit2 = int(PRESS_W // h) * int(PRESS_H // w)
+            per_mold = max(fit1, fit2, 1)
+            
+            line.signs_per_mold = per_mold
+            
+            # Calculate molds needed (rounding up)
+            # 17 molds fit on a standard 49x97 sheet
+            MOLDS_PER_SHEET = 17
+            
+            total_signs_capacity = per_mold # signs per 1 mold
+            
+            # Total molds needed for Quantity
+            import math
+            molds = math.ceil(line.quantity / per_mold)
+            
+            line.molds_needed = molds
+            line.signs_produced = molds * per_mold
+            line.stock_generated = line.signs_produced - line.quantity
+
+    @api.depends('sheets_needed', 'molds_needed', 'quantity', 'calculate_dynamic', 'sign_width', 'sign_height')
+    def _compute_material_usage(self):
+        """Calculate sheets needed based on molds and true waste %"""
+        # Standard sheet sizes (should ideally come from product, but hardcoded for now based on logic)
+        SHEET_W, SHEET_H = 49.0, 97.0 # Pionite size
+        SHEET_AREA = SHEET_W * SHEET_H
+        MOLDS_PER_SHEET = 17
+        
+        for line in self:
+            if not line.molds_needed:
+                line.sheets_needed = 0
+                line.waste_percent = 0
+                continue
+                
+            # Sheets needed (Pionite)
+            line.sheets_needed = math.ceil(line.molds_needed / MOLDS_PER_SHEET)
+            
+            # True Waste Calculation:
+            # Waste = (Total Sheet Area Consumed - Total Sign Area) / Total Sheet Area Consumed
+            if line.sign_width and line.sign_height and line.sheets_needed:
+                total_sheet_area = line.sheets_needed * SHEET_AREA
+                
+                # Area actually used by the finished signs
+                # Note: We use the quantity ordered, not produced, because the extra signs are "stock" asset, not waste
+                # However, the user said "even if you fit 6, that doesn't mean you use full square inch"
+                # So waste is the offcut material that goes in the bin.
+                total_sign_area = line.quantity * (line.sign_width * line.sign_height)
+                
+                if total_sheet_area > 0:
+                    line.waste_percent = ((total_sheet_area - total_sign_area) / total_sheet_area) * 100
+                else:
+                    line.waste_percent = 0
+            else:
+                 # Fallback if dimensions missing
+                line.waste_percent = 0
+
+    @api.depends('sheets_needed', 'molds_needed', 'quantity', 'calculate_dynamic')
+    def _compute_costs(self):
+        company = self.env.company
+        
+        for line in self:
+            if not line.calculate_dynamic:
+                continue
+                
+            # Material Cost
+            # Assuming standard Pionite + ABS construction for calculation baseline
+            sheet_cost_total = (line.sheets_needed * company.cost_pionite_sheet) + \
+                               (line.sheets_needed * company.cost_abs_18_sheet)
+                               
+            consumables = (line.quantity * company.cost_ink_per_unit) + \
+                          (line.quantity * company.cost_paint_per_unit) + \
+                          (line.molds_needed * company.cost_tape_per_mold) + \
+                          (line.molds_needed * company.cost_mclube_per_mold)
+                          
+            total_material = sheet_cost_total + consumables
+            
+            if line.quantity:
+                line.material_unit_cost = total_material / line.quantity
+            
+            # Labor Cost (Mold labor)
+            # Conservative estimate: $100 per mold set up / processing
+            MOLD_LABOR_COST = 100.0
+            total_labor = line.molds_needed * MOLD_LABOR_COST
+            
+            if line.quantity:
+                line.labor_unit_cost = total_labor / line.quantity
+                
+            # Overhead
+            line.overhead_unit_cost = (line.material_unit_cost + line.labor_unit_cost) * \
+                                      (company.pricing_overhead_pct / 100.0)
+                                      
+            line.total_unit_cost = line.material_unit_cost + line.labor_unit_cost + line.overhead_unit_cost
+
+    @api.depends('quantity', 'unit_price', 'material_unit_cost', 'labor_unit_cost')
+    def _compute_extended(self):
+        for line in self:
+            # Extended costs
+            line.material_extended = line.quantity * line.material_unit_cost
+            line.labor_extended = line.quantity * line.labor_unit_cost
+            
+            # Install is usually flat rate or separate calc, placeholder
+            line.install_extended = 0.0 
+            
+            # Line total is PRICE, not cost
+            line.line_total = line.quantity * line.unit_price
+
+    @api.depends('unit_price', 'total_unit_cost')
+    def _compute_margin(self):
+        for line in self:
+            if line.unit_price:
+                line.profit_margin = ((line.unit_price - line.total_unit_cost) / line.unit_price) * 100
+            else:
+                line.profit_margin = 0
+
+    @api.onchange('sign_type_id')
+    def _onchange_sign_type_id(self):
+        if self.sign_type_id:
+            self.description = self.sign_type_id.name
+            self.quantity = self.sign_type_id.quantity
+            # Pull dimensions if available
+            # self.sign_width = ...

@@ -1,10 +1,28 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
-    <!-- Estimates menu under CRM or Signage -->
+    <!-- Estimations Root Menu -->
+    <menuitem id="menu_estimations_root"
+              name="Estimating"
+              sequence="20"
+              web_icon="patriot_estimating,static/description/icon.png"/>
+
+    <!-- Estimates Menu -->
     <menuitem id="menu_estimates"
               name="Estimates"
-              parent="patriot_signage.menu_patriot_signage_root"
+              parent="menu_estimations_root"
               action="ps_estimate_action"
-              sequence="30"/>
+              sequence="10"/>
+
+    <!-- Reporting Menu -->
+    <menuitem id="menu_reporting"
+              name="Reporting"
+              parent="menu_estimations_root"
+              sequence="90"/>
+
+    <menuitem id="menu_reporting_analysis"
+              name="Estimate &amp; Waste Analysis"
+              parent="menu_reporting"
+              action="ps_estimate_analysis_action"
+              sequence="10"/>
 
 </odoo>

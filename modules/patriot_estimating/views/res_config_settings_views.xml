@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <record id="res_config_settings_view_form_pricing" model="ir.ui.view">
+            <field name="name">res.config.settings.view.form.inherit.pricing</field>
+            <field name="model">res.config.settings</field>
+            <field name="priority" eval="90"/>
+            <field name="inherit_id" ref="base.res_config_settings_view_form"/>
+            <field name="arch" type="xml">
+                <xpath expr="//form" position="inside">
+                    <app data-string="Sign Pricing" string="Sign Pricing" name="patriot_estimating">
+                        <block title="Rates &amp; Markup" name="rates_setting_container">
+                            <setting string="Labor Rates" help="Hourly rates for cost estimation" id="labor_rates">
+                                <group>
+                                    <field name="shop_labor_rate"/>
+                                    <field name="install_labor_rate"/>
+                                </group>
+                            </setting>
+                            <setting string="Markup &amp; Overhead" help="Global markup factors" id="markup_settings">
+                                <group>
+                                    <field name="pricing_overhead_pct"/>
+                                    <field name="pricing_markup_mult"/>
+                                </group>
+                            </setting>
+                        </block>
+                        <block title="Material Costs (Defaults)" name="material_cost_container">
+                            <setting string="Sheet Costs" help="Standard sheet costs for calculation" id="sheet_costs">
+                                <group>
+                                    <field name="cost_pionite_sheet"/>
+                                    <field name="cost_abs_18_sheet"/>
+                                    <field name="cost_abs_316_sheet"/>
+                                    <field name="cost_acrylic_sheet"/>
+                                    <field name="cost_window_sheet"/>
+                                </group>
+                            </setting>
+                            <setting string="Consumables" help="Standard consumable costs" id="consumable_costs">
+                                <group>
+                                    <field name="cost_ink_per_unit"/>
+                                    <field name="cost_paint_per_unit"/>
+                                    <field name="cost_tape_per_mold"/>
+                                    <field name="cost_mclube_per_mold"/>
+                                </group>
+                            </setting>
+                        </block>
+                    </app>
+                </xpath>
+            </field>
+        </record>
+
+        <record id="action_pricing_config_settings" model="ir.actions.act_window">
+            <field name="name">Pricing Settings</field>
+            <field name="res_model">res.config.settings</field>
+            <field name="view_mode">form</field>
+            <field name="target">inline</field>
+            <field name="context">{'module' : 'patriot_estimating'}</field>
+        </record>
+
+        <menuitem id="menu_pricing_settings"
+            name="Configuration"
+            parent="menu_estimations_root"
+            sequence="100"/>
+
+        <menuitem id="menu_pricing_settings_action"
+            name="Settings"
+            parent="menu_pricing_settings"
+            action="action_pricing_config_settings"
+            groups="base.group_system"/>
+    </data>
+</odoo>
