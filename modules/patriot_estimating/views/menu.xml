@@ -1,28 +1,23 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
-    <!-- Estimations Root Menu -->
-    <menuitem id="menu_estimations_root"
-              name="Estimating"
-              sequence="20"
-              web_icon="patriot_estimating,static/description/icon.png"/>
+    <!-- 
+    Estimating menus - NO ROOT MENU
+    All estimating features are accessed through the unified Patriot Signs menu.
+    The estimation calculations run in the background.
+    -->
 
-    <!-- Estimates Menu -->
+    <!-- These menus go under patriot_base.menu_estimating -->
     <menuitem id="menu_estimates"
               name="Estimates"
-              parent="menu_estimations_root"
+              parent="patriot_base.menu_estimating"
               action="ps_estimate_action"
-              sequence="10"/>
+              sequence="50"/>
 
-    <!-- Reporting Menu -->
-    <menuitem id="menu_reporting"
-              name="Reporting"
-              parent="menu_estimations_root"
-              sequence="90"/>
-
-    <menuitem id="menu_reporting_analysis"
-              name="Estimate &amp; Waste Analysis"
-              parent="menu_reporting"
-              action="ps_estimate_analysis_action"
-              sequence="10"/>
+    <!-- Waste/Reporting under Configuration -->
+    <menuitem id="menu_waste_analysis"
+              name="Waste Analysis"
+              parent="patriot_base.menu_configuration"
+              action="ps_waste_dashboard_action"
+              sequence="50"/>
 
 </odoo>

@@ -2,6 +2,7 @@
 <odoo>
     <!-- ================================================================== -->
     <!-- WASTE ANALYSIS DASHBOARD                                           -->
+    <!-- Views and actions only - menus are in menu.xml                     -->
     <!-- ================================================================== -->
 
     <!-- Dashboard Search View with Date Filters -->
@@ -62,7 +63,7 @@
                 <field name="stock_generated" type="measure"/>
                 <field name="molds_needed" type="measure"/>
                 <field name="sheets_needed" type="measure"/>
-                <field name="waste_percent" type="measure" widget="percentage"/>
+                <field name="waste_percent" type="measure"/>
                 <field name="material_unit_cost" type="measure"/>
                 <field name="profit_margin" type="measure"/>
             </pivot>
@@ -135,18 +136,4 @@
         </field>
     </record>
 
-    <!-- Menu Items for Dashboard -->
-    <menuitem id="menu_waste_dashboard"
-        name="Waste Dashboard"
-        parent="ps_estimating_menu"
-        action="ps_waste_dashboard_action"
-        sequence="30"/>
-    
-    <menuitem id="menu_stock_report"
-        name="Stock Report"
-        parent="ps_estimating_menu"
-        action="ps_stock_report_action"
-        sequence="31"/>
-
 </odoo>
-</field>
