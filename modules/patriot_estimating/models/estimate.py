@@ -402,6 +402,12 @@ class EstimateLine(models.Model):
     # PRICING
     # =========================================================================
     
+    # Labor & Install inputs (for manual override or reference)
+    labor_hours = fields.Float(string='Labor Hours')
+    labor_rate = fields.Float(string='Labor Rate', default=75.0)
+    install_hours = fields.Float(string='Install Hours')
+    install_rate = fields.Float(string='Install Rate', default=100.0)
+
     unit_price = fields.Float(string='Unit Price (Sell)')
     
     material_extended = fields.Float(string='Material Ext.', compute='_compute_extended', store=True)
@@ -521,15 +527,18 @@ class EstimateLine(models.Model):
                                       
             line.total_unit_cost = line.material_unit_cost + line.labor_unit_cost + line.overhead_unit_cost
 
-    @api.depends('quantity', 'unit_price', 'material_unit_cost', 'labor_unit_cost')
+    @api.depends('quantity', 'unit_price', 'material_unit_cost', 'labor_unit_cost', 'install_hours', 'install_rate')
     def _compute_extended(self):
         for line in self:
             # Extended costs
             line.material_extended = line.quantity * line.material_unit_cost
             line.labor_extended = line.quantity * line.labor_unit_cost
             
-            # Install is usually flat rate or separate calc, placeholder
-            line.install_extended = 0.0 
+            # Install cost from hours
+            if line.install_hours:
+                line.install_extended = line.install_hours * line.install_rate
+            else:
+                line.install_extended = 0.0 
             
             # Line total is PRICE, not cost
             line.line_total = line.quantity * line.unit_price
