@@ -129,5 +129,25 @@
             <field name="sequence">110</field>
         </record>
         
+        <!-- Evacuation -->
+        <record id="category_evac" model="sign.category">
+            <field name="name">Evacuation Plans</field>
+            <field name="code">EVAC</field>
+            <field name="description">Evacuation plans and emergency route signage</field>
+            <field name="color">1</field>
+            <field name="is_ada_default">False</field>
+            <field name="sequence">115</field>
+        </record>
+        
+        <!-- Life Safety -->
+        <record id="category_life" model="sign.category">
+            <field name="name">Life Safety</field>
+            <field name="code">LIFE</field>
+            <field name="description">Fire extinguisher, AED, emergency equipment signage</field>
+            <field name="color">1</field>
+            <field name="is_ada_default">False</field>
+            <field name="sequence">120</field>
+        </record>
+        
     </data>
 </odoo>
