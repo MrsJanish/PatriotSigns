@@ -5,19 +5,11 @@
         <!-- Note: Default Odoo stages (New, Qualified, Proposition) should be archived manually -->
         <!-- Go to CRM > Configuration > Stages and set Active=False on default stages -->
         
-        <!-- ARCHIVE DEFAULT ODOO STAGES -->
-        <record id="crm.stage_lead1" model="crm.stage">
-            <field name="active" eval="False"/>
-        </record>
-        <record id="crm.stage_lead2" model="crm.stage">
-            <field name="active" eval="False"/>
-        </record>
-        <record id="crm.stage_lead3" model="crm.stage">
-            <field name="active" eval="False"/>
-        </record>
-        <record id="crm.stage_lead4" model="crm.stage">
-            <field name="active" eval="False"/>
-        </record>
+        <!-- DELETE DEFAULT ODOO STAGES -->
+        <delete model="crm.stage" id="crm.stage_lead1"/>
+        <delete model="crm.stage" id="crm.stage_lead2"/>
+        <delete model="crm.stage" id="crm.stage_lead3"/>
+        <delete model="crm.stage" id="crm.stage_lead4"/>
 
         <!-- DELETE OLD TRANSIENT STAGES -->
         <!-- These are no longer needed as automation runs in background -->
