@@ -5,34 +5,14 @@
         <!-- Note: Default Odoo stages (New, Qualified, Proposition) should be archived manually -->
         <!-- Go to CRM > Configuration > Stages and set Active=False on default stages -->
         
-        <!-- HIDE DEFAULT ODOO STAGES (Fold them instead of delete to prevent data loss) -->
-        <record id="crm.stage_lead1" model="crm.stage">
-            <field name="fold" eval="True"/>
-        </record>
-        <record id="crm.stage_lead2" model="crm.stage">
-            <field name="fold" eval="True"/>
-        </record>
-        <record id="crm.stage_lead3" model="crm.stage">
-            <field name="fold" eval="True"/>
-        </record>
-        <record id="crm.stage_lead4" model="crm.stage">
-            <field name="fold" eval="True"/>
-        </record>
+        <!-- DELETE DEFAULT ODOO STAGES -->
+        <delete model="crm.stage" id="crm.stage_lead1"/>
+        <delete model="crm.stage" id="crm.stage_lead2"/>
+        <delete model="crm.stage" id="crm.stage_lead3"/>
+        <delete model="crm.stage" id="crm.stage_lead4"/>
 
-        <!-- RESTORE TRANSIENT STAGES (Folded) -->
-        <record id="stage_new_itb" model="crm.stage">
-            <field name="name">📧 New ITB</field>
-            <field name="sequence">5</field>
-            <field name="is_won">False</field>
-            <field name="fold" eval="True"/>
-        </record>
-        
-        <record id="stage_fetching_docs" model="crm.stage">
-            <field name="name">📥 Fetching Docs</field>
-            <field name="sequence">6</field>
-            <field name="is_won">False</field>
-            <field name="fold" eval="True"/>
-        </record>
+        <!-- DELETE OLD TRANSIENT STAGES -->
+        <delete model="crm.stage" search="[('name', 'in', ['📧 New ITB', '📥 Fetching Docs'])]"/>
 
         <!-- PIPELINE STAGES -->
         

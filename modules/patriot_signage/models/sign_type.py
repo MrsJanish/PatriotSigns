@@ -526,7 +526,16 @@ class SignType(models.Model):
         # Labor cost
         labor_per_mold = (MOLD_TIME_MINUTES / 60.0) * EMPLOYEE_WAGE  # ~$13.33
         total_labor = molds_needed * labor_per_mold
-        labor_per_unit = total_labor / qty if qty else 0
+        
+        # Unit Cost Calculation:
+        # User Logic: "Unused signs are stock, don't charge customer for them."
+        # So we divide Total Batch Cost by Total Capacity (Signs Produced), 
+        # effectively keeping the Unit Cost stable regardless of Order Qty.
+        signs_produced = molds_needed * signs_per_mold
+        divisor = signs_produced if signs_produced else (qty or 1)
+        
+        material_per_unit = total_material / divisor
+        labor_per_unit = total_labor / divisor
         
         # Overhead
         overhead_per_unit = (material_per_unit + labor_per_unit) * (OVERHEAD_PCT / 100.0)

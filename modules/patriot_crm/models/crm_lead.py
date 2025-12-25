@@ -749,6 +749,40 @@ class CrmLead(models.Model):
             _logger.error(f"Error triggering GitHub Action: {e}")
             self.message_post(body=f"Error triggering fetch: {e}")
 
+    @api.model
+    def action_rescue_leads(self):
+        """
+        One-off cleanup: Move all leads from transient/default stages to 'Reviewing'.
+        This allows us to safely delete the unwanted stages without losing leads.
+        """
+        # Stages to clear out
+        unwanted_stages = [
+            'New', 'Qualified', 'Proposition', 'Won',  # Default Odoo
+            '📧 New ITB', '📥 Fetching Docs'            # Custom Transient
+        ]
+        
+        # Find the destination stage (Reviewing)
+        reviewing_stage = self.env.ref('patriot_crm.stage_reviewing', raise_if_not_found=False)
+        if not reviewing_stage:
+            # Fallback search if XML ID failed
+            reviewing_stage = self.env['crm.stage'].search([('name', 'ilike', 'Reviewing')], limit=1)
+            
+        if not reviewing_stage:
+            _logger.error("Cannot rescue leads: 'Reviewing' stage not found!")
+            return
+            
+        # Find leads in unwanted stages
+        domain = [('stage_id.name', 'in', unwanted_stages)]
+        leads_to_move = self.search(domain)
+        
+        if leads_to_move:
+            _logger.info(f"Rescuing {len(leads_to_move)} leads from unwanted stages to '{reviewing_stage.name}'")
+            leads_to_move.write({'stage_id': reviewing_stage.id})
+            
+            # Post message on leads
+            for lead in leads_to_move:
+                lead.message_post(body="System: Automatically moved to 'Reviewing' as part of pipeline cleanup.")
+
     def action_export_sign_schedule(self):
         """
         Exports sign types to an Excel sign schedule.

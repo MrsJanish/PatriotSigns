@@ -682,8 +682,12 @@ class EstimateLine(models.Model):
                           
             total_material = sheet_cost_total + consumables
             
+            # Unit Cost Calculation (Standard Costing based on Batch Capacity)
+            # Dividing by signs_produced counts the "Stock" items as valid units that absorb cost.
+            divisor = line.signs_produced if line.signs_produced else (line.quantity or 1)
+
             if line.quantity:
-                line.material_unit_cost = total_material / line.quantity
+                line.material_unit_cost = total_material / divisor
             
             # Labor Cost (80 min per mold at $10/hr employee wage)
             # 80 min × ($10/hr / 60) = $13.33 labor cost per mold
@@ -693,7 +697,7 @@ class EstimateLine(models.Model):
             total_labor = line.molds_needed * labor_cost_per_mold
             
             if line.quantity:
-                line.labor_unit_cost = total_labor / line.quantity
+                line.labor_unit_cost = total_labor / divisor
                 
             # Overhead
             line.overhead_unit_cost = (line.material_unit_cost + line.labor_unit_cost) * \
