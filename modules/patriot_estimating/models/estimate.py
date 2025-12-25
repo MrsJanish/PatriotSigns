@@ -621,7 +621,8 @@ class EstimateLine(models.Model):
                 continue
                 
             # Sheets needed (Pionite)
-            line.sheets_needed = math.ceil(line.molds_needed / MOLDS_PER_SHEET)
+            # Sheets needed (Pionite) - Fractional usage
+            line.sheets_needed = line.molds_needed / MOLDS_PER_SHEET
             
             # True Waste Calculation:
             # Waste = (Total Sheet Area Consumed - Total Sign Area) / Total Sheet Area Consumed

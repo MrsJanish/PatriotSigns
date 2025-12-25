@@ -513,7 +513,8 @@ class SignType(models.Model):
         molds_needed = math.ceil(qty / signs_per_mold)
         
         # Sheets needed
-        sheets_needed = math.ceil(molds_needed / MOLDS_PER_SHEET)
+        # Sheets needed - Use fractional sheets (consumption based)
+        sheets_needed = molds_needed / MOLDS_PER_SHEET
         
         # Material cost
         sheet_cost = sheets_needed * (PIONITE_COST + ABS_COST)
