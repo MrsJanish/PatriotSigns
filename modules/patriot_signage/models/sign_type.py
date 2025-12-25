@@ -558,9 +558,8 @@ class SignType(models.Model):
         qty = self.quantity or 1
         molds_needed = math.ceil(qty / signs_per_mold)
         
-        # Sheets needed
-        # Sheets needed - Use fractional sheets (consumption based)
-        sheets_needed = molds_needed / MOLDS_PER_SHEET
+        # Sheets needed (round up to full sheets)
+        sheets_needed = math.ceil(molds_needed / MOLDS_PER_SHEET)
         
         # Material cost
         sheet_cost = sheets_needed * (PIONITE_COST + ABS_COST)
@@ -572,33 +571,17 @@ class SignType(models.Model):
         # Labor cost
         labor_per_mold = (MOLD_TIME_MINUTES / 60.0) * EMPLOYEE_WAGE  # ~$13.33
         total_labor = molds_needed * labor_per_mold
-        
-        # Unit Cost Calculation:
-        # User Logic: "Unused signs are stock, don't charge customer for them."
-        # So we divide Total Batch Cost by Total Capacity (Signs Produced), 
-        # effectively keeping the Unit Cost stable regardless of Order Qty.
-        signs_produced = molds_needed * signs_per_mold
-        divisor = signs_produced if signs_produced else (qty or 1)
-        
-        material_per_unit = total_material / divisor
-        labor_per_unit = total_labor / divisor
+        labor_per_unit = total_labor / qty if qty else 0
         
         # Overhead
         overhead_per_unit = (material_per_unit + labor_per_unit) * (OVERHEAD_PCT / 100.0)
         
-        # Base handling cost (fixed per sign - scales price slower for larger signs)
-        BASE_HANDLING_COST = 10.0  # $10 per sign for handling, QC, packaging
-        MIN_UNIT_PRICE = 25.0      # Absolute minimum price per sign
-        
         # Total cost per unit
-        total_cost_per_unit = material_per_unit + labor_per_unit + overhead_per_unit + BASE_HANDLING_COST
+        total_cost_per_unit = material_per_unit + labor_per_unit + overhead_per_unit
         
         # Apply markup and round
         raw_price = total_cost_per_unit * MARKUP
         rounded_price = round(raw_price / ROUND_TO) * ROUND_TO
-        
-        # Enforce minimum price
-        rounded_price = max(rounded_price, MIN_UNIT_PRICE)
         
         # Set unit cost and unit price
         self.unit_cost = round(total_cost_per_unit, 2)
