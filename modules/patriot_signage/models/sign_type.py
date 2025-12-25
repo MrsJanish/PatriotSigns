@@ -586,12 +586,19 @@ class SignType(models.Model):
         # Overhead
         overhead_per_unit = (material_per_unit + labor_per_unit) * (OVERHEAD_PCT / 100.0)
         
+        # Base handling cost (fixed per sign - scales price slower for larger signs)
+        BASE_HANDLING_COST = 10.0  # $10 per sign for handling, QC, packaging
+        MIN_UNIT_PRICE = 25.0      # Absolute minimum price per sign
+        
         # Total cost per unit
-        total_cost_per_unit = material_per_unit + labor_per_unit + overhead_per_unit
+        total_cost_per_unit = material_per_unit + labor_per_unit + overhead_per_unit + BASE_HANDLING_COST
         
         # Apply markup and round
         raw_price = total_cost_per_unit * MARKUP
         rounded_price = round(raw_price / ROUND_TO) * ROUND_TO
+        
+        # Enforce minimum price
+        rounded_price = max(rounded_price, MIN_UNIT_PRICE)
         
         # Set unit cost and unit price
         self.unit_cost = round(total_cost_per_unit, 2)
