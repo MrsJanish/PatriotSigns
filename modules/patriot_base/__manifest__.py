@@ -23,6 +23,7 @@ This module must be installed before other Patriot Signs modules.
         'product',
         'uom',
         'hr',
+        'sale_management',
     ],
     'data': [
         'security/ir.model.access.csv',
