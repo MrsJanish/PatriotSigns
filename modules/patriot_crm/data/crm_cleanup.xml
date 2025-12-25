@@ -1,7 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
     <data noupdate="1">
-        <!-- Move existing leads out of unwanted stages before deleting stages -->
-        <function model="crm.lead" name="action_rescue_leads"/>
+        <!-- 
+            This file is intentionally empty.
+            Stage cleanup is done by folding stages in crm_stages.xml.
+            Previously attempted to call action_rescue_leads but that caused deployment issues.
+        -->
     </data>
 </odoo>

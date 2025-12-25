@@ -2,17 +2,25 @@
 <odoo>
     <data noupdate="0">
         <!-- CRM Stages for Sign Project Pipeline -->
-        <!-- Note: Default Odoo stages (New, Qualified, Proposition) should be archived manually -->
-        <!-- Go to CRM > Configuration > Stages and set Active=False on default stages -->
+        <!-- Note: Default Odoo stages are hidden/folded, not deleted, to prevent errors -->
         
-        <!-- DELETE DEFAULT ODOO STAGES -->
-        <delete model="crm.stage" id="crm.stage_lead1"/>
-        <delete model="crm.stage" id="crm.stage_lead2"/>
-        <delete model="crm.stage" id="crm.stage_lead3"/>
-        <delete model="crm.stage" id="crm.stage_lead4"/>
-
-        <!-- DELETE OLD TRANSIENT STAGES -->
-        <delete model="crm.stage" search="[('name', 'in', ['📧 New ITB', '📥 Fetching Docs'])]"/>
+        <!-- FOLD DEFAULT ODOO STAGES (can't delete if they have leads) -->
+        <record id="crm.stage_lead1" model="crm.stage">
+            <field name="fold" eval="True"/>
+            <field name="sequence">999</field>
+        </record>
+        <record id="crm.stage_lead2" model="crm.stage">
+            <field name="fold" eval="True"/>
+            <field name="sequence">999</field>
+        </record>
+        <record id="crm.stage_lead3" model="crm.stage">
+            <field name="fold" eval="True"/>
+            <field name="sequence">999</field>
+        </record>
+        <record id="crm.stage_lead4" model="crm.stage">
+            <field name="fold" eval="True"/>
+            <field name="sequence">999</field>
+        </record>
 
         <!-- PIPELINE STAGES -->
         
