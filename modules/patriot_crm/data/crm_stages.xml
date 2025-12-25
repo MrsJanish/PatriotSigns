@@ -5,46 +5,55 @@
         <!-- Note: Default Odoo stages (New, Qualified, Proposition) should be archived manually -->
         <!-- Go to CRM > Configuration > Stages and set Active=False on default stages -->
         
-        <record id="stage_new_itb" model="crm.stage">
-            <field name="name">📧 New ITB</field>
-            <field name="sequence">10</field>
-            <field name="is_won">False</field>
+        <!-- ARCHIVE DEFAULT ODOO STAGES -->
+        <record id="crm.stage_lead1" model="crm.stage">
+            <field name="active" eval="False"/>
         </record>
-        
-        <record id="stage_fetching_docs" model="crm.stage">
-            <field name="name">📥 Fetching Docs</field>
-            <field name="sequence">20</field>
-            <field name="is_won">False</field>
+        <record id="crm.stage_lead2" model="crm.stage">
+            <field name="active" eval="False"/>
         </record>
+        <record id="crm.stage_lead3" model="crm.stage">
+            <field name="active" eval="False"/>
+        </record>
+        <record id="crm.stage_lead4" model="crm.stage">
+            <field name="active" eval="False"/>
+        </record>
+
+        <!-- DELETE OLD TRANSIENT STAGES -->
+        <!-- These are no longer needed as automation runs in background -->
+        <delete model="crm.stage" search="[('name', 'in', ['📧 New ITB', '📥 Fetching Docs'])]"/>
+
+        <!-- PIPELINE STAGES -->
         
         <record id="stage_reviewing" model="crm.stage">
             <field name="name">📄 Reviewing</field>
-            <field name="sequence">30</field>
+            <field name="sequence">10</field>
             <field name="is_won">False</field>
         </record>
         
         <record id="stage_estimating" model="crm.stage">
             <field name="name">📊 Estimating</field>
-            <field name="sequence">40</field>
+            <field name="sequence">20</field>
             <field name="is_won">False</field>
         </record>
         
         <record id="stage_bid_prepared" model="crm.stage">
             <field name="name">📝 Bid Prepared</field>
-            <field name="sequence">50</field>
+            <field name="sequence">30</field>
             <field name="is_won">False</field>
         </record>
         
         <record id="stage_bid_submitted" model="crm.stage">
             <field name="name">✉️ Bid Submitted</field>
-            <field name="sequence">60</field>
+            <field name="sequence">40</field>
             <field name="is_won">False</field>
         </record>
         
         <record id="stage_won" model="crm.stage">
             <field name="name">✅ Won</field>
-            <field name="sequence">70</field>
+            <field name="sequence">50</field>
             <field name="is_won">True</field>
+            <field name="fold">True</field>
         </record>
 
     </data>

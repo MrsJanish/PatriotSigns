@@ -727,10 +727,15 @@ class CrmLead(models.Model):
         }
         
         try:
-            # Update stage to Fetching
-            stage_fetching = self.env.ref('patriot_crm.stage_fetching_docs', raise_if_not_found=False)
-            if stage_fetching:
-                self.stage_id = stage_fetching.id
+            # Update stage to Reviewing (default flow)
+            # stage_fetching = self.env.ref('patriot_crm.stage_fetching_docs', raise_if_not_found=False)
+            # if stage_fetching:
+            #     self.stage_id = stage_fetching.id
+            
+            # Ensure we are in Reviewing stage if not already
+            stage_reviewing = self.env.ref('patriot_crm.stage_reviewing', raise_if_not_found=False)
+            if stage_reviewing:
+                self.stage_id = stage_reviewing.id
             
             response = requests.post(url, headers=headers, json=data, timeout=30)
             if response.status_code == 204:
