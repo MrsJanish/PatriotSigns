@@ -214,7 +214,24 @@ class Estimate(models.Model):
         string='Estimate Total',
         compute='_compute_totals',
         store=True,
-        tracking=True
+        tracking=True,
+        help='Final bid price after markup'
+    )
+    
+    # =========================================================================
+    # PROFITABILITY
+    # =========================================================================
+    profit_amount = fields.Float(
+        string='Profit $',
+        compute='_compute_totals',
+        store=True,
+        help='Total (bid) - Subtotal (cost) = Profit'
+    )
+    profit_margin_pct = fields.Float(
+        string='Profit Margin %',
+        compute='_compute_totals',
+        store=True,
+        help='Profit as percentage of bid price'
     )
     
     # =========================================================================
@@ -300,6 +317,13 @@ class Estimate(models.Model):
             # Markup on subtotal
             estimate.markup_amount = estimate.subtotal * (estimate.markup_percent / 100)
             estimate.total = estimate.subtotal + estimate.markup_amount
+            
+            # Profitability
+            estimate.profit_amount = estimate.total - estimate.subtotal
+            if estimate.total:
+                estimate.profit_margin_pct = (estimate.profit_amount / estimate.total) * 100
+            else:
+                estimate.profit_margin_pct = 0
 
     # =========================================================================
     # ACTIONS

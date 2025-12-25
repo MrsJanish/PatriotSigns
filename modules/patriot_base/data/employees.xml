@@ -4,6 +4,7 @@
         <!-- 
             Patriot Signs Employees
             Created: 2024-12-24
+            Updated: Added hourly_cost for profitability tracking
         -->
 
         <!-- Bryson Tate -->
@@ -13,6 +14,7 @@
             <field name="work_phone">+1 405-658-7304</field>
             <field name="mobile_phone">+1 405-658-7304</field>
             <field name="job_title">Production / Installer</field>
+            <field name="hourly_cost">10.0</field>
         </record>
 
         <!-- Darrell Janish -->
@@ -22,6 +24,7 @@
             <field name="work_phone">+1 405-996-8770</field>
             <field name="mobile_phone">+1 405-996-8770</field>
             <field name="job_title">Owner</field>
+            <field name="hourly_cost">10.0</field>
         </record>
 
         <!-- Carter Janish -->
@@ -31,6 +34,7 @@
             <field name="work_phone">+1 405-658-7915</field>
             <field name="mobile_phone">+1 405-658-7915</field>
             <field name="job_title">Technology</field>
+            <field name="hourly_cost">10.0</field>
         </record>
 
         <!-- Robert S. Barcum -->
@@ -40,6 +44,7 @@
             <field name="work_phone">+1 405-202-3211</field>
             <field name="mobile_phone">+1 405-202-3211</field>
             <field name="job_title">Production / Installer</field>
+            <field name="hourly_cost">10.0</field>
         </record>
 
         <!-- Robert L. Barcum -->
@@ -49,6 +54,7 @@
             <field name="work_phone">+1 405-850-9301</field>
             <field name="mobile_phone">+1 405-850-9301</field>
             <field name="job_title">Partner</field>
+            <field name="hourly_cost">10.0</field>
         </record>
 
         <!-- Lexi Tate -->
@@ -58,6 +64,7 @@
             <field name="work_phone">+1 405-738-3298</field>
             <field name="mobile_phone">+1 405-738-3298</field>
             <field name="job_title">Project Manager</field>
+            <field name="hourly_cost">10.0</field>
         </record>
 
 
@@ -68,6 +75,7 @@
             <field name="work_phone">+1 405-641-1594</field>
             <field name="mobile_phone">+1 405-641-1594</field>
             <field name="job_title">Estimator / Bidding</field>
+            <field name="hourly_cost">10.0</field>
         </record>
 
     </data>

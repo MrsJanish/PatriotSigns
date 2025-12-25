@@ -284,23 +284,54 @@ class SignType(models.Model):
     )
 
     # =========================================================================
-    # COSTING
+    # COSTING & PROFITABILITY
     # =========================================================================
     unit_cost = fields.Float(
         string='Unit Cost',
-        tracking=True
+        tracking=True,
+        help='Internal cost per sign (materials + labor)'
     )
     unit_price = fields.Float(
         string='Unit Price',
-        tracking=True
+        tracking=True,
+        help='Customer-facing price per sign'
     )
     install_rate = fields.Float(
         string='Install Rate'
     )
+    
+    # Extended totals
+    extended_cost = fields.Float(
+        string='Extended Cost',
+        compute='_compute_profitability',
+        store=True,
+        help='Total internal cost: unit_cost × quantity'
+    )
     extended_price = fields.Float(
         string='Extended Price',
-        compute='_compute_extended_price',
-        store=True
+        compute='_compute_profitability',
+        store=True,
+        help='Total customer price: unit_price × quantity'
+    )
+    
+    # Profit metrics
+    profit_per_unit = fields.Float(
+        string='Profit/Unit',
+        compute='_compute_profitability',
+        store=True,
+        help='unit_price - unit_cost'
+    )
+    profit_margin_pct = fields.Float(
+        string='Margin %',
+        compute='_compute_profitability',
+        store=True,
+        help='Profit as percentage of price'
+    )
+    total_profit = fields.Float(
+        string='Total Profit',
+        compute='_compute_profitability',
+        store=True,
+        help='profit_per_unit × quantity'
     )
 
     # =========================================================================
@@ -420,10 +451,25 @@ class SignType(models.Model):
         for record in self:
             record.bookmark_count = len(record.bookmark_ids)
 
-    @api.depends('unit_price', 'quantity')
-    def _compute_extended_price(self):
+    @api.depends('unit_cost', 'unit_price', 'quantity')
+    def _compute_profitability(self):
+        """Calculate all profitability metrics for sign type"""
         for record in self:
+            # Extended totals
+            record.extended_cost = record.unit_cost * record.quantity
             record.extended_price = record.unit_price * record.quantity
+            
+            # Per-unit profit
+            record.profit_per_unit = record.unit_price - record.unit_cost
+            
+            # Margin percentage
+            if record.unit_price:
+                record.profit_margin_pct = (record.profit_per_unit / record.unit_price) * 100
+            else:
+                record.profit_margin_pct = 0
+            
+            # Total profit
+            record.total_profit = record.profit_per_unit * record.quantity
 
     # =========================================================================
     # ONCHANGE

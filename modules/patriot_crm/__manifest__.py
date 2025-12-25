@@ -14,6 +14,8 @@ Extends Odoo CRM with:
 - Project location fields
 - Document tracking
 - Sign project workflow stages
+- Project profitability tracking
+- Timesheet integration for labor cost tracking
 
 This module integrates the CC Ops dashboard with Odoo's native CRM pipeline.
     """,
@@ -21,6 +23,7 @@ This module integrates the CC Ops dashboard with Odoo's native CRM pipeline.
     'website': 'https://patriotsigns.com',
     'depends': [
         'crm',
+        'hr_timesheet',
         'patriot_base',
     ],
     'data': [
