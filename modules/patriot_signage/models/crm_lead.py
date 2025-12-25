@@ -131,23 +131,36 @@ class CrmLead(models.Model):
         """
         Compute timesheet hours and ACTUAL cost from linked project.
         Cost = each timesheet line's hours × that employee's hourly_cost from HR.
+        
+        Note: This gracefully handles the case where patriot_projects is not installed
+        or the opportunity_id field doesn't exist on project.project.
         """
         Project = self.env['project.project']
         Timesheet = self.env['account.analytic.line']
         
+        # Check if opportunity_id field exists on project.project
+        has_opportunity_link = 'opportunity_id' in Project._fields
+        
         for lead in self:
-            project = Project.search([('opportunity_id', '=', lead.id)], limit=1)
-            
-            if project:
-                timesheets = Timesheet.search([('project_id', '=', project.id)])
-                lead.timesheet_hours = sum(timesheets.mapped('unit_amount'))
-                
-                # Actual cost from HR employee hourly_cost
-                total_cost = 0
-                for ts in timesheets:
-                    if ts.employee_id and ts.employee_id.hourly_cost:
-                        total_cost += ts.unit_amount * ts.employee_id.hourly_cost
-                lead.timesheet_cost = total_cost
+            if has_opportunity_link:
+                try:
+                    project = Project.search([('opportunity_id', '=', lead.id)], limit=1)
+                    if project:
+                        timesheets = Timesheet.search([('project_id', '=', project.id)])
+                        lead.timesheet_hours = sum(timesheets.mapped('unit_amount'))
+                        
+                        # Actual cost from HR employee hourly_cost
+                        total_cost = 0
+                        for ts in timesheets:
+                            if ts.employee_id and ts.employee_id.hourly_cost:
+                                total_cost += ts.unit_amount * ts.employee_id.hourly_cost
+                        lead.timesheet_cost = total_cost
+                    else:
+                        lead.timesheet_hours = 0
+                        lead.timesheet_cost = 0
+                except Exception:
+                    lead.timesheet_hours = 0
+                    lead.timesheet_cost = 0
             else:
                 lead.timesheet_hours = 0
                 lead.timesheet_cost = 0
