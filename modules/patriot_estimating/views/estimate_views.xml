@@ -73,6 +73,8 @@
                                     <field name="description"/>
                                     <field name="category_id" optional="show"/>
                                     <field name="dimensions_display" optional="show"/>
+                                    <field name="sign_width" optional="hide"/>
+                                    <field name="sign_height" optional="hide"/>
                                     <field name="quantity"/>
                                     <field name="material_unit_cost"/>
                                     <field name="material_extended" sum="Material"/>

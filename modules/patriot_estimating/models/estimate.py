@@ -315,6 +315,8 @@ class Estimate(models.Model):
                 'estimate_id': self.id,
                 'sign_type_id': sign_type.id,
                 'quantity': sign_type.quantity,
+                'sign_width': sign_type.width,
+                'sign_height': sign_type.length,
                 'material_unit_cost': sign_type.unit_cost or 0,
             })
         
@@ -742,5 +744,8 @@ class EstimateLine(models.Model):
         if self.sign_type_id:
             self.description = self.sign_type_id.name
             self.quantity = self.sign_type_id.quantity
-            # Pull dimensions if available
+            self.sign_width = self.sign_type_id.width
+            self.sign_height = self.sign_type_id.length
+            # If sign type already has a calculated unit cost, we could use it, 
+            # but we recalculate here to ensure estimate-specific logic applies.
             # self.sign_width = ...
