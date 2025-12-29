@@ -554,36 +554,35 @@ class SignType(models.Model):
         fit2 = int(PRESS_W // h) * int(PRESS_H // w) if w > 0 and h > 0 else 1
         signs_per_mold = max(fit1, fit2, 1)
         
-        # Calculate molds needed
-        qty = self.quantity or 1
-        molds_needed = math.ceil(qty / signs_per_mold)
+        # =====================================================================
+        # FIXED PRICING: Calculate cost for ONE MOLD, divide by signs per mold
+        # Price is determined by SIZE only, not by order quantity
+        # =====================================================================
         
-        # Sheets needed (round up to full sheets)
-        sheets_needed = math.ceil(molds_needed / MOLDS_PER_SHEET)
+        # Material cost per mold (assume 1 mold, fractional sheet)
+        sheet_fraction = 1.0 / MOLDS_PER_SHEET  # ~0.059 sheets per mold
+        sheet_cost_per_mold = sheet_fraction * (PIONITE_COST + ABS_COST)
         
-        # Material cost
-        sheet_cost = sheets_needed * (PIONITE_COST + ABS_COST)
-        consumables = (qty * INK_COST) + (qty * PAINT_COST) + \
-                      (molds_needed * TAPE_COST) + (molds_needed * MCLUBE_COST)
-        total_material = sheet_cost + consumables
+        # Consumables per mold
+        consumables_per_mold = (
+            signs_per_mold * (INK_COST + PAINT_COST) +  # Per sign
+            TAPE_COST + MCLUBE_COST                      # Per mold
+        )
         
-        # Labor cost
+        total_material_per_mold = sheet_cost_per_mold + consumables_per_mold
+        
+        # Labor cost per mold
         labor_per_mold = (MOLD_TIME_MINUTES / 60.0) * EMPLOYEE_WAGE  # ~$13.33
-        total_labor = molds_needed * labor_per_mold
         
-        # Divide costs by BATCH CAPACITY (signs produced), not qty ordered
-        # Customer orders 3, we make 6, 3 go to stock, customer pays for 3 at batch-rate
-        signs_produced = molds_needed * signs_per_mold
-        divisor = signs_produced if signs_produced else (qty or 1)
+        # Total cost per mold
+        total_cost_per_mold = total_material_per_mold + labor_per_mold
         
-        material_per_unit = total_material / divisor
-        labor_per_unit = total_labor / divisor
+        # Cost per sign = mold cost / signs per mold
+        cost_per_sign = total_cost_per_mold / signs_per_mold
         
-        # Overhead
-        overhead_per_unit = (material_per_unit + labor_per_unit) * (OVERHEAD_PCT / 100.0)
-        
-        # Total cost per unit
-        total_cost_per_unit = material_per_unit + labor_per_unit + overhead_per_unit
+        # Add overhead
+        overhead_per_sign = cost_per_sign * (OVERHEAD_PCT / 100.0)
+        total_cost_per_unit = cost_per_sign + overhead_per_sign
         
         # Apply markup and round
         raw_price = total_cost_per_unit * MARKUP
