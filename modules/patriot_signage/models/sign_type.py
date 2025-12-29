@@ -566,12 +566,18 @@ class SignType(models.Model):
         consumables = (qty * INK_COST) + (qty * PAINT_COST) + \
                       (molds_needed * TAPE_COST) + (molds_needed * MCLUBE_COST)
         total_material = sheet_cost + consumables
-        material_per_unit = total_material / qty if qty else 0
         
         # Labor cost
         labor_per_mold = (MOLD_TIME_MINUTES / 60.0) * EMPLOYEE_WAGE  # ~$13.33
         total_labor = molds_needed * labor_per_mold
-        labor_per_unit = total_labor / qty if qty else 0
+        
+        # Divide costs by BATCH CAPACITY (signs produced), not qty ordered
+        # Customer orders 3, we make 6, 3 go to stock, customer pays for 3 at batch-rate
+        signs_produced = molds_needed * signs_per_mold
+        divisor = signs_produced if signs_produced else (qty or 1)
+        
+        material_per_unit = total_material / divisor
+        labor_per_unit = total_labor / divisor
         
         # Overhead
         overhead_per_unit = (material_per_unit + labor_per_unit) * (OVERHEAD_PCT / 100.0)
