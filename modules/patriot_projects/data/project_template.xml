@@ -31,14 +31,14 @@
             <field name="name">Project Management</field>
             <field name="project_id" ref="project_project_signage_template"/>
             <field name="description">Manage communications, contracts, and billing.</field>
-            <field name="planned_hours">10.0</field>
+            <field name="allocated_hours">10.0</field>
         </record>
 
         <record id="project_task_design_template" model="project.task">
             <field name="name">Design &amp; Submittals</field>
             <field name="project_id" ref="project_project_signage_template"/>
             <field name="description">Create and revise shop drawings.</field>
-            <field name="planned_hours">5.0</field>
+            <field name="allocated_hours">5.0</field>
         </record>
 
     </data>
