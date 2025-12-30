@@ -15,7 +15,6 @@
             <field name="list_price">150.00</field>
             <field name="standard_price">50.00</field>
             <field name="uom_id" ref="uom.product_uom_hour"/>
-            <field name="uom_po_id" ref="uom.product_uom_hour"/>
             <field name="description_sale">Project coordination, meetings, and administration.</field>
             <field name="invoice_policy">delivery</field> <!-- Bill based on hours (timesheets) -->
         </record>
@@ -29,7 +28,6 @@
             <field name="list_price">125.00</field>
             <field name="standard_price">40.00</field>
             <field name="uom_id" ref="uom.product_uom_hour"/>
-            <field name="uom_po_id" ref="uom.product_uom_hour"/>
             <field name="description_sale">Signage design, shop drawings, and submittal packages.</field>
             <field name="invoice_policy">delivery</field>
         </record>
@@ -44,7 +42,6 @@
             <field name="list_price">95.00</field>
             <field name="standard_price">30.00</field>
             <field name="uom_id" ref="uom.product_uom_hour"/>
-            <field name="uom_po_id" ref="uom.product_uom_hour"/>
             <field name="description_sale">Manufacturing, assembly, and quality control.</field>
             <field name="invoice_policy">delivery</field>
         </record>
@@ -58,7 +55,6 @@
             <field name="list_price">110.00</field>
             <field name="standard_price">35.00</field>
             <field name="uom_id" ref="uom.product_uom_hour"/>
-            <field name="uom_po_id" ref="uom.product_uom_hour"/>
             <field name="description_sale">On-site installation and travel.</field>
             <field name="invoice_policy">delivery</field>
         </record>
