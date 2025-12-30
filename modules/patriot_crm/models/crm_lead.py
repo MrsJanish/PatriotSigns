@@ -509,7 +509,16 @@ class CrmLead(models.Model):
                 if partner:
                     vals['architect_partner_id'] = partner.id
         
-        return super().create(vals_list)
+        leads = super().create(vals_list)
+        
+        # Trigger project creation if lead is created directly in Reviewing stage
+        reviewing_stage = self.env.ref('patriot_crm.stage_reviewing', raise_if_not_found=False)
+        if reviewing_stage:
+            for lead in leads:
+                if lead.stage_id.id == reviewing_stage.id:
+                    lead._ensure_project_created()
+        
+        return leads
 
     # =========================================================================
     # WORKFLOW AUTOMATIONS
