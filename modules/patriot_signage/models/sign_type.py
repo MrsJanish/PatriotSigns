@@ -584,8 +584,16 @@ class SignType(models.Model):
         overhead_per_sign = cost_per_sign * (OVERHEAD_PCT / 100.0)
         total_cost_per_unit = cost_per_sign + overhead_per_sign
         
+        # VARIABLE MARKUP: Higher for small signs (more per mold), lower for large
+        # This flattens the price curve so small efficient signs aren't too cheap
+        # Formula: markup = signs_per_mold + BASE gives:
+        #   6 per mold (6x6) → 7.5x markup
+        #   2 per mold (8x8) → 3.5x markup
+        BASE_MARKUP_OFFSET = 1.5
+        variable_markup = signs_per_mold + BASE_MARKUP_OFFSET
+        
         # Apply markup and round
-        raw_price = total_cost_per_unit * MARKUP
+        raw_price = total_cost_per_unit * variable_markup
         rounded_price = round(raw_price / ROUND_TO) * ROUND_TO
         
         # Set unit cost and unit price
