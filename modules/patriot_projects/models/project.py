@@ -179,8 +179,11 @@ class Project(models.Model):
     
     @api.model
     def create_from_opportunity(self, opportunity):
-        """Create project from won CRM opportunity"""
-        return self.create({
+        """Create project from won CRM opportunity by cloning the template"""
+        # 1. Find the Master Template
+        template = self.env.ref('patriot_projects.project_project_signage_template', raise_if_not_found=False)
+        
+        project_vals = {
             'name': opportunity.name,
             'opportunity_id': opportunity.id,
             'project_alias': opportunity.project_alias,
@@ -194,7 +197,29 @@ class Project(models.Model):
             'project_type': opportunity.project_type,
             'award_date': fields.Date.today(),
             'project_stage': 'contract',
-        })
+            'allow_timesheets': True, # Enforce Timekeeping
+        }
+
+        if template:
+            # Clone the template (Deep copy includes Tasks)
+            project = template.copy(default=project_vals)
+            # Activate it (Template is inactive)
+            project.active = True
+        else:
+            # Fallback if template missing
+            project = self.create(project_vals)
+
+        # Ensure a "General" task exists for high-level time logging
+        # This addresses user request to "log hours to a whole project"
+        Task = self.env['project.task']
+        if not Task.search_count([('project_id', '=', project.id), ('name', 'ilike', 'General')]):
+            Task.create({
+                'name': 'General - Project Time',
+                'project_id': project.id,
+                'description': 'Log general project hours here if not in a specific phase.',
+            })
+
+        return project
 
     def action_view_sign_types(self):
         """View sign types for this project"""

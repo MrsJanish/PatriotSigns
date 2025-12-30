@@ -515,33 +515,40 @@ class CrmLead(models.Model):
     # WORKFLOW AUTOMATIONS
     # =========================================================================
     
+    def write(self, vals):
+        """
+        Override write to trigger actions on stage changes.
+        """
+        res = super(CrmLead, self).write(vals)
+        
+        if 'stage_id' in vals:
+            # Check if moved to Reviewing stage
+            reviewing_stage = self.env.ref('patriot_crm.stage_reviewing', raise_if_not_found=False)
+            if reviewing_stage and vals['stage_id'] == reviewing_stage.id:
+                for lead in self:
+                    lead._ensure_project_created()
+                    
+        return res
+
     def action_set_won_rainbowman(self):
         """
-        Override Won action to trigger project creation workflow.
-        
-        When opportunity is marked as Won:
-        1. Create a Project record
-        2. Create initial Submittal record
-        3. Copy over sign types and project data
+        Override Won action to ensure project exists (fallback).
         """
-        # Call parent method first
         result = super().action_set_won_rainbowman()
         
-        # Trigger project creation for each won opportunity
         for lead in self:
-            lead._create_project_from_won()
+            lead._ensure_project_created()
         
         return result
 
-    def _create_project_from_won(self):
-        """Create project and related records when opportunity is won"""
+    def _ensure_project_created(self):
+        """Create project and related records if they don't exist"""
         self.ensure_one()
         
         # Check if project already exists
         Project = self.env['project.project']
         existing = Project.search([('opportunity_id', '=', self.id)], limit=1)
         if existing:
-            _logger.info(f"Project already exists for opportunity {self.name}")
             return existing
         
         # Create the project
