@@ -37,12 +37,18 @@
 
                     <separator/>
                     
-                    <!-- Project Selection -->
+                    <!-- Work Selection: Project OR Opportunity -->
                     <group>
                         <field name="project_id" string="Project" 
+                               placeholder="Select a won project..."
+                               options="{'no_create': True}"/>
+                        <field name="opportunity_id" string="Opportunity (Pre-Bid)"
+                               placeholder="...or select opportunity for bidding work"
                                options="{'no_create': True}"/>
                         <field name="task_id" string="Task" 
+                               placeholder="(Optional)"
                                options="{'no_create': True}"
+                               invisible="not project_id"
                                domain="[('project_id', '=', project_id), '|', ('user_ids', 'in', uid), ('user_ids', '=', False)]"/>
                         <field name="notes" string="Notes"/>
                     </group>

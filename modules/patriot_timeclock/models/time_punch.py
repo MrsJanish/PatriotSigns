@@ -31,11 +31,10 @@ class TimePunch(models.Model):
         store=True
     )
     
-    # Project/Task
+    # Project/Task (for won projects)
     project_id = fields.Many2one(
         'project.project',
         string='Project',
-        required=True,
         tracking=True
     )
     task_id = fields.Many2one(
@@ -43,6 +42,31 @@ class TimePunch(models.Model):
         string='Task',
         domain="[('project_id', '=', project_id)]"
     )
+    
+    # Opportunity (for pre-bid time - before project exists)
+    opportunity_id = fields.Many2one(
+        'crm.lead',
+        string='Opportunity',
+        tracking=True,
+        help='For logging time to opportunities before they become projects'
+    )
+    
+    # Computed: What we're working on (project or opportunity name)
+    work_item = fields.Char(
+        string='Work Item',
+        compute='_compute_work_item',
+        store=True
+    )
+    
+    @api.depends('project_id', 'opportunity_id')
+    def _compute_work_item(self):
+        for punch in self:
+            if punch.project_id:
+                punch.work_item = punch.project_id.name
+            elif punch.opportunity_id:
+                punch.work_item = f"[Bid] {punch.opportunity_id.name}"
+            else:
+                punch.work_item = "Unknown"
     
     # Time tracking
     punch_in = fields.Datetime(
