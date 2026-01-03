@@ -1,93 +1,79 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
-    <!-- Time Clock Kiosk Form View - Clean centered design -->
+    <!-- Time Clock Kiosk Form View - Standard Odoo styling -->
     <record id="ps_time_clock_kiosk_form" model="ir.ui.view">
         <field name="name">ps.time.clock.kiosk.form</field>
         <field name="model">ps.time.clock.kiosk</field>
         <field name="arch" type="xml">
             <form create="0" edit="1" delete="0">
-                <field name="is_clocked_in" invisible="1"/>
-                <field name="active_punch_id" invisible="1"/>
-                <field name="employee_id" invisible="1"/>
-                <field name="current_project_id" invisible="1"/>
-                <field name="current_duration" invisible="1"/>
-                
-                <div class="container-fluid" style="max-width: 600px; margin: 0 auto; padding: 40px 20px;">
-                    
-                    <!-- Status Card -->
-                    <div class="card shadow-sm mb-4">
-                        <div class="card-body text-center py-4 bg-success text-white" invisible="not is_clocked_in">
-                            <h4 class="mb-0">⏱️ Currently Working</h4>
-                        </div>
-                        <div class="card-body text-center py-4 bg-secondary text-white" invisible="is_clocked_in">
-                            <h4 class="mb-0">⏸️ Not Clocked In</h4>
-                        </div>
-                        <div class="card-body text-center" invisible="not is_clocked_in">
-                            <p class="text-muted mb-1">Project</p>
-                            <h4 class="mb-3"><field name="current_project_id" readonly="1" nolabel="1"/></h4>
-                            <p class="text-muted mb-1">Time</p>
-                            <h2 class="text-primary mb-0">
-                                <field name="current_duration" readonly="1" nolabel="1"/>
-                            </h2>
-                        </div>
+                <sheet>
+                    <div class="oe_title text-center">
+                        <h1>Time Clock</h1>
                     </div>
                     
-                    <!-- Project Selection Card -->
-                    <div class="card shadow-sm mb-4">
-                        <div class="card-header">
-                            <strong invisible="is_clocked_in">🎯 Select Project</strong>
-                            <strong invisible="not is_clocked_in">🔄 Switch Project</strong>
-                        </div>
-                        <div class="card-body">
-                            <div class="mb-3">
-                                <label class="form-label fw-bold">Project</label>
-                                <field name="project_id" 
-                                       placeholder="Select a project..."
-                                       options="{'no_create': True}"
-                                       nolabel="1"/>
-                            </div>
-                            <div class="mb-3">
-                                <label class="form-label">Task (optional)</label>
-                                <field name="task_id" 
-                                       placeholder="Select a task..."
-                                       options="{'no_create': True}"
-                                       nolabel="1"/>
-                            </div>
-                            <div>
-                                <label class="form-label">Notes (optional)</label>
-                                <field name="notes" 
-                                       placeholder="What are you working on?"
-                                       nolabel="1"/>
-                            </div>
-                        </div>
+                    <!-- Hidden computed fields -->
+                    <field name="is_clocked_in" invisible="1"/>
+                    <field name="active_punch_id" invisible="1"/>
+                    <field name="employee_id" invisible="1"/>
+                    
+                    <!-- Status Display -->
+                    <div class="alert alert-success text-center" role="alert" 
+                         invisible="not is_clocked_in" style="font-size: 16px;">
+                        <strong>⏱️ Currently Working On:</strong>
+                        <field name="current_project_id" readonly="1" class="fw-bold"/>
+                        <br/>
+                        <strong>Time:</strong>
+                        <field name="current_duration" readonly="1" class="fw-bold"/>
                     </div>
                     
-                    <!-- Action Buttons in footer area -->
-                    <div class="text-center">
+                    <div class="alert alert-secondary text-center" role="alert" 
+                         invisible="is_clocked_in" style="font-size: 16px;">
+                        <strong>⏸️ Not Clocked In</strong>
+                    </div>
+                    
+                    <!-- Project Selection -->
+                    <group>
+                        <group string="Select Project" colspan="2">
+                            <field name="project_id" 
+                                   placeholder="Select a project..."
+                                   options="{'no_create': True}"/>
+                            <field name="task_id" 
+                                   placeholder="(Optional) Select a task..."
+                                   options="{'no_create': True}"/>
+                            <field name="notes" 
+                                   placeholder="What are you working on? (optional)"/>
+                        </group>
+                    </group>
+                    
+                    <!-- Action Buttons - centered -->
+                    <div class="text-center mt-4 mb-4">
                         <button name="action_clock_in" 
                                 string="🕐 Clock In" 
                                 type="object"
-                                class="btn btn-success btn-lg me-2"/>
+                                class="btn btn-success btn-lg me-2"
+                                style="font-size: 18px; padding: 12px 30px;"/>
                         
                         <button name="action_clock_out" 
                                 string="🛑 Clock Out" 
                                 type="object"
                                 class="btn btn-danger btn-lg me-2"
-                                invisible="not is_clocked_in"/>
+                                invisible="not is_clocked_in"
+                                style="font-size: 18px; padding: 12px 30px;"/>
                         
                         <button name="action_take_break" 
                                 string="☕ Break" 
                                 type="object"
                                 class="btn btn-warning btn-lg"
-                                invisible="not is_clocked_in"/>
+                                invisible="not is_clocked_in"
+                                style="font-size: 18px; padding: 12px 30px;"/>
                     </div>
                     
-                </div>
+                </sheet>
             </form>
         </field>
     </record>
 
-    <!-- Time Clock Kiosk Action - opens as main page -->
+    <!-- Time Clock Kiosk Action -->
     <record id="ps_time_clock_kiosk_action" model="ir.actions.act_window">
         <field name="name">Time Clock</field>
         <field name="res_model">ps.time.clock.kiosk</field>
