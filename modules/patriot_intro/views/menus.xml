@@ -6,9 +6,12 @@
         <field name="target">current</field>
     </record>
 
+    <!-- DISABLED - This creates a separate "Patriot" app on home screen
+         The unified menu is defined in patriot_base/menu_unified.xml
     <menuitem id="menu_patriot_root"
               name="Patriot"
               sequence="1"
               web_icon="patriot_intro,static/description/icon.png"
               action="action_patriot_intro"/>
+    -->
 </odoo>
