@@ -20,7 +20,7 @@
             'patriot_intro/static/src/js/splash_screen.js',
         ],
     },
-    'installable': False,  # DEPRECATED: Use patriot_signage instead
+    'installable': True,  # Must be True - production has it installed
     'application': False,
     'license': 'LGPL-3',
 }
