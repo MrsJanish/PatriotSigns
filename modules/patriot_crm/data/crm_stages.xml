@@ -4,20 +4,27 @@
         <!-- CRM Stages for Sign Project Pipeline -->
         <!-- Note: Default Odoo stages are hidden/folded, not deleted, to prevent errors -->
         
-        <!-- FOLD DEFAULT ODOO STAGES (can't delete if they have leads) -->
+        <!-- DELETE DEFAULT ODOO STAGES -->
+        <!-- First move any leads, then delete the stages -->
+        
+        <!-- Deactivate default stages (safer than delete, won't error if leads exist) -->
         <record id="crm.stage_lead1" model="crm.stage">
+            <field name="active" eval="False"/>
             <field name="fold" eval="True"/>
             <field name="sequence">999</field>
         </record>
         <record id="crm.stage_lead2" model="crm.stage">
+            <field name="active" eval="False"/>
             <field name="fold" eval="True"/>
             <field name="sequence">999</field>
         </record>
         <record id="crm.stage_lead3" model="crm.stage">
+            <field name="active" eval="False"/>
             <field name="fold" eval="True"/>
             <field name="sequence">999</field>
         </record>
         <record id="crm.stage_lead4" model="crm.stage">
+            <field name="active" eval="False"/>
             <field name="fold" eval="True"/>
             <field name="sequence">999</field>
         </record>
