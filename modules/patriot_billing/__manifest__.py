@@ -22,6 +22,7 @@ Integrates with Odoo Accounting for invoicing.
     'depends': [
         'account',
         'patriot_field_service',
+        'patriot_projects',  # for ps.contract model
     ],
     'data': [
         'security/ir.model.access.csv',
