@@ -286,7 +286,7 @@ class Estimate(models.Model):
 
     @api.depends('line_ids.line_total',
                  'shop_labor_total', 'travel_total', 'install_total', 
-                 'equipment_total', 'markup_percent')
+                 'equipment_total')
     def _compute_totals(self):
         """
         Calculate CUSTOMER-FACING totals (PRICES, not costs).
