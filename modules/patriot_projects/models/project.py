@@ -10,6 +10,7 @@ class Project(models.Model):
     Tracks contracts, insurance, submittals, production, and installation.
     """
     _inherit = 'project.project'
+    _rec_names_search = ['name', 'project_alias', 'project_number']  # Search by alias/number too
 
     # =========================================================================
     # CRM LINK

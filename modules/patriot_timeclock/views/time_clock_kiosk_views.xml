@@ -11,25 +11,28 @@
                     <field name="is_clocked_in" invisible="1"/>
                     <field name="active_punch_id" invisible="1"/>
                     
-                    <!-- Employee Info with Avatar -->
-                    <div class="oe_title">
-                        <field name="employee_id" widget="many2one_avatar_employee" readonly="1" options="{'no_open': True}"/>
+                    <!-- Employee Info - Large -->
+                    <div class="oe_title mb-3">
+                        <h1>
+                            <field name="employee_id" widget="many2one_avatar_employee" 
+                                   readonly="1" options="{'no_open': True}"/>
+                        </h1>
                     </div>
                     
-                    <!-- Status -->
-                    <group>
-                        <group>
-                            <div class="badge text-bg-success fs-5 p-2" invisible="not is_clocked_in">
-                                On Site
-                            </div>
-                            <div class="badge text-bg-secondary fs-5 p-2" invisible="is_clocked_in">
-                                Off Site
-                            </div>
-                        </group>
-                        <group invisible="not is_clocked_in">
-                            <field name="current_project_id" string="Working on" readonly="1"/>
-                            <field name="current_duration" string="Duration" readonly="1"/>
-                        </group>
+                    <!-- Status - Simple bold text -->
+                    <div class="mb-4">
+                        <span class="fw-bold text-success fs-4" invisible="not is_clocked_in">
+                            On Site
+                        </span>
+                        <span class="fw-bold text-info fs-4" invisible="is_clocked_in">
+                            Off Site
+                        </span>
+                    </div>
+                    
+                    <!-- Current work info when on site -->
+                    <group invisible="not is_clocked_in">
+                        <field name="current_project_id" string="Working on" readonly="1"/>
+                        <field name="current_duration" string="Duration" readonly="1"/>
                     </group>
 
                     <separator/>
@@ -39,16 +42,17 @@
                         <field name="project_id" string="Project" 
                                options="{'no_create': True}"/>
                         <field name="task_id" string="Task" 
-                               options="{'no_create': True}"/>
+                               options="{'no_create': True}"
+                               domain="[('project_id', '=', project_id), '|', ('user_ids', 'in', uid), ('user_ids', '=', False)]"/>
                         <field name="notes" string="Notes"/>
                     </group>
                     
-                    <!-- Action Buttons - inside sheet so they show -->
-                    <div class="oe_button_box">
+                    <!-- Action Buttons -->
+                    <div class="mt-4">
                         <button name="action_clock_in" 
                                 string="Start" 
                                 type="object"
-                                class="btn-primary oe_highlight"/>
+                                class="btn-primary oe_highlight o_wide_btn"/>
                         
                         <button name="action_clock_out" 
                                 string="Stop" 
