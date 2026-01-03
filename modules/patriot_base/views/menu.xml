@@ -1,11 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
-    <!-- Patriot Signs Configuration Menu -->
+    <!-- OLD ROOT MENU - DISABLED (duplicate of patriot_signage menu) -->
+    <!-- This menu created a separate "Patriot Signs" app for configuration only -->
+    <!-- Configuration is now accessed via the main Patriot Signs app -->
+    <!--
     <menuitem id="menu_patriot_config_root"
               name="Patriot Signs"
               web_icon="patriot_base,static/description/icon.png"
               groups="base.group_system"
               sequence="100"/>
+    -->
 
     <!-- Configuration Submenu -->
     <menuitem id="menu_patriot_config"
