@@ -47,6 +47,36 @@ class CrmLead(models.Model):
     # in patriot_signage/models/crm_lead.py because ps.sign.type is in that module
 
     # =========================================================================
+    # TIME TRACKING (Bidding Time)
+    # =========================================================================
+    time_punch_ids = fields.One2many(
+        'ps.time.punch',
+        'opportunity_id',
+        string='Time Punches'
+    )
+    bidding_hours = fields.Float(
+        string='Bidding Hours',
+        compute='_compute_bidding_hours',
+        help='Total hours spent on bidding/estimating this opportunity'
+    )
+    bidding_hours_display = fields.Char(
+        string='Bidding Time',
+        compute='_compute_bidding_hours'
+    )
+    
+    @api.depends('time_punch_ids', 'time_punch_ids.duration_hours')
+    def _compute_bidding_hours(self):
+        for lead in self:
+            punches = lead.time_punch_ids.filtered(lambda p: p.state == 'closed')
+            total = sum(punches.mapped('duration_hours'))
+            lead.bidding_hours = total
+            
+            # Format as Xh Ym
+            hours = int(total)
+            minutes = int((total - hours) * 60)
+            lead.bidding_hours_display = f"{hours}h {minutes}m"
+
+    # =========================================================================
     # BID INFORMATION
     # =========================================================================
     bid_date = fields.Date(
