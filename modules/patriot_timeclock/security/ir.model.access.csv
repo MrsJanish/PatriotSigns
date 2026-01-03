@@ -1,0 +1,6 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_ps_time_punch_user,ps.time.punch.user,model_ps_time_punch,base.group_user,1,0,1,0
+access_ps_time_punch_manager,ps.time.punch.manager,model_ps_time_punch,hr.group_hr_manager,1,1,1,1
+access_ps_time_punch_admin,ps.time.punch.admin,model_ps_time_punch,base.group_system,1,1,1,1
+access_ps_time_clock_kiosk_user,ps.time.clock.kiosk.user,model_ps_time_clock_kiosk,base.group_user,1,1,1,1
+access_ps_time_punch_adjustment_wizard,ps.time.punch.adjustment.wizard,model_ps_time_punch_adjustment_wizard,base.group_system,1,1,1,1
