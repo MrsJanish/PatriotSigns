@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
-    <!-- Time Clock Kiosk Form View -->
+    <!-- Time Clock Kiosk Form View - Default Odoo Styling -->
     <record id="ps_time_clock_kiosk_form" model="ir.ui.view">
         <field name="name">ps.time.clock.kiosk.form</field>
         <field name="model">ps.time.clock.kiosk</field>
@@ -12,59 +12,51 @@
                     <field name="active_punch_id" invisible="1"/>
                     <field name="employee_id" invisible="1"/>
                     
-                    <!-- CLOCKED IN STATE -->
-                    <div invisible="not is_clocked_in" style="background: #28a745; color: white; padding: 30px; border-radius: 8px; text-align: center; margin-bottom: 30px;">
-                        <h2 style="margin: 0 0 15px 0; font-weight: 600;">⏱️ CLOCKED IN</h2>
-                        <div style="font-size: 24px; margin-bottom: 10px;">
-                            <field name="current_project_id" readonly="1" nolabel="1" style="font-weight: bold;"/>
-                        </div>
-                        <div style="font-size: 48px; font-weight: bold;">
-                            <field name="current_duration" readonly="1" nolabel="1"/>
-                        </div>
+                    <!-- Status using Odoo's alert classes -->
+                    <div class="alert alert-success" role="alert" invisible="not is_clocked_in">
+                        <h4 class="alert-heading">⏱️ Clocked In</h4>
+                        <p><strong>Project:</strong> <field name="current_project_id" readonly="1" nolabel="1"/></p>
+                        <p><strong>Time:</strong> <field name="current_duration" readonly="1" nolabel="1"/></p>
                     </div>
                     
-                    <!-- NOT CLOCKED IN STATE -->
-                    <div invisible="is_clocked_in" style="background: #6c757d; color: white; padding: 30px; border-radius: 8px; text-align: center; margin-bottom: 30px;">
-                        <h2 style="margin: 0; font-weight: 600;">⏸️ NOT CLOCKED IN</h2>
-                        <p style="margin: 10px 0 0 0; opacity: 0.8;">Select a project below to clock in</p>
+                    <div class="alert alert-secondary" role="alert" invisible="is_clocked_in">
+                        <h4 class="alert-heading">⏸️ Not Clocked In</h4>
+                        <p>Select a project below to clock in.</p>
                     </div>
                     
-                    <!-- Project Selection -->
-                    <group col="1">
-                        <field name="project_id" string="Project" 
+                    <!-- Standard Odoo form groups -->
+                    <group>
+                        <field name="project_id" 
                                placeholder="Select project..."
                                options="{'no_create': True}"/>
-                        <field name="task_id" string="Task" 
+                        <field name="task_id" 
                                placeholder="(Optional)"
                                options="{'no_create': True}"/>
-                        <field name="notes" string="Notes" 
-                               placeholder="(Optional) What are you working on?"/>
+                        <field name="notes" 
+                               placeholder="(Optional)"/>
                     </group>
                     
-                    <!-- BIG Action Buttons -->
-                    <div style="text-align: center; padding: 20px 0;">
-                        <button name="action_clock_in" 
-                                string="⏱️ CLOCK IN" 
-                                type="object"
-                                class="btn-success"
-                                style="font-size: 20px; padding: 15px 50px; margin: 5px;"/>
-                        
-                        <button name="action_clock_out" 
-                                string="🛑 CLOCK OUT" 
-                                type="object"
-                                class="btn-danger"
-                                invisible="not is_clocked_in"
-                                style="font-size: 20px; padding: 15px 50px; margin: 5px;"/>
-                        
-                        <button name="action_take_break" 
-                                string="☕ BREAK" 
-                                type="object"
-                                class="btn-warning"
-                                invisible="not is_clocked_in"
-                                style="font-size: 20px; padding: 15px 40px; margin: 5px;"/>
-                    </div>
-                    
                 </sheet>
+                
+                <!-- Standard Odoo footer buttons -->
+                <footer>
+                    <button name="action_clock_in" 
+                            string="Clock In" 
+                            type="object"
+                            class="btn-primary"/>
+                    
+                    <button name="action_clock_out" 
+                            string="Clock Out" 
+                            type="object"
+                            class="btn-danger"
+                            invisible="not is_clocked_in"/>
+                    
+                    <button name="action_take_break" 
+                            string="Break" 
+                            type="object"
+                            class="btn-secondary"
+                            invisible="not is_clocked_in"/>
+                </footer>
             </form>
         </field>
     </record>
