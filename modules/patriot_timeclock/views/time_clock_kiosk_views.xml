@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Time Clock Kiosk Form View -->
+    <record id="ps_time_clock_kiosk_form" model="ir.ui.view">
+        <field name="name">ps.time.clock.kiosk.form</field>
+        <field name="model">ps.time.clock.kiosk</field>
+        <field name="arch" type="xml">
+            <form>
+                <sheet>
+                    <div class="oe_title" style="text-align: center; margin-bottom: 20px;">
+                        <h1>Time Clock</h1>
+                    </div>
+                    
+                    <!-- Current Status -->
+                    <div class="alert alert-info" role="alert" invisible="not is_clocked_in" 
+                         style="text-align: center; font-size: 18px;">
+                        <strong>Currently working on:</strong>
+                        <field name="current_project_id" readonly="1" class="oe_inline"/>
+                        <br/>
+                        <strong>Time elapsed:</strong>
+                        <field name="current_duration" readonly="1" class="oe_inline"/>
+                    </div>
+                    
+                    <div class="alert alert-secondary" role="alert" invisible="is_clocked_in"
+                         style="text-align: center; font-size: 18px;">
+                        <strong>Not clocked in</strong>
+                    </div>
+                    
+                    <field name="is_clocked_in" invisible="1"/>
+                    <field name="active_punch_id" invisible="1"/>
+                    <field name="employee_id" invisible="1"/>
+                    
+                    <!-- Clock In Section -->
+                    <group invisible="is_clocked_in">
+                        <group string="Clock In To:" colspan="2">
+                            <field name="project_id" placeholder="Select a project..." 
+                                   options="{'no_create': True}"/>
+                            <field name="task_id" placeholder="(Optional) Select a task..."
+                                   options="{'no_create': True}"/>
+                            <field name="notes" placeholder="What are you working on? (optional)"/>
+                        </group>
+                    </group>
+                    
+                    <!-- Switch Project Section (when clocked in) -->
+                    <group invisible="not is_clocked_in">
+                        <group string="Switch To Different Project:" colspan="2">
+                            <field name="project_id" placeholder="Select new project..."
+                                   options="{'no_create': True}"/>
+                            <field name="task_id" placeholder="(Optional) Select a task..."
+                                   options="{'no_create': True}"/>
+                            <field name="notes" placeholder="What are you working on? (optional)"/>
+                        </group>
+                    </group>
+                    
+                </sheet>
+                <footer>
+                    <!-- Clock In Button (when not clocked in) -->
+                    <button name="action_clock_in" string="🕐 Clock In" type="object"
+                            class="btn-success btn-lg" invisible="is_clocked_in"
+                            style="font-size: 24px; padding: 15px 40px;"/>
+                    
+                    <!-- Clock Out Button (when clocked in) -->
+                    <button name="action_clock_out" string="🛑 Clock Out" type="object"
+                            class="btn-danger btn-lg" invisible="not is_clocked_in"
+                            style="font-size: 24px; padding: 15px 40px;"/>
+                    
+                    <!-- Switch Project Button (when clocked in) -->
+                    <button name="action_switch_project" string="🔄 Switch Project" type="object"
+                            class="btn-warning btn-lg" invisible="not is_clocked_in"
+                            style="font-size: 18px; padding: 10px 25px; margin-left: 20px;"/>
+                    
+                    <button string="Cancel" class="btn-secondary" special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <!-- Time Clock Kiosk Action -->
+    <record id="ps_time_clock_kiosk_action" model="ir.actions.act_window">
+        <field name="name">Time Clock</field>
+        <field name="res_model">ps.time.clock.kiosk</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+        <field name="context">{'form_view_initial_mode': 'edit'}</field>
+    </record>
+
+    <!-- Time Clock Client Action (for dashboard/home) -->
+    <record id="action_open_time_clock" model="ir.actions.client">
+        <field name="name">Time Clock</field>
+        <field name="tag">ps_time_clock_kiosk</field>
+    </record>
+
+</odoo>

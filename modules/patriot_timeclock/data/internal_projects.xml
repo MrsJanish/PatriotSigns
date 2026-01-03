@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+        <!-- 
+            Internal Projects for non-billable work.
+            These are created once and used for overhead time tracking.
+        -->
+        
+        <!-- General Shop Work -->
+        <record id="project_general_shop" model="project.project">
+            <field name="name">General Shop Work</field>
+            <field name="description">Non-project-specific shop work: cleaning, organizing, general maintenance, etc.</field>
+            <field name="active">True</field>
+            <field name="allow_timesheets">True</field>
+        </record>
+        
+        <!-- Training -->
+        <record id="project_training" model="project.project">
+            <field name="name">Training</field>
+            <field name="description">Training activities, learning new skills, safety training, etc.</field>
+            <field name="active">True</field>
+            <field name="allow_timesheets">True</field>
+        </record>
+        
+        <!-- Admin/Office Work -->
+        <record id="project_admin" model="project.project">
+            <field name="name">Admin / Office</field>
+            <field name="description">Administrative tasks, meetings, paperwork, etc.</field>
+            <field name="active">True</field>
+            <field name="allow_timesheets">True</field>
+        </record>
+        
+        <!-- Break Time -->
+        <record id="project_break" model="project.project">
+            <field name="name">Break</field>
+            <field name="description">Lunch breaks, rest breaks (unpaid time).</field>
+            <field name="active">True</field>
+            <field name="allow_timesheets">True</field>
+        </record>
+        
+    </data>
+</odoo>

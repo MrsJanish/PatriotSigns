@@ -1,0 +1,45 @@
+{
+    'name': 'Patriot Time Clock',
+    'version': '19.0.1.0.0',
+    'category': 'Human Resources',
+    'summary': 'Clock in/out time tracking for employees',
+    'description': """
+Patriot Time Clock Module
+=========================
+
+Button-based time tracking for employees:
+- Clock in/out to projects (no manual time entry)
+- Internal projects for non-billable work
+- Kiosk mode for shop floor
+- Admin-only time adjustments
+
+Employees click to start/stop tracking, cannot manually enter hours.
+    """,
+    'author': 'Patriot Signs',
+    'website': 'https://patriotsigns.com',
+    'depends': [
+        'hr',
+        'project',
+        'hr_timesheet',
+        'patriot_projects',
+    ],
+    'data': [
+        'security/ir.model.access.csv',
+        'security/ir_rules.xml',
+        'data/internal_projects.xml',
+        'views/time_punch_views.xml',
+        'views/time_clock_kiosk_views.xml',
+        'views/menu.xml',
+    ],
+    'assets': {
+        'web.assets_backend': [
+            'patriot_timeclock/static/src/css/time_clock.css',
+            'patriot_timeclock/static/src/js/time_clock_kiosk.js',
+            'patriot_timeclock/static/src/xml/time_clock_kiosk.xml',
+        ],
+    },
+    'installable': True,
+    'application': False,
+    'auto_install': False,
+    'license': 'LGPL-3',
+}

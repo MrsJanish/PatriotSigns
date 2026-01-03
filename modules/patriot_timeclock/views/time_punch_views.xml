@@ -1,0 +1,170 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Time Punch List View -->
+    <record id="ps_time_punch_tree" model="ir.ui.view">
+        <field name="name">ps.time.punch.tree</field>
+        <field name="model">ps.time.punch</field>
+        <field name="arch" type="xml">
+            <list decoration-info="state == 'active'"
+                  decoration-muted="state == 'closed'">
+                <field name="employee_id"/>
+                <field name="project_id"/>
+                <field name="task_id" optional="hide"/>
+                <field name="punch_in"/>
+                <field name="punch_out"/>
+                <field name="duration_display" string="Duration"/>
+                <field name="state" widget="badge" 
+                       decoration-success="state == 'active'"
+                       decoration-muted="state == 'closed'"/>
+                <field name="notes" optional="hide"/>
+            </list>
+        </field>
+    </record>
+
+    <!-- Time Punch Form View -->
+    <record id="ps_time_punch_form" model="ir.ui.view">
+        <field name="name">ps.time.punch.form</field>
+        <field name="model">ps.time.punch</field>
+        <field name="arch" type="xml">
+            <form>
+                <header>
+                    <button name="action_clock_out" string="Clock Out" type="object"
+                            class="btn-primary" invisible="state != 'active'"/>
+                    <field name="state" widget="statusbar"/>
+                </header>
+                <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <button class="oe_stat_button" type="object" 
+                                name="action_admin_adjust"
+                                icon="fa-clock-o"
+                                groups="base.group_system"
+                                invisible="state != 'closed'">
+                            <span>Adjust Time</span>
+                        </button>
+                    </div>
+                    <group>
+                        <group string="Employee">
+                            <field name="employee_id"/>
+                            <field name="user_id" invisible="1"/>
+                        </group>
+                        <group string="Project">
+                            <field name="project_id"/>
+                            <field name="task_id"/>
+                        </group>
+                    </group>
+                    <group>
+                        <group string="Time">
+                            <field name="punch_in"/>
+                            <field name="punch_out"/>
+                            <field name="duration_hours"/>
+                            <field name="duration_display"/>
+                        </group>
+                        <group string="Adjustment" groups="base.group_system"
+                               invisible="not adjusted_by">
+                            <field name="adjusted_by"/>
+                            <field name="adjustment_reason"/>
+                        </group>
+                    </group>
+                    <group string="Notes">
+                        <field name="notes" nolabel="1"/>
+                    </group>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+
+    <!-- Time Punch Pivot View (for reports) -->
+    <record id="ps_time_punch_pivot" model="ir.ui.view">
+        <field name="name">ps.time.punch.pivot</field>
+        <field name="model">ps.time.punch</field>
+        <field name="arch" type="xml">
+            <pivot>
+                <field name="employee_id" type="row"/>
+                <field name="project_id" type="col"/>
+                <field name="duration_hours" type="measure"/>
+            </pivot>
+        </field>
+    </record>
+
+    <!-- Time Punch Graph View -->
+    <record id="ps_time_punch_graph" model="ir.ui.view">
+        <field name="name">ps.time.punch.graph</field>
+        <field name="model">ps.time.punch</field>
+        <field name="arch" type="xml">
+            <graph type="bar">
+                <field name="project_id"/>
+                <field name="duration_hours" type="measure"/>
+            </graph>
+        </field>
+    </record>
+
+    <!-- Time Punch Search View -->
+    <record id="ps_time_punch_search" model="ir.ui.view">
+        <field name="name">ps.time.punch.search</field>
+        <field name="model">ps.time.punch</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="employee_id"/>
+                <field name="project_id"/>
+                <field name="task_id"/>
+                <filter name="active" string="Currently Clocked In" 
+                        domain="[('state', '=', 'active')]"/>
+                <filter name="today" string="Today" 
+                        domain="[('punch_in', '&gt;=', context_today().strftime('%Y-%m-%d'))]"/>
+                <filter name="this_week" string="This Week" 
+                        domain="[('punch_in', '&gt;=', (context_today() - datetime.timedelta(days=context_today().weekday())).strftime('%Y-%m-%d'))]"/>
+                <separator/>
+                <filter name="my_punches" string="My Punches" 
+                        domain="[('employee_id.user_id', '=', uid)]"/>
+                <group expand="0" string="Group By">
+                    <filter name="group_employee" string="Employee" 
+                            context="{'group_by': 'employee_id'}"/>
+                    <filter name="group_project" string="Project" 
+                            context="{'group_by': 'project_id'}"/>
+                    <filter name="group_date" string="Date" 
+                            context="{'group_by': 'punch_in:day'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <!-- Time Punch Action -->
+    <record id="ps_time_punch_action" model="ir.actions.act_window">
+        <field name="name">Time Punches</field>
+        <field name="res_model">ps.time.punch</field>
+        <field name="view_mode">list,form,pivot,graph</field>
+        <field name="context">{'search_default_my_punches': 1, 'search_default_today': 1}</field>
+    </record>
+
+    <!-- My Time Punches Action (for employees) -->
+    <record id="ps_time_punch_my_action" model="ir.actions.act_window">
+        <field name="name">My Time</field>
+        <field name="res_model">ps.time.punch</field>
+        <field name="view_mode">list,pivot,graph</field>
+        <field name="domain">[('employee_id.user_id', '=', uid)]</field>
+        <field name="context">{'search_default_this_week': 1}</field>
+    </record>
+
+    <!-- Adjustment Wizard Form -->
+    <record id="ps_time_punch_adjustment_wizard_form" model="ir.ui.view">
+        <field name="name">ps.time.punch.adjustment.wizard.form</field>
+        <field name="model">ps.time.punch.adjustment.wizard</field>
+        <field name="arch" type="xml">
+            <form>
+                <group>
+                    <field name="punch_id" readonly="1"/>
+                    <field name="new_punch_in"/>
+                    <field name="new_punch_out"/>
+                    <field name="reason" placeholder="Reason for adjustment (required)"/>
+                </group>
+                <footer>
+                    <button name="action_apply_adjustment" string="Apply Adjustment" 
+                            type="object" class="btn-primary"/>
+                    <button string="Cancel" class="btn-secondary" special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+</odoo>
