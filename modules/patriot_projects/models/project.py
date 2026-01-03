@@ -65,11 +65,24 @@ class Project(models.Model):
         compute='_compute_total_hours'
     )
     
-    @api.depends('time_punch_ids', 'time_punch_ids.duration_hours')
+    @api.depends('time_punch_ids', 'time_punch_ids.duration_hours', 'opportunity_id')
     def _compute_total_hours(self):
+        TimePunch = self.env['ps.time.punch']
         for project in self:
-            punches = project.time_punch_ids.filtered(lambda p: p.state == 'closed')
-            total = sum(punches.mapped('duration_hours'))
+            # Project punches
+            project_punches = project.time_punch_ids.filtered(lambda p: p.state == 'closed')
+            project_hours = sum(project_punches.mapped('duration_hours'))
+            
+            # Also include opportunity punches (pre-bid time) if linked
+            opp_hours = 0
+            if project.opportunity_id:
+                opp_punches = TimePunch.search([
+                    ('opportunity_id', '=', project.opportunity_id.id),
+                    ('state', '=', 'closed')
+                ])
+                opp_hours = sum(opp_punches.mapped('duration_hours'))
+            
+            total = project_hours + opp_hours
             project.total_hours = total
             project.time_punch_count = len(project.time_punch_ids)
             
@@ -77,6 +90,29 @@ class Project(models.Model):
             hours = int(total)
             minutes = int((total - hours) * 60)
             project.total_hours_display = f"{hours}h {minutes}m"
+    
+    def write(self, vals):
+        """Sync key fields back to linked opportunity."""
+        res = super().write(vals)
+        
+        # Skip sync if we're being called from opportunity sync (prevent loop)
+        if self.env.context.get('skip_sync'):
+            return res
+        
+        # Sync name/alias to linked opportunity if changed
+        sync_fields = {'name', 'project_alias'}
+        if sync_fields & set(vals.keys()):
+            for project in self:
+                if project.opportunity_id:
+                    update_vals = {}
+                    if 'name' in vals:
+                        update_vals['name'] = vals['name']
+                    if 'project_alias' in vals:
+                        update_vals['project_alias'] = vals['project_alias']
+                    if update_vals:
+                        project.opportunity_id.with_context(skip_sync=True).write(update_vals)
+        
+        return res
     
     # =========================================================================
     # PROJECT DETAILS
