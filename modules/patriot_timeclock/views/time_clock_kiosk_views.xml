@@ -31,7 +31,7 @@
                     
                     <!-- Current work info when on site -->
                     <group invisible="not is_clocked_in">
-                        <field name="current_project_id" string="Working on" readonly="1"/>
+                        <field name="current_work_item" string="Working on" readonly="1"/>
                         <field name="current_duration" string="Duration" readonly="1"/>
                     </group>
 

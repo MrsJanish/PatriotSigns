@@ -53,6 +53,10 @@ class TimeClockKiosk(models.TransientModel):
         string='Current Project',
         compute='_compute_status'
     )
+    current_work_item = fields.Char(
+        string='Working On',
+        compute='_compute_status'
+    )
     current_duration = fields.Char(
         string='Time Elapsed',
         compute='_compute_status'
@@ -88,6 +92,17 @@ class TimeClockKiosk(models.TransientModel):
             kiosk.is_clocked_in = bool(active_punch)
             kiosk.current_project_id = active_punch.project_id if active_punch else False
             kiosk.current_duration = active_punch.duration_display if active_punch else "0h 0m"
+            
+            # Show project name OR opportunity name
+            if active_punch:
+                if active_punch.project_id:
+                    kiosk.current_work_item = active_punch.project_id.name
+                elif active_punch.opportunity_id:
+                    kiosk.current_work_item = f"[Bid] {active_punch.opportunity_id.name}"
+                else:
+                    kiosk.current_work_item = "Unknown"
+            else:
+                kiosk.current_work_item = ""
 
     def _get_reload_action(self):
         """Return action to reload the time clock kiosk."""
