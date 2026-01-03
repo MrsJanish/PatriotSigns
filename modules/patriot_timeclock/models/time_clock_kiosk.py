@@ -10,7 +10,21 @@ class TimeClockKiosk(models.TransientModel):
     This is the interface employees use to clock in and out.
     """
     _name = 'ps.time.clock.kiosk'
-    _description = 'Time Clock Kiosk'
+    _description = 'Time Clock'
+    _rec_name = 'display_name'
+    
+    display_name = fields.Char(
+        string='Name',
+        compute='_compute_display_name'
+    )
+    
+    @api.depends('employee_id')
+    def _compute_display_name(self):
+        for rec in self:
+            if rec.employee_id:
+                rec.display_name = f"Time Clock - {rec.employee_id.name}"
+            else:
+                rec.display_name = "Time Clock"
 
     employee_id = fields.Many2one(
         'hr.employee',
