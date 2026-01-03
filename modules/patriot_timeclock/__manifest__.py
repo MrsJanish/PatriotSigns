@@ -39,7 +39,7 @@ Employees click to start/stop tracking, cannot manually enter hours.
         ],
     },
     'installable': True,
-    'application': False,
+    'application': True,
     'auto_install': False,
     'license': 'LGPL-3',
 }
