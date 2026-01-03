@@ -554,8 +554,13 @@ class CrmLead(models.Model):
         """Create project and related records if they don't exist"""
         self.ensure_one()
         
-        # Check if project already exists
+        # Guard: patriot_projects may not be loaded yet during module installation
         Project = self.env['project.project']
+        if 'opportunity_id' not in Project._fields:
+            _logger.debug("Skipping project creation: opportunity_id field not yet available")
+            return False
+        
+        # Check if project already exists
         existing = Project.search([('opportunity_id', '=', self.id)], limit=1)
         if existing:
             return existing
