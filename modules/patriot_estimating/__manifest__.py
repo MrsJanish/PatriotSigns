@@ -1,10 +1,10 @@
 {
-    'name': 'Patriot Estimating',
+    'name': 'Omega Estimating',
     'version': '19.0.1.0.0',
     'category': 'Sales',
     'summary': 'Sign project estimating and quoting',
     'description': """
-Patriot Estimating Module
+Omega Estimating Module
 =========================
 
 Estimating and quoting for sign projects:
@@ -16,8 +16,8 @@ Estimating and quoting for sign projects:
 
 Links CRM opportunities to detailed cost estimates.
     """,
-    'author': 'Patriot Signs',
-    'website': 'https://patriotsigns.com',
+    'author': 'Omega Signs Co',
+    'website': 'https://omegasignsco.com',
     'depends': [
         'patriot_signage',
     ],

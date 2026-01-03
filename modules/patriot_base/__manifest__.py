@@ -1,10 +1,10 @@
 {
-    'name': 'Patriot Signs Base',
+    'name': 'Omega Signs Base',
     'version': '19.0.1.0.0',
     'category': 'Sales',
-    'summary': 'Base configuration and reference tables for Patriot Signs',
+    'summary': 'Base configuration and reference tables for Omega Signs Co',
     'description': """
-Patriot Signs Base Module
+Omega Signs Base Module
 =========================
 
 Foundation module providing:
@@ -13,10 +13,10 @@ Foundation module providing:
 - Dimension lookup tables
 - Partner extensions (GC, Owner, Architect tags)
 
-This module must be installed before other Patriot Signs modules.
+This module must be installed before other Omega Signs modules.
     """,
-    'author': 'Patriot Signs',
-    'website': 'https://patriotsigns.com',
+    'author': 'Omega Signs Co',
+    'website': 'https://omegasignsco.com',
     'depends': [
         'base',
         'contacts',

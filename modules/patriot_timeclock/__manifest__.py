@@ -1,10 +1,10 @@
 {
-    'name': 'Patriot Time Clock',
+    'name': 'Omega Time Clock',
     'version': '19.0.1.0.0',
     'category': 'Human Resources',
     'summary': 'Clock in/out time tracking for employees',
     'description': """
-Patriot Time Clock Module
+Omega Time Clock Module
 =========================
 
 Button-based time tracking for employees:
@@ -15,8 +15,8 @@ Button-based time tracking for employees:
 
 Employees click to start/stop tracking, cannot manually enter hours.
     """,
-    'author': 'Patriot Signs',
-    'website': 'https://patriotsigns.com',
+    'author': 'Omega Signs Co',
+    'website': 'https://omegasignsco.com',
     'depends': [
         'hr',
         'project',

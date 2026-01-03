@@ -1,10 +1,10 @@
 {
-    'name': 'Patriot Submittals',
+    'name': 'Omega Submittals',
     'version': '19.0.1.0.0',
     'category': 'Project',
     'summary': 'Submittal and shop drawing workflow',
     'description': """
-Patriot Submittals Module
+Omega Submittals Module
 =========================
 
 Submittal workflow for sign projects:
@@ -17,8 +17,8 @@ Submittal workflow for sign projects:
 
 Follows standard AIA submittal procedures.
     """,
-    'author': 'Patriot Signs',
-    'website': 'https://patriotsigns.com',
+    'author': 'Omega Signs Co',
+    'website': 'https://omegasignsco.com',
     'depends': [
         'patriot_projects',
     ],
