@@ -4,24 +4,20 @@
         <!-- CRM Stages for Sign Project Pipeline -->
         <!-- Note: Default Odoo stages are hidden/folded, not deleted, to prevent errors -->
         
-        <!-- HIDE DEFAULT ODOO STAGES (fold + high sequence) -->
-        <!-- crm.stage doesn't have 'active' field in Odoo 19, using fold only -->
-        <record id="crm.stage_lead1" model="crm.stage">
-            <field name="fold" eval="True"/>
-            <field name="sequence">999</field>
-        </record>
-        <record id="crm.stage_lead2" model="crm.stage">
-            <field name="fold" eval="True"/>
-            <field name="sequence">999</field>
-        </record>
-        <record id="crm.stage_lead3" model="crm.stage">
-            <field name="fold" eval="True"/>
-            <field name="sequence">999</field>
-        </record>
-        <record id="crm.stage_lead4" model="crm.stage">
-            <field name="fold" eval="True"/>
-            <field name="sequence">999</field>
-        </record>
+        <!-- DELETE DEFAULT ODOO STAGES -->
+        <!-- Using function calls to unlink (delete) the default stages -->
+        <function model="crm.stage" name="unlink">
+            <value eval="[ref('crm.stage_lead1')]"/>
+        </function>
+        <function model="crm.stage" name="unlink">
+            <value eval="[ref('crm.stage_lead2')]"/>
+        </function>
+        <function model="crm.stage" name="unlink">
+            <value eval="[ref('crm.stage_lead3')]"/>
+        </function>
+        <function model="crm.stage" name="unlink">
+            <value eval="[ref('crm.stage_lead4')]"/>
+        </function>
 
         <!-- PIPELINE STAGES -->
         
