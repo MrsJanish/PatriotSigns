@@ -12,6 +12,30 @@ class Project(models.Model):
     _inherit = 'project.project'
     _rec_names_search = ['name', 'project_alias', 'project_number']  # Search by alias/number too
 
+    @api.model
+    def _name_search(self, name='', domain=None, operator='ilike', limit=None, order=None):
+        """Extended search to also find projects by task name."""
+        domain = domain or []
+        
+        # First do the standard search
+        project_ids = super()._name_search(name, domain, operator, limit, order)
+        
+        if name and operator in ('ilike', 'like', '='):
+            # Also search for projects that have tasks matching the search term
+            tasks = self.env['project.task'].search([
+                ('name', operator, name),
+                ('project_id', '!=', False)
+            ], limit=limit)
+            
+            if tasks:
+                # Get the project IDs from matching tasks
+                task_project_ids = tasks.mapped('project_id').ids
+                # Combine with original results, removing duplicates
+                all_ids = list(dict.fromkeys(list(project_ids) + task_project_ids))
+                return all_ids[:limit] if limit else all_ids
+        
+        return project_ids
+
     # =========================================================================
     # CRM LINK
     # =========================================================================
