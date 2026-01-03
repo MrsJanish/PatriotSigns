@@ -25,6 +25,7 @@ This module bridges CRM (bidding) to execution (production/install).
     ],
     'data': [
         'security/ir.model.access.csv',
+        'security/ir_rules.xml',
         'data/project_stages.xml',
         'data/service_products.xml',
         'data/project_template.xml',

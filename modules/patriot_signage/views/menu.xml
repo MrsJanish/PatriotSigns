@@ -24,26 +24,27 @@
               sequence="30"/>
 
     <!-- ========================================================================= -->
-    <!-- LEGACY STANDALONE MENU (for backwards compatibility)                     -->
+    <!-- LEGACY STANDALONE MENU - DISABLED                                         -->
+    <!-- Was creating a duplicate "Signage" app on home screen                     -->
     <!-- ========================================================================= -->
+    <!--
     <menuitem id="menu_patriot_signage_root"
               name="Signage"
               web_icon="patriot_signage,static/description/icon.png"
               sequence="115"
               groups="base.group_no_one"/>
 
-    <!-- Sign Instances (under standalone for now) -->
     <menuitem id="menu_sign_instances"
               name="Sign Instances"
               parent="menu_patriot_signage_root"
               action="ps_sign_instance_action"
               sequence="20"/>
 
-    <!-- Locations -->
     <menuitem id="menu_locations"
               name="Locations"
               parent="menu_patriot_signage_root"
               action="ps_location_action"
               sequence="30"/>
+    -->
 
 </odoo>
