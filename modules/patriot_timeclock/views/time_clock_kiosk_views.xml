@@ -1,62 +1,69 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
-    <!-- Time Clock Kiosk Form View - Default Odoo Styling -->
+    <!-- Time Clock Kiosk Form View - Professional -->
     <record id="ps_time_clock_kiosk_form" model="ir.ui.view">
         <field name="name">ps.time.clock.kiosk.form</field>
         <field name="model">ps.time.clock.kiosk</field>
         <field name="arch" type="xml">
-            <form create="0" edit="1" delete="0">
+            <form create="0" delete="0">
                 <sheet>
                     <!-- Hidden fields -->
                     <field name="is_clocked_in" invisible="1"/>
                     <field name="active_punch_id" invisible="1"/>
-                    <field name="employee_id" invisible="1"/>
                     
-                    <!-- Status using Odoo's alert classes -->
-                    <div class="alert alert-success" role="alert" invisible="not is_clocked_in">
-                        <h4 class="alert-heading">⏱️ Clocked In</h4>
-                        <p><strong>Project:</strong> <field name="current_project_id" readonly="1" nolabel="1"/></p>
-                        <p><strong>Time:</strong> <field name="current_duration" readonly="1" nolabel="1"/></p>
+                    <!-- Employee Info with Avatar -->
+                    <div class="oe_title">
+                        <field name="employee_id" widget="many2one_avatar_employee" readonly="1" options="{'no_open': True}"/>
                     </div>
                     
-                    <div class="alert alert-secondary" role="alert" invisible="is_clocked_in">
-                        <h4 class="alert-heading">⏸️ Not Clocked In</h4>
-                        <p>Select a project below to clock in.</p>
-                    </div>
-                    
-                    <!-- Standard Odoo form groups -->
+                    <!-- Status -->
                     <group>
-                        <field name="project_id" 
-                               placeholder="Select project..."
+                        <group>
+                            <div class="badge text-bg-success fs-5 p-2" invisible="not is_clocked_in">
+                                On Site
+                            </div>
+                            <div class="badge text-bg-secondary fs-5 p-2" invisible="is_clocked_in">
+                                Off Site
+                            </div>
+                        </group>
+                        <group invisible="not is_clocked_in">
+                            <field name="current_project_id" string="Working on" readonly="1"/>
+                            <field name="current_duration" string="Duration" readonly="1"/>
+                        </group>
+                    </group>
+
+                    <separator/>
+                    
+                    <!-- Project Selection -->
+                    <group>
+                        <field name="project_id" string="Project" 
                                options="{'no_create': True}"/>
-                        <field name="task_id" 
-                               placeholder="(Optional)"
+                        <field name="task_id" string="Task" 
                                options="{'no_create': True}"/>
-                        <field name="notes" 
-                               placeholder="(Optional)"/>
+                        <field name="notes" string="Notes"/>
                     </group>
                     
+                    <!-- Action Buttons - inside sheet so they show -->
+                    <div class="oe_button_box">
+                        <button name="action_clock_in" 
+                                string="Start" 
+                                type="object"
+                                class="btn-primary oe_highlight"/>
+                        
+                        <button name="action_clock_out" 
+                                string="Stop" 
+                                type="object"
+                                class="btn-secondary"
+                                invisible="not is_clocked_in"/>
+                        
+                        <button name="action_take_break" 
+                                string="Break" 
+                                type="object"
+                                class="btn-secondary"
+                                invisible="not is_clocked_in"/>
+                    </div>
+                    
                 </sheet>
-                
-                <!-- Standard Odoo footer buttons -->
-                <footer>
-                    <button name="action_clock_in" 
-                            string="Clock In" 
-                            type="object"
-                            class="btn-primary"/>
-                    
-                    <button name="action_clock_out" 
-                            string="Clock Out" 
-                            type="object"
-                            class="btn-danger"
-                            invisible="not is_clocked_in"/>
-                    
-                    <button name="action_take_break" 
-                            string="Break" 
-                            type="object"
-                            class="btn-secondary"
-                            invisible="not is_clocked_in"/>
-                </footer>
             </form>
         </field>
     </record>

@@ -69,6 +69,17 @@ class TimeClockKiosk(models.TransientModel):
             kiosk.current_project_id = active_punch.project_id if active_punch else False
             kiosk.current_duration = active_punch.duration_display if active_punch else "0h 0m"
 
+    def _get_reload_action(self):
+        """Return action to reload the time clock kiosk."""
+        return {
+            'type': 'ir.actions.act_window',
+            'name': 'Clock In / Out',
+            'res_model': 'ps.time.clock.kiosk',
+            'view_mode': 'form',
+            'target': 'current',
+            'context': {'form_view_initial_mode': 'edit'},
+        }
+
     def action_clock_in(self):
         """
         Clock in to a project.
@@ -123,16 +134,8 @@ class TimeClockKiosk(models.TransientModel):
             message = f'You are now clocked into {self.project_id.name}'
             title = 'Clocked In!'
         
-        return {
-            'type': 'ir.actions.client',
-            'tag': 'display_notification',
-            'params': {
-                'title': title,
-                'message': message,
-                'type': 'success',
-                'sticky': False,
-            }
-        }
+        # Reload the form to show updated status
+        return self._get_reload_action()
 
     def action_clock_out(self):
         """Clock out from current project (end of day/session)."""
@@ -147,16 +150,8 @@ class TimeClockKiosk(models.TransientModel):
         # Clock out the active punch
         self.active_punch_id.action_clock_out()
         
-        return {
-            'type': 'ir.actions.client',
-            'tag': 'display_notification',
-            'params': {
-                'title': 'Clocked Out!',
-                'message': f'Logged {duration} to {project_name}',
-                'type': 'success',
-                'sticky': False,
-            }
-        }
+        # Reload the form to show updated status
+        return self._get_reload_action()
 
     def action_take_break(self):
         """
@@ -191,16 +186,8 @@ class TimeClockKiosk(models.TransientModel):
             'state': 'active',
         })
         
-        return {
-            'type': 'ir.actions.client',
-            'tag': 'display_notification',
-            'params': {
-                'title': 'Break Started',
-                'message': f'Enjoy your break! (Coming from {old_project or "start of day"})',
-                'type': 'info',
-                'sticky': False,
-            }
-        }
+        # Reload the form to show updated status
+        return self._get_reload_action()
 
     def action_end_break(self):
         """
@@ -219,16 +206,8 @@ class TimeClockKiosk(models.TransientModel):
         
         self.active_punch_id.action_clock_out()
         
-        return {
-            'type': 'ir.actions.client',
-            'tag': 'display_notification',
-            'params': {
-                'title': 'Break Ended',
-                'message': 'Welcome back! Please clock into your next project.',
-                'type': 'success',
-                'sticky': False,
-            }
-        }
+        # Reload the form to show updated status
+        return self._get_reload_action()
 
     def action_open_kiosk(self):
         """Open the kiosk in a new window."""
