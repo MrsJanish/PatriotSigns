@@ -29,7 +29,7 @@
                         <p style="margin: 10px 0 0 0; opacity: 0.8;">Select a project below to clock in</p>
                     </div>
                     
-                    <!-- Project Selection - Simple -->
+                    <!-- Project Selection -->
                     <group col="1">
                         <field name="project_id" string="Project" 
                                placeholder="Select project..."
@@ -69,12 +69,12 @@
         </field>
     </record>
 
-    <!-- Time Clock Action - inline target to hide breadcrumb -->
+    <!-- Time Clock Action -->
     <record id="ps_time_clock_kiosk_action" model="ir.actions.act_window">
-        <field name="name">Time Clock</field>
+        <field name="name">Clock In / Out</field>
         <field name="res_model">ps.time.clock.kiosk</field>
         <field name="view_mode">form</field>
-        <field name="target">inline</field>
+        <field name="target">current</field>
         <field name="context">{'form_view_initial_mode': 'edit'}</field>
     </record>
 

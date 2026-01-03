@@ -1,31 +1,31 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
-    <!-- Time Clock menu items -->
+    <!-- Time Clock App - Standalone -->
     
-    <!-- Main Time Clock menu under Patriot Signs -->
-    <menuitem id="menu_timeclock_root"
+    <!-- Root menu - appears on home screen -->
+    <menuitem id="menu_timeclock_app"
               name="Time Clock"
-              parent="patriot_base.menu_patriot_root"
-              sequence="5"/>
+              web_icon="patriot_timeclock,static/description/icon.svg"
+              sequence="50"/>
 
-    <!-- Time Clock Kiosk (main entry point) -->
+    <!-- Clock In / Out - main action -->
     <menuitem id="menu_time_clock_kiosk"
               name="Clock In / Out"
-              parent="menu_timeclock_root"
+              parent="menu_timeclock_app"
               action="ps_time_clock_kiosk_action"
               sequence="1"/>
 
     <!-- My Time -->
     <menuitem id="menu_my_time"
               name="My Time"
-              parent="menu_timeclock_root"
+              parent="menu_timeclock_app"
               action="ps_time_punch_my_action"
               sequence="10"/>
 
     <!-- All Time Punches (managers) -->
     <menuitem id="menu_all_time_punches"
               name="All Time Punches"
-              parent="menu_timeclock_root"
+              parent="menu_timeclock_app"
               action="ps_time_punch_action"
               groups="hr.group_hr_manager"
               sequence="20"/>
