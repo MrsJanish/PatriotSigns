@@ -111,13 +111,11 @@
                 <filter name="active" string="Currently Clocked In" 
                         domain="[('state', '=', 'active')]"/>
                 <filter name="today" string="Today" 
-                        domain="[('punch_in', '&gt;=', context_today().strftime('%Y-%m-%d'))]"/>
-                <filter name="this_week" string="This Week" 
-                        domain="[('punch_in', '&gt;=', (context_today() - datetime.timedelta(days=context_today().weekday())).strftime('%Y-%m-%d'))]"/>
+                        domain="[('punch_in', '&gt;=', (context_today()).strftime('%Y-%m-%d'))]"/>
                 <separator/>
                 <filter name="my_punches" string="My Punches" 
                         domain="[('employee_id.user_id', '=', uid)]"/>
-                <group expand="0" string="Group By">
+                <group string="Group By">
                     <filter name="group_employee" string="Employee" 
                             context="{'group_by': 'employee_id'}"/>
                     <filter name="group_project" string="Project" 

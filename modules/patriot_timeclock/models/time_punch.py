@@ -59,12 +59,12 @@ class TimePunch(models.Model):
     # Computed duration
     duration_hours = fields.Float(
         string='Duration (Hours)',
-        compute='_compute_duration',
+        compute='_compute_duration_hours',
         store=True
     )
     duration_display = fields.Char(
         string='Duration',
-        compute='_compute_duration'
+        compute='_compute_duration_display'
     )
     
     # State
@@ -98,19 +98,28 @@ class TimePunch(models.Model):
     )
 
     @api.depends('punch_in', 'punch_out')
-    def _compute_duration(self):
+    def _compute_duration_hours(self):
+        """Compute stored duration in hours."""
         for punch in self:
             if punch.punch_in:
                 end_time = punch.punch_out or fields.Datetime.now()
                 delta = end_time - punch.punch_in
                 punch.duration_hours = delta.total_seconds() / 3600.0
-                
-                # Format display
-                hours = int(punch.duration_hours)
-                minutes = int((punch.duration_hours - hours) * 60)
-                punch.duration_display = f"{hours}h {minutes}m"
             else:
                 punch.duration_hours = 0.0
+
+    @api.depends('punch_in', 'punch_out')
+    def _compute_duration_display(self):
+        """Compute non-stored display duration."""
+        for punch in self:
+            if punch.punch_in:
+                end_time = punch.punch_out or fields.Datetime.now()
+                delta = end_time - punch.punch_in
+                total_hours = delta.total_seconds() / 3600.0
+                hours = int(total_hours)
+                minutes = int((total_hours - hours) * 60)
+                punch.duration_display = f"{hours}h {minutes}m"
+            else:
                 punch.duration_display = "0h 0m"
 
     def action_clock_out(self):
