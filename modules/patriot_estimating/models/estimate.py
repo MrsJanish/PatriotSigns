@@ -176,36 +176,25 @@ class Estimate(models.Model):
     )
     
     # =========================================================================
-    # TOTALS
+    # TOTALS (Customer-Facing Prices)
     # =========================================================================
-    material_total = fields.Float(
-        string='Material Total',
+    signage_total = fields.Float(
+        string='Signage Total',
         compute='_compute_totals',
-        store=True
+        store=True,
+        help='Sum of all sign prices (unit_price × qty)'
     )
-    labor_total = fields.Float(
-        string='Labor Total',
-        compute='_compute_totals',
-        store=True
-    )
+    # NOTE: labor_total removed - not used in customer-facing estimates
+    # Shop Labor, Install, and Travel are already at customer rates
+    
     subtotal = fields.Float(
         string='Subtotal',
         compute='_compute_totals',
         store=True
     )
     
-    # =========================================================================
-    # MARKUP
-    # =========================================================================
-    markup_percent = fields.Float(
-        string='Markup %',
-        default=25.0
-    )
-    markup_amount = fields.Float(
-        string='Markup Amount',
-        compute='_compute_totals',
-        store=True
-    )
+    # NOTE: Markup section removed - markup is already applied to sign prices
+    # The estimate total IS the subtotal (no additional markup needed)
     
     # =========================================================================
     # FINAL
@@ -215,7 +204,7 @@ class Estimate(models.Model):
         compute='_compute_totals',
         store=True,
         tracking=True,
-        help='Final bid price after markup'
+        help='Final bid price (Signage + Shop + Install + Travel + Equipment)'
     )
     
     # =========================================================================
@@ -303,29 +292,26 @@ class Estimate(models.Model):
         Calculate CUSTOMER-FACING totals (PRICES, not costs).
         
         Structure:
-        - Sign Prices: Sum of line_total (unit_price × qty) for each sign type
-        - Shop Fee: Charged at shop_rate (customer rate, not employee wage)
+        - Signage Total: Sum of line_total (unit_price × qty) for each sign type
+        - Shop Fee: Charged at shop_rate (customer rate)
         - Install Fee: Charged at install_rate (customer rate)
         - Travel Fee: Miles × rate
         - Equipment Fee: Rental charges (pass-through)
         
-        Markup applies ONLY to Sign Prices (not to fees which are already at customer rates).
+        NO ADDITIONAL MARKUP - prices already include markup on signs.
         """
         for estimate in self:
             # =================================================================
-            # CUSTOMER-FACING PRICES (not internal costs!)
+            # CUSTOMER-FACING PRICES
             # =================================================================
             
-            # Sign Prices = sum of (unit_price × quantity) for all lines
-            # line_total should already be price, not cost
-            sign_prices_total = sum(estimate.line_ids.mapped('line_total'))
+            # Signage Total = sum of (unit_price × quantity) for all lines
+            signage = sum(estimate.line_ids.mapped('line_total'))
             
-            # Shop Fee (at shop rate - customer rate)
-            # shop_labor_total is already calculated at shop_rate ($75/hr)
+            # Shop Fee (at shop rate - customer rate, $75/hr)
             shop_fee = estimate.shop_labor_total
             
             # Install Fee (at install rate - customer rate)
-            # install_total is already calculated at install_rate ($40/hr combined)
             install_fee = estimate.install_total
             
             # Travel Fee
@@ -335,35 +321,27 @@ class Estimate(models.Model):
             equipment_fee = estimate.equipment_total
             
             # =================================================================
-            # STORE IN FIELDS (reusing existing field names for view compatibility)
+            # STORE IN FIELDS
             # =================================================================
-            
-            # "Material Total" → rename conceptually to "Sign Prices"
-            estimate.material_total = sign_prices_total
-            
-            # "Labor Total" → not used for customer view (hide or repurpose)
-            estimate.labor_total = 0  # Internal only, not shown
+            estimate.signage_total = signage
             
             # =================================================================
-            # SUBTOTAL = Sign Prices + Fees
+            # SUBTOTAL & TOTAL (same - no additional markup)
             # =================================================================
             estimate.subtotal = (
-                sign_prices_total +
+                signage +
                 shop_fee +
                 install_fee +
                 travel_fee +
                 equipment_fee
             )
             
-            # =================================================================
-            # MARKUP: Only on Sign Prices (not on fees)
-            # =================================================================
-            estimate.markup_amount = sign_prices_total * (estimate.markup_percent / 100)
-            estimate.total = estimate.subtotal + estimate.markup_amount
+            # Total = Subtotal (no additional markup needed)
+            estimate.total = estimate.subtotal
             
-            # Profitability (internal metric, can be hidden from customer view)
-            # This would need actual costs from another source for accurate calculation
-            estimate.profit_amount = estimate.markup_amount  # Simplified
+            # Profitability (internal tracking only)
+            # Rough estimate: markup is ~40% of sign price
+            estimate.profit_amount = signage * 0.40
             if estimate.total:
                 estimate.profit_margin_pct = (estimate.profit_amount / estimate.total) * 100
             else:

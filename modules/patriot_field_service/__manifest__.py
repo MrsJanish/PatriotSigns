@@ -29,7 +29,7 @@ Manages all field activities after signs leave the shop.
         'views/menu.xml',
     ],
     'installable': True,
-    'application': True,
+    'application': False,  # Part of unified Patriot Signs app
     'auto_install': False,
     'license': 'LGPL-3',
 }

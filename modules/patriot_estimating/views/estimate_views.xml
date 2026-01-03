@@ -11,8 +11,6 @@
                 <field name="opportunity_id"/>
                 <field name="gc_partner_id"/>
                 <field name="date"/>
-                <field name="subtotal"/>
-                <field name="markup_percent"/>
                 <field name="total" sum="Total"/>
                 <field name="state" widget="badge"/>
             </list>
@@ -124,20 +122,12 @@
                         
                         <page string="Summary" name="summary">
                             <group class="oe_subtotal_footer oe_right">
-                                <field name="material_total" widget="monetary" readonly="1"/>
-                                <field name="labor_total" widget="monetary" readonly="1"/>
-                                <field name="shop_labor_total" widget="monetary" readonly="1"/>
-                                <field name="travel_total" widget="monetary" readonly="1"/>
-                                <field name="install_total" widget="monetary" readonly="1"/>
-                                <field name="equipment_total" widget="monetary" readonly="1" invisible="not needs_equipment"/>
-                                <field name="subtotal" widget="monetary" readonly="1" class="oe_subtotal_footer_separator"/>
-                                <label for="markup_percent"/>
-                                <div class="o_row">
-                                    <field name="markup_percent" class="oe_inline"/>
-                                    <span>%</span>
-                                </div>
-                                <field name="markup_amount" widget="monetary" readonly="1"/>
-                                <field name="total" widget="monetary" readonly="1" class="oe_subtotal_footer_separator"/>
+                                <field name="signage_total" widget="monetary" readonly="1" string="Signage Total"/>
+                                <field name="shop_labor_total" widget="monetary" readonly="1" string="Shop Labor"/>
+                                <field name="travel_total" widget="monetary" readonly="1" string="Travel"/>
+                                <field name="install_total" widget="monetary" readonly="1" string="Installation"/>
+                                <field name="equipment_total" widget="monetary" readonly="1" invisible="not needs_equipment" string="Equipment"/>
+                                <field name="total" widget="monetary" readonly="1" class="oe_subtotal_footer_separator" string="Estimate Total"/>
                             </group>
                         </page>
                         
