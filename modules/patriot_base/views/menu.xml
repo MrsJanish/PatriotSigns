@@ -1,23 +1,25 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
-    <!-- OLD ROOT MENU - DISABLED (duplicate of patriot_signage menu) -->
-    <!-- This menu created a separate "Patriot Signs" app for configuration only -->
-    <!-- Configuration is now accessed via the main Patriot Signs app -->
+    <!-- 
+        DEPRECATED: This entire menu file is disabled.
+        All menu items have been moved to menu_unified.xml
+        
+        The old structure here created a duplicate "Patriot Signs" app.
+        Keeping the file but commenting out all content to avoid breaking references.
+    -->
+    
     <!--
     <menuitem id="menu_patriot_config_root"
               name="Patriot Signs"
               web_icon="patriot_base,static/description/icon.png"
               groups="base.group_system"
               sequence="100"/>
-    -->
 
-    <!-- Configuration Submenu -->
     <menuitem id="menu_patriot_config"
               name="Configuration"
               parent="menu_patriot_config_root"
               sequence="90"/>
 
-    <!-- Sign Reference Tables -->
     <menuitem id="menu_sign_reference_tables"
               name="Sign Reference Tables"
               parent="menu_patriot_config"
@@ -40,5 +42,6 @@
               parent="menu_sign_reference_tables"
               action="sign_dimension_action"
               sequence="30"/>
+    -->
 
 </odoo>
