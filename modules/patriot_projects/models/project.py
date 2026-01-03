@@ -14,7 +14,7 @@ class Project(models.Model):
 
     @api.model
     def _name_search(self, name='', domain=None, operator='ilike', limit=None, order=None):
-        """Extended search to find projects by task name AND opportunities."""
+        """Extended search to find projects by task name."""
         domain = domain or []
         
         # First do the standard search
@@ -32,32 +32,6 @@ class Project(models.Model):
                 task_project_ids = tasks.mapped('project_id').ids
                 # Combine with original results, removing duplicates
                 project_ids = list(dict.fromkeys(list(project_ids) + task_project_ids))
-            
-            # Also search CRM opportunities (for pre-bid time logging)
-            opportunities = self.env['crm.lead'].search([
-                '|', '|',
-                ('name', operator, name),
-                ('project_alias', operator, name),
-                ('partner_id.name', operator, name),
-            ], limit=limit)
-            
-            for opp in opportunities:
-                # Check if this opportunity already has a project
-                existing_project = self.search([('opportunity_id', '=', opp.id)], limit=1)
-                if existing_project:
-                    if existing_project.id not in project_ids:
-                        project_ids.append(existing_project.id)
-                else:
-                    # Create a project for this opportunity (for time logging)
-                    new_project = self.create({
-                        'name': f"[Bid] {opp.name}",
-                        'opportunity_id': opp.id,
-                        'project_alias': opp.project_alias,
-                        'gc_partner_id': opp.gc_partner_id.id if opp.gc_partner_id else False,
-                        'allow_timesheets': True,
-                        'active': True,
-                    })
-                    project_ids.append(new_project.id)
         
         return project_ids[:limit] if limit else project_ids
 
@@ -275,6 +249,15 @@ class Project(models.Model):
                 'name': 'General - Project Time',
                 'project_id': project.id,
                 'description': 'Log general project hours here if not in a specific phase.',
+            })
+        
+        # Transfer any pre-bid time punches from the opportunity to this project
+        TimePunch = self.env['ps.time.punch']
+        opportunity_punches = TimePunch.search([('opportunity_id', '=', opportunity.id)])
+        if opportunity_punches:
+            opportunity_punches.write({
+                'project_id': project.id,
+                'opportunity_id': False,  # Clear the opportunity link
             })
 
         return project

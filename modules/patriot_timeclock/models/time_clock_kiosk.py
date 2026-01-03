@@ -44,11 +44,17 @@ class TimeClockKiosk(models.TransientModel):
         compute='_compute_status'
     )
     
-    # For clocking in
+    # For clocking in - can choose project OR opportunity
     project_id = fields.Many2one(
         'project.project',
         string='Project',
         domain=[('active', '=', True)]
+    )
+    opportunity_id = fields.Many2one(
+        'crm.lead',
+        string='Opportunity',
+        domain=[('type', '=', 'opportunity')],
+        help='Select an opportunity for pre-bid work'
     )
     task_id = fields.Many2one(
         'project.task',
@@ -56,7 +62,7 @@ class TimeClockKiosk(models.TransientModel):
         domain="[('project_id', '=', project_id)]"
     )
     notes = fields.Text(
-        string='What are you working on?'
+        string='Notes'
     )
 
     @api.depends('employee_id')
@@ -95,44 +101,42 @@ class TimeClockKiosk(models.TransientModel):
                 "Please ask your administrator to create an Employee record for you."
             )
         
-        if not self.project_id:
-            raise UserError("Please select a project to clock into.")
+        # Must select either project or opportunity
+        if not self.project_id and not self.opportunity_id:
+            raise UserError("Please select a project or opportunity to clock into.")
         
-        # If already clocked in to the SAME project, do nothing
-        if self.is_clocked_in and self.project_id == self.current_project_id:
-            return {
-                'type': 'ir.actions.client',
-                'tag': 'display_notification',
-                'params': {
-                    'title': 'Already Working',
-                    'message': f'You are already clocked into {self.project_id.name}',
-                    'type': 'info',
-                    'sticky': False,
-                }
-            }
+        # Determine what we're clocking into
+        work_name = self.project_id.name if self.project_id else f"[Bid] {self.opportunity_id.name}"
         
-        old_project = None
-        
-        # If clocked into a DIFFERENT project, auto-clock-out first
+        # If already clocked in to the SAME item, do nothing
         if self.is_clocked_in:
-            old_project = self.current_project_id.name
+            current = self.active_punch_id
+            same_project = self.project_id and current.project_id == self.project_id
+            same_opp = self.opportunity_id and current.opportunity_id == self.opportunity_id
+            if same_project or same_opp:
+                return self._get_reload_action()
+        
+        old_work = None
+        
+        # If clocked into something else, auto-clock-out first
+        if self.is_clocked_in:
+            old_work = self.active_punch_id.work_item
             self.active_punch_id.action_clock_out()
         
-        # Create new punch
-        self.env['ps.time.punch'].create({
+        # Create new punch - can have project OR opportunity (not both)
+        punch_vals = {
             'employee_id': self.employee_id.id,
-            'project_id': self.project_id.id,
-            'task_id': self.task_id.id if self.task_id else False,
             'notes': self.notes,
             'state': 'active',
-        })
+        }
         
-        if old_project:
-            message = f'Switched from {old_project} to {self.project_id.name}'
-            title = 'Switched Project!'
+        if self.project_id:
+            punch_vals['project_id'] = self.project_id.id
+            punch_vals['task_id'] = self.task_id.id if self.task_id else False
         else:
-            message = f'You are now clocked into {self.project_id.name}'
-            title = 'Clocked In!'
+            punch_vals['opportunity_id'] = self.opportunity_id.id
+        
+        self.env['ps.time.punch'].create(punch_vals)
         
         # Reload the form to show updated status
         return self._get_reload_action()
