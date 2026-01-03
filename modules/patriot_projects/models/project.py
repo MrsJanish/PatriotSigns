@@ -14,7 +14,7 @@ class Project(models.Model):
 
     @api.model
     def _name_search(self, name='', domain=None, operator='ilike', limit=None, order=None):
-        """Extended search to also find projects by task name."""
+        """Extended search to find projects by task name AND opportunities."""
         domain = domain or []
         
         # First do the standard search
@@ -31,10 +31,35 @@ class Project(models.Model):
                 # Get the project IDs from matching tasks
                 task_project_ids = tasks.mapped('project_id').ids
                 # Combine with original results, removing duplicates
-                all_ids = list(dict.fromkeys(list(project_ids) + task_project_ids))
-                return all_ids[:limit] if limit else all_ids
+                project_ids = list(dict.fromkeys(list(project_ids) + task_project_ids))
+            
+            # Also search CRM opportunities (for pre-bid time logging)
+            opportunities = self.env['crm.lead'].search([
+                '|', '|',
+                ('name', operator, name),
+                ('project_alias', operator, name),
+                ('partner_id.name', operator, name),
+            ], limit=limit)
+            
+            for opp in opportunities:
+                # Check if this opportunity already has a project
+                existing_project = self.search([('opportunity_id', '=', opp.id)], limit=1)
+                if existing_project:
+                    if existing_project.id not in project_ids:
+                        project_ids.append(existing_project.id)
+                else:
+                    # Create a project for this opportunity (for time logging)
+                    new_project = self.create({
+                        'name': f"[Bid] {opp.name}",
+                        'opportunity_id': opp.id,
+                        'project_alias': opp.project_alias,
+                        'gc_partner_id': opp.gc_partner_id.id if opp.gc_partner_id else False,
+                        'allow_timesheets': True,
+                        'active': True,
+                    })
+                    project_ids.append(new_project.id)
         
-        return project_ids
+        return project_ids[:limit] if limit else project_ids
 
     # =========================================================================
     # CRM LINK
@@ -204,17 +229,21 @@ class Project(models.Model):
     
     @api.model
     def create_from_opportunity(self, opportunity):
-        """Create project from won CRM opportunity by cloning the template"""
-        # 1. Find the Master Template
-        template = self.env.ref('patriot_projects.project_project_signage_template', raise_if_not_found=False)
+        """Create project from won CRM opportunity.
+        
+        If a [Bid] project already exists for this opportunity (from pre-bid time logging),
+        we reuse it and update it with the full project details.
+        """
+        # Check if there's already a project for this opportunity (from pre-bid time logging)
+        existing_project = self.search([('opportunity_id', '=', opportunity.id)], limit=1)
         
         project_vals = {
-            'name': opportunity.name,
+            'name': opportunity.name,  # Remove [Bid] prefix if it was there
             'opportunity_id': opportunity.id,
             'project_alias': opportunity.project_alias,
-            'gc_partner_id': opportunity.gc_partner_id.id,
-            'owner_partner_id': opportunity.owner_partner_id.id,
-            'architect_partner_id': opportunity.architect_partner_id.id,
+            'gc_partner_id': opportunity.gc_partner_id.id if opportunity.gc_partner_id else False,
+            'owner_partner_id': opportunity.owner_partner_id.id if opportunity.owner_partner_id else False,
+            'architect_partner_id': opportunity.architect_partner_id.id if opportunity.architect_partner_id else False,
             'project_address': opportunity.project_address,
             'project_city': opportunity.project_city,
             'project_state_id': opportunity.project_state_id.id if opportunity.project_state_id else False,
@@ -222,20 +251,24 @@ class Project(models.Model):
             'project_type': opportunity.project_type,
             'award_date': fields.Date.today(),
             'project_stage': 'contract',
-            'allow_timesheets': True, # Enforce Timekeeping
+            'allow_timesheets': True,
         }
-
-        if template:
-            # Clone the template (Deep copy includes Tasks)
-            project = template.copy(default=project_vals)
-            # Activate it (Template is inactive)
-            project.active = True
+        
+        if existing_project:
+            # Update the existing [Bid] project with full details
+            existing_project.write(project_vals)
+            project = existing_project
         else:
-            # Fallback if template missing
-            project = self.create(project_vals)
+            # No existing project - create from template if available
+            template = self.env.ref('patriot_projects.project_project_signage_template', raise_if_not_found=False)
+            
+            if template:
+                project = template.copy(default=project_vals)
+                project.active = True
+            else:
+                project = self.create(project_vals)
 
         # Ensure a "General" task exists for high-level time logging
-        # This addresses user request to "log hours to a whole project"
         Task = self.env['project.task']
         if not Task.search_count([('project_id', '=', project.id), ('name', 'ilike', 'General')]):
             Task.create({
