@@ -329,6 +329,37 @@ class Estimate(models.Model):
     # ACTIONS
     # =========================================================================
     
+    def write(self, vals):
+        """
+        Override write to sync estimate state with CRM opportunity stage.
+        """
+        res = super(Estimate, self).write(vals)
+        
+        if 'state' in vals:
+            self._sync_crm_stage(vals['state'])
+        
+        return res
+    
+    def _sync_crm_stage(self, new_state):
+        """Sync estimate state changes to CRM opportunity stages"""
+        stage_mapping = {
+            'approved': 'patriot_crm.stage_bid_prepared',
+            'submitted': 'patriot_crm.stage_bid_submitted',
+            'won': 'patriot_crm.stage_won',
+        }
+        
+        stage_ref = stage_mapping.get(new_state)
+        if stage_ref:
+            stage = self.env.ref(stage_ref, raise_if_not_found=False)
+            if stage:
+                for estimate in self:
+                    if estimate.opportunity_id:
+                        estimate.opportunity_id.stage_id = stage
+                        
+                        # If Won, also ensure project is created
+                        if new_state == 'won':
+                            estimate.opportunity_id._ensure_project_created()
+    
     def action_populate_from_sign_types(self):
         """Create estimate lines from opportunity's sign types"""
         self.ensure_one()
@@ -353,6 +384,14 @@ class Estimate(models.Model):
     def action_approve(self):
         """Mark estimate as approved"""
         self.write({'state': 'approved'})
+    
+    def action_mark_won(self):
+        """Mark estimate as won"""
+        self.write({'state': 'won'})
+    
+    def action_mark_lost(self):
+        """Mark estimate as lost"""
+        self.write({'state': 'lost'})
 
 
 class EstimateLine(models.Model):

@@ -521,7 +521,7 @@ class SignType(models.Model):
         1. Calculate material cost per unit (based on sheet usage)
         2. Add labor cost per unit
         3. Add 15% overhead
-        4. Multiply by markup (2.4x)
+        4. Multiply by markup (graduated based on size)
         5. Round to nearest $5
         """
         if not self.length or not self.width:
@@ -545,14 +545,30 @@ class SignType(models.Model):
         MOLD_TIME_MINUTES = 80  # Worst case per mold
         
         OVERHEAD_PCT = 15.0
-        MARKUP = 2.4
         ROUND_TO = 5.0
+        
+        # =====================================================================
+        # GRADUATED MARKUP: Smaller signs get higher markup, larger signs lower
+        # Target: 6x6 = $45, 8x8 = $55, 12x12 = ~$115
+        # =====================================================================
+        BASE_MARKUP = 2.4  # For smallest signs (fits 6+ per mold)
+        MIN_MARKUP = 1.8   # For largest signs (fits 1 per mold)
         
         # Calculate how many signs fit per mold (optimize rotation)
         w, h = self.width, self.length
         fit1 = int(PRESS_W // w) * int(PRESS_H // h) if w > 0 and h > 0 else 1
         fit2 = int(PRESS_W // h) * int(PRESS_H // w) if w > 0 and h > 0 else 1
         signs_per_mold = max(fit1, fit2, 1)
+        
+        # Graduated markup: lerp from BASE_MARKUP (6 per mold) to MIN_MARKUP (1 per mold)
+        if signs_per_mold >= 6:
+            effective_markup = BASE_MARKUP
+        elif signs_per_mold <= 1:
+            effective_markup = MIN_MARKUP
+        else:
+            # Linear interpolation: 6->2.4, 1->1.8
+            t = (6 - signs_per_mold) / 5.0  # 0 at 6, 1 at 1
+            effective_markup = BASE_MARKUP - t * (BASE_MARKUP - MIN_MARKUP)
         
         # =====================================================================
         # FIXED PRICING: Calculate cost for ONE MOLD, divide by signs per mold
@@ -584,8 +600,8 @@ class SignType(models.Model):
         overhead_per_sign = cost_per_sign * (OVERHEAD_PCT / 100.0)
         total_cost_per_unit = cost_per_sign + overhead_per_sign
         
-        # Apply markup and round
-        raw_price = total_cost_per_unit * MARKUP
+        # Apply graduated markup and round
+        raw_price = total_cost_per_unit * effective_markup
         rounded_price = round(raw_price / ROUND_TO) * ROUND_TO
         
         # Set unit cost and unit price
