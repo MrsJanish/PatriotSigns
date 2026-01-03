@@ -45,6 +45,41 @@ class Project(models.Model):
     )
     
     # =========================================================================
+    # TIME TRACKING
+    # =========================================================================
+    total_hours = fields.Float(
+        string='Total Hours',
+        compute='_compute_total_hours',
+        store=True
+    )
+    total_hours_display = fields.Char(
+        string='Total Time',
+        compute='_compute_total_hours'
+    )
+    time_punch_ids = fields.One2many(
+        'ps.time.punch',
+        'project_id',
+        string='Time Punches'
+    )
+    time_punch_count = fields.Integer(
+        string='Punch Count',
+        compute='_compute_total_hours'
+    )
+    
+    @api.depends('time_punch_ids', 'time_punch_ids.duration_hours')
+    def _compute_total_hours(self):
+        for project in self:
+            punches = project.time_punch_ids.filtered(lambda p: p.state == 'closed')
+            total = sum(punches.mapped('duration_hours'))
+            project.total_hours = total
+            project.time_punch_count = len(project.time_punch_ids)
+            
+            # Format as Xh Ym
+            hours = int(total)
+            minutes = int((total - hours) * 60)
+            project.total_hours_display = f"{hours}h {minutes}m"
+    
+    # =========================================================================
     # PROJECT DETAILS
     # =========================================================================
     project_alias = fields.Char(

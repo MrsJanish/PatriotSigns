@@ -42,7 +42,7 @@
                         <field name="project_id" string="Project" 
                                placeholder="Select a won project..."
                                options="{'no_create': True}"/>
-                        <field name="opportunity_id" string="Opportunity (Pre-Bid)"
+                        <field name="opportunity_id" string="Opportunity (Bidding/Submittals)"
                                placeholder="...or select opportunity for bidding work"
                                options="{'no_create': True}"/>
                         <field name="task_id" string="Task" 
