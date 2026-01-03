@@ -8,7 +8,9 @@
             <list decoration-info="state == 'active'"
                   decoration-muted="state == 'closed'">
                 <field name="employee_id"/>
-                <field name="project_id"/>
+                <field name="work_item" string="Working On"/>
+                <field name="project_id" optional="hide"/>
+                <field name="opportunity_id" optional="hide"/>
                 <field name="task_id" optional="hide"/>
                 <field name="punch_in"/>
                 <field name="punch_out"/>
