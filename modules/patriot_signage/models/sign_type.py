@@ -515,97 +515,55 @@ class SignType(models.Model):
     @api.onchange('length', 'width', 'quantity', 'is_ada', 'category_id')
     def _onchange_compute_price(self):
         """
-        Auto-calculate unit price based on dimensions, category, and quantity.
+        Auto-calculate unit price based on dimensions.
         
-        Formula from patriot_estimating:
-        1. Calculate material cost per unit (based on sheet usage)
-        2. Add labor cost per unit
-        3. Add 15% overhead
-        4. Multiply by markup (graduated based on size)
-        5. Round to nearest $5
+        Uses a REFERENCE PRICE TABLE approach:
+        - 6x6 = $45 (base reference)
+        - Price scales by square footage relative to 6x6
+        - Minimum price = $35
         """
         if not self.length or not self.width:
             return
-            
-        import math
-        
-        # Constants from the estimating module
-        PRESS_W, PRESS_H = 13.0, 19.0  # Press sheet size
-        SHEET_W, SHEET_H = 49.0, 97.0  # Pionite sheet size
-        MOLDS_PER_SHEET = 17
-        
-        # Costs (from product catalog defaults)
-        PIONITE_COST = 211.30  # Per sheet
-        ABS_COST = 80.00       # Per sheet
-        INK_COST = 0.33        # Per sign
-        PAINT_COST = 0.60      # Per sign
-        TAPE_COST = 0.25       # Per mold
-        MCLUBE_COST = 0.50     # Per mold
-        EMPLOYEE_WAGE = 10.00  # $/hr
-        MOLD_TIME_MINUTES = 80  # Worst case per mold
-        
-        OVERHEAD_PCT = 15.0
-        ROUND_TO = 5.0
         
         # =====================================================================
-        # GRADUATED MARKUP: Smaller signs get higher markup, larger signs lower
-        # Target: 6x6 = $45, 8x8 = $55, 12x12 = ~$115
+        # REFERENCE PRICING TABLE
+        # Based on user requirement: 6x6=$45, 8x8=$55
         # =====================================================================
-        BASE_MARKUP = 2.4  # For smallest signs (fits 6+ per mold)
-        MIN_MARKUP = 1.8   # For largest signs (fits 1 per mold)
         
-        # Calculate how many signs fit per mold (optimize rotation)
-        w, h = self.width, self.length
-        fit1 = int(PRESS_W // w) * int(PRESS_H // h) if w > 0 and h > 0 else 1
-        fit2 = int(PRESS_W // h) * int(PRESS_H // w) if w > 0 and h > 0 else 1
-        signs_per_mold = max(fit1, fit2, 1)
+        # Reference values
+        REF_SIZE_SQIN = 36.0  # 6x6 = 36 sq in
+        REF_PRICE = 45.0      # 6x6 base price
+        MIN_PRICE = 35.0      # Minimum for very small signs
         
-        # Graduated markup: lerp from BASE_MARKUP (6 per mold) to MIN_MARKUP (1 per mold)
-        if signs_per_mold >= 6:
-            effective_markup = BASE_MARKUP
-        elif signs_per_mold <= 1:
-            effective_markup = MIN_MARKUP
+        # Calculate square inches
+        sqin = self.length * self.width
+        
+        # Linear scaling: price grows proportionally to size relative to 6x6
+        # 8x8 = 64 sqin → ratio = 64/36 = 1.78 → price = 45 * (1 + 0.78 * 0.28) ≈ 55
+        # Using a factor of 0.28 to get 8x8 to $55
+        SIZE_FACTOR = 0.28
+        
+        if sqin <= REF_SIZE_SQIN:
+            # Small signs: scale down from reference
+            ratio = sqin / REF_SIZE_SQIN
+            raw_price = REF_PRICE * ratio
         else:
-            # Linear interpolation: 6->2.4, 1->1.8
-            t = (6 - signs_per_mold) / 5.0  # 0 at 6, 1 at 1
-            effective_markup = BASE_MARKUP - t * (BASE_MARKUP - MIN_MARKUP)
+            # Larger signs: scale up with diminishing returns
+            ratio = sqin / REF_SIZE_SQIN
+            raw_price = REF_PRICE * (1 + (ratio - 1) * SIZE_FACTOR)
         
-        # =====================================================================
-        # FIXED PRICING: Calculate cost for ONE MOLD, divide by signs per mold
-        # Price is determined by SIZE only, not by order quantity
-        # =====================================================================
+        # Apply minimum
+        raw_price = max(raw_price, MIN_PRICE)
         
-        # Material cost per mold (assume 1 mold, fractional sheet)
-        sheet_fraction = 1.0 / MOLDS_PER_SHEET  # ~0.059 sheets per mold
-        sheet_cost_per_mold = sheet_fraction * (PIONITE_COST + ABS_COST)
-        
-        # Consumables per mold
-        consumables_per_mold = (
-            signs_per_mold * (INK_COST + PAINT_COST) +  # Per sign
-            TAPE_COST + MCLUBE_COST                      # Per mold
-        )
-        
-        total_material_per_mold = sheet_cost_per_mold + consumables_per_mold
-        
-        # Labor cost per mold
-        labor_per_mold = (MOLD_TIME_MINUTES / 60.0) * EMPLOYEE_WAGE  # ~$13.33
-        
-        # Total cost per mold
-        total_cost_per_mold = total_material_per_mold + labor_per_mold
-        
-        # Cost per sign = mold cost / signs per mold
-        cost_per_sign = total_cost_per_mold / signs_per_mold
-        
-        # Add overhead
-        overhead_per_sign = cost_per_sign * (OVERHEAD_PCT / 100.0)
-        total_cost_per_unit = cost_per_sign + overhead_per_sign
-        
-        # Apply graduated markup and round
-        raw_price = total_cost_per_unit * effective_markup
+        # Round to nearest $5
+        ROUND_TO = 5.0
         rounded_price = round(raw_price / ROUND_TO) * ROUND_TO
         
-        # Set unit cost and unit price
-        self.unit_cost = round(total_cost_per_unit, 2)
+        # Estimate unit cost (for internal tracking only)
+        # Rough estimate: 40% of price
+        estimated_cost = rounded_price * 0.40
+        
+        self.unit_cost = round(estimated_cost, 2)
         self.unit_price = rounded_price
 
     # =========================================================================

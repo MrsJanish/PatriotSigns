@@ -43,7 +43,7 @@ This module must be installed before other Patriot Signs modules.
         'views/menu_unified.xml',
     ],
     'installable': True,
-    'application': True,
+    'application': False,  # Not a standalone app, just foundation
     'auto_install': False,
     'license': 'LGPL-3',
 }

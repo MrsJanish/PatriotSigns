@@ -531,13 +531,44 @@ class CrmLead(models.Model):
         res = super(CrmLead, self).write(vals)
         
         if 'stage_id' in vals:
-            # Check if moved to Reviewing stage
+            new_stage_id = vals['stage_id']
+            
+            # Check if moved to Reviewing stage → create project
             reviewing_stage = self.env.ref('patriot_crm.stage_reviewing', raise_if_not_found=False)
-            if reviewing_stage and vals['stage_id'] == reviewing_stage.id:
+            if reviewing_stage and new_stage_id == reviewing_stage.id:
+                for lead in self:
+                    lead._ensure_project_created()
+            
+            # Sync CRM stage to Estimate stage
+            self._sync_estimate_stage(new_stage_id)
+            
+            # Check if moved to Won stage → create project
+            won_stage = self.env.ref('patriot_crm.stage_won', raise_if_not_found=False)
+            if won_stage and new_stage_id == won_stage.id:
                 for lead in self:
                     lead._ensure_project_created()
                     
         return res
+    
+    def _sync_estimate_stage(self, stage_id):
+        """Sync CRM stage changes to linked Estimate stages"""
+        stage_mapping = {
+            'patriot_crm.stage_bid_prepared': 'approved',
+            'patriot_crm.stage_bid_submitted': 'submitted',
+            'patriot_crm.stage_won': 'won',
+        }
+        
+        for ref_id, estimate_state in stage_mapping.items():
+            stage = self.env.ref(ref_id, raise_if_not_found=False)
+            if stage and stage.id == stage_id:
+                for lead in self:
+                    estimates = self.env['ps.estimate'].search([
+                        ('opportunity_id', '=', lead.id)
+                    ])
+                    if estimates:
+                        # Use sudo and context to avoid recursive sync
+                        estimates.with_context(skip_crm_sync=True).write({'state': estimate_state})
+                break
 
     def action_set_won_rainbowman(self):
         """

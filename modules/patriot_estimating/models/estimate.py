@@ -295,31 +295,75 @@ class Estimate(models.Model):
             else:
                 estimate.equipment_total = 0.0
 
-    @api.depends('line_ids.material_extended', 'line_ids.labor_extended',
+    @api.depends('line_ids.line_total',
                  'shop_labor_total', 'travel_total', 'install_total', 
                  'equipment_total', 'markup_percent')
     def _compute_totals(self):
+        """
+        Calculate CUSTOMER-FACING totals (PRICES, not costs).
+        
+        Structure:
+        - Sign Prices: Sum of line_total (unit_price × qty) for each sign type
+        - Shop Fee: Charged at shop_rate (customer rate, not employee wage)
+        - Install Fee: Charged at install_rate (customer rate)
+        - Travel Fee: Miles × rate
+        - Equipment Fee: Rental charges (pass-through)
+        
+        Markup applies ONLY to Sign Prices (not to fees which are already at customer rates).
+        """
         for estimate in self:
-            # Line item costs
-            estimate.material_total = sum(estimate.line_ids.mapped('material_extended'))
-            estimate.labor_total = sum(estimate.line_ids.mapped('labor_extended'))
+            # =================================================================
+            # CUSTOMER-FACING PRICES (not internal costs!)
+            # =================================================================
             
-            # Subtotal = Materials + Line Labor + Shop Labor + Travel + Install + Equipment
+            # Sign Prices = sum of (unit_price × quantity) for all lines
+            # line_total should already be price, not cost
+            sign_prices_total = sum(estimate.line_ids.mapped('line_total'))
+            
+            # Shop Fee (at shop rate - customer rate)
+            # shop_labor_total is already calculated at shop_rate ($75/hr)
+            shop_fee = estimate.shop_labor_total
+            
+            # Install Fee (at install rate - customer rate)
+            # install_total is already calculated at install_rate ($40/hr combined)
+            install_fee = estimate.install_total
+            
+            # Travel Fee
+            travel_fee = estimate.travel_total
+            
+            # Equipment Fee (pass-through)
+            equipment_fee = estimate.equipment_total
+            
+            # =================================================================
+            # STORE IN FIELDS (reusing existing field names for view compatibility)
+            # =================================================================
+            
+            # "Material Total" → rename conceptually to "Sign Prices"
+            estimate.material_total = sign_prices_total
+            
+            # "Labor Total" → not used for customer view (hide or repurpose)
+            estimate.labor_total = 0  # Internal only, not shown
+            
+            # =================================================================
+            # SUBTOTAL = Sign Prices + Fees
+            # =================================================================
             estimate.subtotal = (
-                estimate.material_total + 
-                estimate.labor_total + 
-                estimate.shop_labor_total +
-                estimate.travel_total +
-                estimate.install_total +
-                estimate.equipment_total
+                sign_prices_total +
+                shop_fee +
+                install_fee +
+                travel_fee +
+                equipment_fee
             )
             
-            # Markup on subtotal
-            estimate.markup_amount = estimate.subtotal * (estimate.markup_percent / 100)
+            # =================================================================
+            # MARKUP: Only on Sign Prices (not on fees)
+            # =================================================================
+            estimate.markup_amount = sign_prices_total * (estimate.markup_percent / 100)
             estimate.total = estimate.subtotal + estimate.markup_amount
             
-            # Profitability
-            estimate.profit_amount = estimate.total - estimate.subtotal
+            # Profitability (internal metric, can be hidden from customer view)
+            # This would need actual costs from another source for accurate calculation
+            estimate.profit_amount = estimate.markup_amount  # Simplified
             if estimate.total:
                 estimate.profit_margin_pct = (estimate.profit_amount / estimate.total) * 100
             else:
@@ -335,7 +379,8 @@ class Estimate(models.Model):
         """
         res = super(Estimate, self).write(vals)
         
-        if 'state' in vals:
+        # Avoid recursive sync when called from CRM stage change
+        if 'state' in vals and not self.env.context.get('skip_crm_sync'):
             self._sync_crm_stage(vals['state'])
         
         return res
