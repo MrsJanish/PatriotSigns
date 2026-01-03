@@ -80,7 +80,7 @@
         <field name="name">Time Clock</field>
         <field name="res_model">ps.time.clock.kiosk</field>
         <field name="view_mode">form</field>
-        <field name="target">new</field>
+        <field name="target">current</field>
         <field name="context">{'form_view_initial_mode': 'edit'}</field>
     </record>
 

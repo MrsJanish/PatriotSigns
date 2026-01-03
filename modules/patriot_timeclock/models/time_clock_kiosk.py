@@ -15,9 +15,14 @@ class TimeClockKiosk(models.TransientModel):
     employee_id = fields.Many2one(
         'hr.employee',
         string='Employee',
-        default=lambda self: self.env.user.employee_id,
-        required=True
+        default=lambda self: self._get_current_employee()
     )
+
+    @api.model
+    def _get_current_employee(self):
+        """Get current employee, with helpful error if not found."""
+        employee = self.env.user.employee_id
+        return employee.id if employee else False
     
     # Current status
     is_clocked_in = fields.Boolean(
@@ -72,6 +77,12 @@ class TimeClockKiosk(models.TransientModel):
         This simplifies the UX - employees just select where they're working.
         """
         self.ensure_one()
+        
+        if not self.employee_id:
+            raise UserError(
+                "No Employee record found for your user account. "
+                "Please ask your administrator to create an Employee record for you."
+            )
         
         if not self.project_id:
             raise UserError("Please select a project to clock into.")
