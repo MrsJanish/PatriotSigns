@@ -1,13 +1,13 @@
 {
-    'name': 'Patriot Intro',
+    'name': 'Omega Intro',
     'version': '1.0',
-    'summary': 'A beautiful welcome experience for Patriot Signs',
+    'summary': 'A beautiful welcome experience for Omega Signs Co',
     'description': """
         A stunning client action module that serves as a beautiful landing page/intro 
-        for the Patriot Signs Odoo system.
+        for the Omega Signs Co Odoo system.
     """,
     'category': 'Productivity',
-    'author': 'Patriot Signs',
+    'author': 'Omega Signs Co',
     'depends': ['base', 'web'],
     'data': [
         'data/company_data.xml',

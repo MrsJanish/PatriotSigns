@@ -1,10 +1,10 @@
 {
-    'name': 'Patriot Production',
+    'name': 'Omega Production',
     'version': '19.0.1.0.0',
     'category': 'Manufacturing',
     'summary': 'Sign production and MRP integration',
     'description': """
-Patriot Production Module
+Omega Production Module
 =========================
 
 Production management for sign manufacturing:
@@ -16,8 +16,8 @@ Production management for sign manufacturing:
 
 Integrates with Odoo MRP for manufacturing operations.
     """,
-    'author': 'Patriot Signs',
-    'website': 'https://patriotsigns.com',
+    'author': 'Omega Signs Co',
+    'website': 'https://omegasignsco.com',
     'depends': [
         'mrp',
         'patriot_submittals',

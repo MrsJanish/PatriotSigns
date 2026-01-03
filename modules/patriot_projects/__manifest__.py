@@ -1,10 +1,10 @@
 {
-    'name': 'Patriot Projects',
+    'name': 'Omega Projects',
     'version': '19.0.1.0.0',
     'category': 'Project',
     'summary': 'Project management for sign contracts',
     'description': """
-Patriot Projects Module
+Omega Projects Module
 =======================
 
 Project management for awarded sign contracts:
@@ -16,8 +16,8 @@ Project management for awarded sign contracts:
 
 This module bridges CRM (bidding) to execution (production/install).
     """,
-    'author': 'Patriot Signs',
-    'website': 'https://patriotsigns.com',
+    'author': 'Omega Signs Co',
+    'website': 'https://omegasignsco.com',
     'depends': [
         'project',
         'hr_timesheet',

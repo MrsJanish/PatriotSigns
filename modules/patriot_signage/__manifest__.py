@@ -1,10 +1,10 @@
 {
-    'name': 'Patriot Signage',
+    'name': 'Omega Signage',
     'version': '19.0.1.0.0',
     'category': 'Sales',
     'summary': 'Core sign type and instance management',
     'description': """
-Patriot Signage Module
+Omega Signage Module
 ======================
 
 Core sign management functionality:
@@ -16,8 +16,8 @@ Core sign management functionality:
 This module provides the data structure for tracking signs from 
 bid intake through production and installation.
     """,
-    'author': 'Patriot Signs',
-    'website': 'https://patriotsigns.com',
+    'author': 'Omega Signs Co',
+    'website': 'https://omegasignsco.com',
     'depends': [
         'patriot_base',
         'patriot_crm',

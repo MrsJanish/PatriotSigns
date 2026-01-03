@@ -1,10 +1,10 @@
 {
-    'name': 'Patriot Signs CRM',
+    'name': 'Omega Signs CRM',
     'version': '19.0.1.0.0',
     'category': 'Sales/CRM',
     'summary': 'CRM extensions for sign project management',
     'description': """
-Patriot Signs CRM Module
+Omega Signs CRM Module
 ========================
 
 Extends Odoo CRM with:
@@ -19,8 +19,8 @@ Extends Odoo CRM with:
 
 This module integrates the CC Ops dashboard with Odoo's native CRM pipeline.
     """,
-    'author': 'Patriot Signs',
-    'website': 'https://patriotsigns.com',
+    'author': 'Omega Signs Co',
+    'website': 'https://omegasignsco.com',
     'depends': [
         'crm',
         'hr_timesheet',

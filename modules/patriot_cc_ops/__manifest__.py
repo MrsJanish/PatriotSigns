@@ -19,7 +19,7 @@
         - patriot_signage: Sign type and instance management
     """,
     'category': 'Sales/CRM',
-    'author': 'Patriot Signs',
+    'author': 'Omega Signs Co',
     'depends': [
         'patriot_signage',  # Pulls in patriot_crm and patriot_base
     ],
@@ -49,4 +49,3 @@
     'application': False,
     'license': 'LGPL-3',
 }
-

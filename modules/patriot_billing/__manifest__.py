@@ -1,10 +1,10 @@
 {
-    'name': 'Patriot Billing',
+    'name': 'Omega Billing',
     'version': '19.0.1.0.0',
     'category': 'Accounting',
     'summary': 'Pay applications and billing management',
     'description': """
-Patriot Billing Module
+Omega Billing Module
 ======================
 
 Billing management for sign projects:
@@ -17,8 +17,8 @@ Billing management for sign projects:
 
 Integrates with Odoo Accounting for invoicing.
     """,
-    'author': 'Patriot Signs',
-    'website': 'https://patriotsigns.com',
+    'author': 'Omega Signs Co',
+    'website': 'https://omegasignsco.com',
     'depends': [
         'account',
         'patriot_field_service',

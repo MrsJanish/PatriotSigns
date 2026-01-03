@@ -1,10 +1,10 @@
 {
-    'name': 'Patriot Field Service',
+    'name': 'Omega Field Service',
     'version': '19.0.1.0.0',
     'category': 'Field Service',
     'summary': 'Sign installation and field service',
     'description': """
-Patriot Field Service Module
+Omega Field Service Module
 ============================
 
 Installation and field service management:
@@ -16,8 +16,8 @@ Installation and field service management:
 
 Manages all field activities after signs leave the shop.
     """,
-    'author': 'Patriot Signs',
-    'website': 'https://patriotsigns.com',
+    'author': 'Omega Signs Co',
+    'website': 'https://omegasignsco.com',
     'depends': [
         'patriot_production',
     ],
@@ -29,7 +29,7 @@ Manages all field activities after signs leave the shop.
         'views/menu.xml',
     ],
     'installable': True,
-    'application': False,  # Part of unified Patriot Signs app
+    'application': False,  # Part of unified Omega Signs app
     'auto_install': False,
     'license': 'LGPL-3',
 }
