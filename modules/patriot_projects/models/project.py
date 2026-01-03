@@ -49,8 +49,7 @@ class Project(models.Model):
     # =========================================================================
     total_hours = fields.Float(
         string='Total Hours',
-        compute='_compute_total_hours',
-        store=True
+        compute='_compute_total_hours'
     )
     total_hours_display = fields.Char(
         string='Total Time',
