@@ -54,19 +54,19 @@
                     
                 </sheet>
                 <footer>
-                    <!-- Clock In Button (when not clocked in) -->
+                    <!-- Clock In Button (works for both new clock-in and switching projects) -->
                     <button name="action_clock_in" string="🕐 Clock In" type="object"
-                            class="btn-success btn-lg" invisible="is_clocked_in"
+                            class="btn-success btn-lg"
                             style="font-size: 24px; padding: 15px 40px;"/>
                     
-                    <!-- Clock Out Button (when clocked in) -->
+                    <!-- Clock Out Button (end of day) -->
                     <button name="action_clock_out" string="🛑 Clock Out" type="object"
                             class="btn-danger btn-lg" invisible="not is_clocked_in"
                             style="font-size: 24px; padding: 15px 40px;"/>
                     
-                    <!-- Switch Project Button (when clocked in) -->
-                    <button name="action_switch_project" string="🔄 Switch Project" type="object"
-                            class="btn-warning btn-lg" invisible="not is_clocked_in"
+                    <!-- Take Break Button -->
+                    <button name="action_take_break" string="☕ Take Break" type="object"
+                            class="btn-info btn-lg" invisible="not is_clocked_in"
                             style="font-size: 18px; padding: 10px 25px; margin-left: 20px;"/>
                     
                     <button string="Cancel" class="btn-secondary" special="cancel"/>

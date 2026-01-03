@@ -65,21 +65,39 @@ class TimeClockKiosk(models.TransientModel):
             kiosk.current_duration = active_punch.duration_display if active_punch else "0h 0m"
 
     def action_clock_in(self):
-        """Clock in to a project."""
+        """
+        Clock in to a project.
+        
+        If already clocked into another project, auto-clock-out from it first.
+        This simplifies the UX - employees just select where they're working.
+        """
         self.ensure_one()
         
         if not self.project_id:
             raise UserError("Please select a project to clock into.")
         
-        # Check if already clocked in
+        # If already clocked in to the SAME project, do nothing
+        if self.is_clocked_in and self.project_id == self.current_project_id:
+            return {
+                'type': 'ir.actions.client',
+                'tag': 'display_notification',
+                'params': {
+                    'title': 'Already Working',
+                    'message': f'You are already clocked into {self.project_id.name}',
+                    'type': 'info',
+                    'sticky': False,
+                }
+            }
+        
+        old_project = None
+        
+        # If clocked into a DIFFERENT project, auto-clock-out first
         if self.is_clocked_in:
-            raise UserError(
-                f"You are already clocked into {self.current_project_id.name}. "
-                "Please clock out first or use 'Switch Project'."
-            )
+            old_project = self.current_project_id.name
+            self.active_punch_id.action_clock_out()
         
         # Create new punch
-        punch = self.env['ps.time.punch'].create({
+        self.env['ps.time.punch'].create({
             'employee_id': self.employee_id.id,
             'project_id': self.project_id.id,
             'task_id': self.task_id.id if self.task_id else False,
@@ -87,23 +105,33 @@ class TimeClockKiosk(models.TransientModel):
             'state': 'active',
         })
         
+        if old_project:
+            message = f'Switched from {old_project} to {self.project_id.name}'
+            title = 'Switched Project!'
+        else:
+            message = f'You are now clocked into {self.project_id.name}'
+            title = 'Clocked In!'
+        
         return {
             'type': 'ir.actions.client',
             'tag': 'display_notification',
             'params': {
-                'title': 'Clocked In!',
-                'message': f'You are now clocked into {self.project_id.name}',
+                'title': title,
+                'message': message,
                 'type': 'success',
                 'sticky': False,
             }
         }
 
     def action_clock_out(self):
-        """Clock out from current project."""
+        """Clock out from current project (end of day/session)."""
         self.ensure_one()
         
         if not self.is_clocked_in:
             raise UserError("You are not currently clocked in.")
+        
+        project_name = self.current_project_id.name
+        duration = self.current_duration
         
         # Clock out the active punch
         self.active_punch_id.action_clock_out()
@@ -113,34 +141,42 @@ class TimeClockKiosk(models.TransientModel):
             'tag': 'display_notification',
             'params': {
                 'title': 'Clocked Out!',
-                'message': f'Logged {self.current_duration} to {self.current_project_id.name}',
+                'message': f'Logged {duration} to {project_name}',
                 'type': 'success',
                 'sticky': False,
             }
         }
 
-    def action_switch_project(self):
-        """Switch to a different project (clock out current, clock into new)."""
+    def action_take_break(self):
+        """
+        Take a break - clocks out current project, clocks into Break project.
+        
+        Uses the internal 'Break' project created during module install.
+        """
         self.ensure_one()
         
-        if not self.project_id:
-            raise UserError("Please select a project to switch to.")
+        # Find the Break project
+        break_project = self.env.ref('patriot_timeclock.project_break', raise_if_not_found=False)
         
-        if self.project_id == self.current_project_id:
-            raise UserError("You're already working on this project.")
+        if not break_project:
+            # Fallback: search for it by name
+            break_project = self.env['project.project'].search([('name', '=', 'Break')], limit=1)
         
-        old_project = self.current_project_id.name if self.current_project_id else "None"
+        if not break_project:
+            raise UserError("Break project not found. Please contact your administrator.")
         
-        # Clock out current if clocked in
+        old_project = None
+        
+        # Clock out of current project if clocked in
         if self.is_clocked_in:
+            old_project = self.current_project_id.name
             self.active_punch_id.action_clock_out()
         
-        # Clock into new project
+        # Clock into Break project
         self.env['ps.time.punch'].create({
             'employee_id': self.employee_id.id,
-            'project_id': self.project_id.id,
-            'task_id': self.task_id.id if self.task_id else False,
-            'notes': self.notes,
+            'project_id': break_project.id,
+            'notes': 'Break',
             'state': 'active',
         })
         
@@ -148,8 +184,36 @@ class TimeClockKiosk(models.TransientModel):
             'type': 'ir.actions.client',
             'tag': 'display_notification',
             'params': {
-                'title': 'Switched Project!',
-                'message': f'Switched from {old_project} to {self.project_id.name}',
+                'title': 'Break Started',
+                'message': f'Enjoy your break! (Coming from {old_project or "start of day"})',
+                'type': 'info',
+                'sticky': False,
+            }
+        }
+
+    def action_end_break(self):
+        """
+        End break - clocks out of Break project.
+        
+        Employee should then clock into their next project.
+        """
+        self.ensure_one()
+        
+        if not self.is_clocked_in:
+            raise UserError("You are not on a break.")
+        
+        # Verify they're on break
+        if self.current_project_id.name != 'Break':
+            raise UserError("You're not currently on break.")
+        
+        self.active_punch_id.action_clock_out()
+        
+        return {
+            'type': 'ir.actions.client',
+            'tag': 'display_notification',
+            'params': {
+                'title': 'Break Ended',
+                'message': 'Welcome back! Please clock into your next project.',
                 'type': 'success',
                 'sticky': False,
             }
