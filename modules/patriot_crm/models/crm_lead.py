@@ -618,16 +618,10 @@ class CrmLead(models.Model):
         if 'stage_id' in vals:
             new_stage_id = vals['stage_id']
             
-            # Check if moved to Reviewing stage → create project
-            reviewing_stage = self.env.ref('patriot_crm.stage_reviewing', raise_if_not_found=False)
-            if reviewing_stage and new_stage_id == reviewing_stage.id:
-                for lead in self:
-                    lead._ensure_project_created()
-            
             # Sync CRM stage to Estimate stage
             self._sync_estimate_stage(new_stage_id)
             
-            # Check if moved to Won stage → create project
+            # Check if moved to Won stage → create project (ONLY when won)
             won_stage = self.env.ref('patriot_crm.stage_won', raise_if_not_found=False)
             if won_stage and new_stage_id == won_stage.id:
                 for lead in self:
