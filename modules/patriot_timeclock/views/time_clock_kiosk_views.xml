@@ -1,71 +1,67 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
-    <!-- Time Clock Kiosk Form View - Standard Odoo styling -->
+    <!-- Time Clock Kiosk Form View -->
     <record id="ps_time_clock_kiosk_form" model="ir.ui.view">
         <field name="name">ps.time.clock.kiosk.form</field>
         <field name="model">ps.time.clock.kiosk</field>
         <field name="arch" type="xml">
             <form create="0" edit="1" delete="0">
                 <sheet>
-                    <div class="oe_title text-center">
-                        <h1>Time Clock</h1>
-                    </div>
-                    
-                    <!-- Hidden computed fields -->
+                    <!-- Hidden fields -->
                     <field name="is_clocked_in" invisible="1"/>
                     <field name="active_punch_id" invisible="1"/>
                     <field name="employee_id" invisible="1"/>
                     
-                    <!-- Status Display -->
-                    <div class="alert alert-success text-center" role="alert" 
-                         invisible="not is_clocked_in" style="font-size: 16px;">
-                        <strong>⏱️ Currently Working On:</strong>
-                        <field name="current_project_id" readonly="1" class="fw-bold"/>
-                        <br/>
-                        <strong>Time:</strong>
-                        <field name="current_duration" readonly="1" class="fw-bold"/>
+                    <!-- CLOCKED IN STATE -->
+                    <div invisible="not is_clocked_in" style="background: #28a745; color: white; padding: 30px; border-radius: 8px; text-align: center; margin-bottom: 30px;">
+                        <h2 style="margin: 0 0 15px 0; font-weight: 600;">⏱️ CLOCKED IN</h2>
+                        <div style="font-size: 24px; margin-bottom: 10px;">
+                            <field name="current_project_id" readonly="1" nolabel="1" style="font-weight: bold;"/>
+                        </div>
+                        <div style="font-size: 48px; font-weight: bold;">
+                            <field name="current_duration" readonly="1" nolabel="1"/>
+                        </div>
                     </div>
                     
-                    <div class="alert alert-secondary text-center" role="alert" 
-                         invisible="is_clocked_in" style="font-size: 16px;">
-                        <strong>⏸️ Not Clocked In</strong>
+                    <!-- NOT CLOCKED IN STATE -->
+                    <div invisible="is_clocked_in" style="background: #6c757d; color: white; padding: 30px; border-radius: 8px; text-align: center; margin-bottom: 30px;">
+                        <h2 style="margin: 0; font-weight: 600;">⏸️ NOT CLOCKED IN</h2>
+                        <p style="margin: 10px 0 0 0; opacity: 0.8;">Select a project below to clock in</p>
                     </div>
                     
-                    <!-- Project Selection -->
-                    <group>
-                        <group string="Select Project" colspan="2">
-                            <field name="project_id" 
-                                   placeholder="Select a project..."
-                                   options="{'no_create': True}"/>
-                            <field name="task_id" 
-                                   placeholder="(Optional) Select a task..."
-                                   options="{'no_create': True}"/>
-                            <field name="notes" 
-                                   placeholder="What are you working on? (optional)"/>
-                        </group>
+                    <!-- Project Selection - Simple -->
+                    <group col="1">
+                        <field name="project_id" string="Project" 
+                               placeholder="Select project..."
+                               options="{'no_create': True}"/>
+                        <field name="task_id" string="Task" 
+                               placeholder="(Optional)"
+                               options="{'no_create': True}"/>
+                        <field name="notes" string="Notes" 
+                               placeholder="(Optional) What are you working on?"/>
                     </group>
                     
-                    <!-- Action Buttons - centered -->
-                    <div class="text-center mt-4 mb-4">
+                    <!-- BIG Action Buttons -->
+                    <div style="text-align: center; padding: 20px 0;">
                         <button name="action_clock_in" 
-                                string="🕐 Clock In" 
+                                string="⏱️ CLOCK IN" 
                                 type="object"
-                                class="btn btn-success btn-lg me-2"
-                                style="font-size: 18px; padding: 12px 30px;"/>
+                                class="btn-success"
+                                style="font-size: 20px; padding: 15px 50px; margin: 5px;"/>
                         
                         <button name="action_clock_out" 
-                                string="🛑 Clock Out" 
+                                string="🛑 CLOCK OUT" 
                                 type="object"
-                                class="btn btn-danger btn-lg me-2"
+                                class="btn-danger"
                                 invisible="not is_clocked_in"
-                                style="font-size: 18px; padding: 12px 30px;"/>
+                                style="font-size: 20px; padding: 15px 50px; margin: 5px;"/>
                         
                         <button name="action_take_break" 
-                                string="☕ Break" 
+                                string="☕ BREAK" 
                                 type="object"
-                                class="btn btn-warning btn-lg"
+                                class="btn-warning"
                                 invisible="not is_clocked_in"
-                                style="font-size: 18px; padding: 12px 30px;"/>
+                                style="font-size: 20px; padding: 15px 40px; margin: 5px;"/>
                     </div>
                     
                 </sheet>
@@ -73,12 +69,12 @@
         </field>
     </record>
 
-    <!-- Time Clock Kiosk Action -->
+    <!-- Time Clock Action - inline target to hide breadcrumb -->
     <record id="ps_time_clock_kiosk_action" model="ir.actions.act_window">
         <field name="name">Time Clock</field>
         <field name="res_model">ps.time.clock.kiosk</field>
         <field name="view_mode">form</field>
-        <field name="target">current</field>
+        <field name="target">inline</field>
         <field name="context">{'form_view_initial_mode': 'edit'}</field>
     </record>
 
