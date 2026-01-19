@@ -1,0 +1,122 @@
+/* Barcode Kiosk Styles */
+.barcode-kiosk {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    display: flex;
+    flex-direction: column;
+    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+    color: white;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    z-index: 9999;
+}
+
+.barcode-kiosk .kiosk-header {
+    padding: 30px;
+    text-align: center;
+    background: rgba(255, 255, 255, 0.05);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.barcode-kiosk .kiosk-header h1 {
+    margin: 0;
+    font-size: 2.5rem;
+    font-weight: 300;
+    letter-spacing: 3px;
+}
+
+.barcode-kiosk .kiosk-body {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    padding: 40px;
+    text-align: center;
+}
+
+.barcode-kiosk .kiosk-message {
+    font-size: 2.5rem;
+    font-weight: 300;
+    margin-bottom: 20px;
+    line-height: 1.4;
+}
+
+.barcode-kiosk .kiosk-sub {
+    font-size: 1.3rem;
+    opacity: 0.7;
+}
+
+.barcode-kiosk .kiosk-footer {
+    padding: 20px;
+    text-align: center;
+    background: rgba(255, 255, 255, 0.05);
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.barcode-kiosk .kiosk-time {
+    font-size: 1.5rem;
+    opacity: 0.8;
+}
+
+/* Mode-specific colors */
+.barcode-kiosk.ready {
+    /* Default dark theme */
+}
+
+.barcode-kiosk.success {
+    background: linear-gradient(135deg, #0d4820 0%, #1a5c33 100%);
+}
+
+.barcode-kiosk.success .kiosk-message {
+    color: #90EE90;
+}
+
+.barcode-kiosk.error {
+    background: linear-gradient(135deg, #4a1919 0%, #5c1a1a 100%);
+}
+
+.barcode-kiosk.error .kiosk-message {
+    color: #ff6b6b;
+}
+
+/* Scanning animation */
+.barcode-kiosk.ready .kiosk-message::after {
+    content: '';
+    display: inline-block;
+    width: 3px;
+    height: 1.2em;
+    background: rgba(255, 255, 255, 0.7);
+    margin-left: 5px;
+    animation: blink 1s infinite;
+}
+
+@keyframes blink {
+
+    0%,
+    50% {
+        opacity: 1;
+    }
+
+    51%,
+    100% {
+        opacity: 0;
+    }
+}
+
+/* Mobile responsive */
+@media (max-width: 768px) {
+    .barcode-kiosk .kiosk-header h1 {
+        font-size: 1.5rem;
+    }
+
+    .barcode-kiosk .kiosk-message {
+        font-size: 1.8rem;
+    }
+
+    .barcode-kiosk .kiosk-sub {
+        font-size: 1rem;
+    }
+}

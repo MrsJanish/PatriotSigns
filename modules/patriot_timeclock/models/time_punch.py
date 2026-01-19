@@ -282,6 +282,177 @@ class TimePunch(models.Model):
             'punch_id': new_punch.id,
         }
 
+    @api.model
+    def barcode_clock_in(self, badge_id, project_barcode):
+        """
+        Clock in an employee to a project via barcode scan.
+        Called by the barcode kiosk when employee scans badge + project.
+        
+        :param badge_id: Employee's badge ID (string)
+        :param project_barcode: Project's barcode (string)
+        :return: dict with result info
+        """
+        # Look up employee by badge
+        Employee = self.env['hr.employee'].sudo()
+        employee = Employee.search([('barcode', '=', badge_id)], limit=1)
+        
+        if not employee:
+            return {
+                'success': False,
+                'error': 'badge_not_found',
+                'message': f'No employee found with badge: {badge_id}'
+            }
+        
+        # Look up project by barcode
+        Project = self.env['project.project'].sudo()
+        project = Project.search([('project_barcode', '=', project_barcode)], limit=1)
+        
+        if not project:
+            return {
+                'success': False,
+                'error': 'project_not_found',
+                'message': f'No project found with barcode: {project_barcode}'
+            }
+        
+        # Get current active punch for this employee
+        active_punch = self.get_active_punch(employee.id)
+        
+        # Check if already on this project
+        if active_punch and active_punch.project_id.id == project.id:
+            return {
+                'success': True,
+                'action': 'already_clocked_in',
+                'employee_name': employee.name,
+                'project_name': project.name,
+                'message': f'{employee.name} already clocked into {project.name}'
+            }
+        
+        # Clock out from current project if any
+        if active_punch:
+            active_punch.action_clock_out()
+        
+        # Clock in to new project
+        new_punch = self.sudo().create({
+            'employee_id': employee.id,
+            'project_id': project.id,
+            'notes': '[Barcode kiosk]',
+            'state': 'active',
+        })
+        
+        return {
+            'success': True,
+            'action': 'switched' if active_punch else 'clocked_in',
+            'employee_name': employee.name,
+            'project_name': project.name,
+            'punch_id': new_punch.id,
+            'message': f'{employee.name} clocked into {project.name}'
+        }
+
+    @api.model
+    def barcode_clock_out(self, badge_id):
+        """
+        Clock out an employee via badge scan (no project needed).
+        
+        :param badge_id: Employee's badge ID
+        :return: dict with result info
+        """
+        Employee = self.env['hr.employee'].sudo()
+        employee = Employee.search([('barcode', '=', badge_id)], limit=1)
+        
+        if not employee:
+            return {
+                'success': False,
+                'error': 'badge_not_found',
+                'message': f'No employee found with badge: {badge_id}'
+            }
+        
+        active_punch = self.get_active_punch(employee.id)
+        
+        if not active_punch:
+            return {
+                'success': False,
+                'error': 'not_clocked_in',
+                'message': f'{employee.name} is not clocked in'
+            }
+        
+        project_name = active_punch.project_id.name or 'Unknown'
+        active_punch.action_clock_out()
+        
+        return {
+            'success': True,
+            'action': 'clocked_out',
+            'employee_name': employee.name,
+            'project_name': project_name,
+            'message': f'{employee.name} clocked out of {project_name}'
+        }
+
+    @api.model
+    def barcode_scan_project(self, project_barcode):
+        """
+        Simple single-scan: employee scans project barcode from their own phone.
+        Uses the current logged-in user's employee record.
+        
+        :param project_barcode: Project's barcode (string)
+        :return: dict with result info
+        """
+        # Get current user's employee
+        employee = self.env.user.employee_id
+        
+        if not employee:
+            return {
+                'success': False,
+                'error': 'no_employee',
+                'message': 'No employee record linked to your user account'
+            }
+        
+        # Look up project by barcode
+        Project = self.env['project.project'].sudo()
+        project = Project.search([('project_barcode', '=', project_barcode)], limit=1)
+        
+        if not project:
+            return {
+                'success': False,
+                'error': 'project_not_found', 
+                'message': f'No project found with barcode: {project_barcode}'
+            }
+        
+        # Get current active punch for this employee
+        active_punch = self.get_active_punch(employee.id)
+        
+        # Check if already on this project
+        if active_punch and active_punch.project_id.id == project.id:
+            return {
+                'success': True,
+                'action': 'already_clocked_in',
+                'employee_name': employee.name,
+                'project_name': project.name,
+                'message': f'Already clocked into {project.name}'
+            }
+        
+        # Clock out from current project if any
+        previous_project = None
+        if active_punch:
+            previous_project = active_punch.project_id.name
+            active_punch.action_clock_out()
+        
+        # Clock in to new project
+        new_punch = self.create({
+            'employee_id': employee.id,
+            'project_id': project.id,
+            'notes': '[Barcode scan]',
+            'state': 'active',
+        })
+        
+        return {
+            'success': True,
+            'action': 'switched' if previous_project else 'clocked_in',
+            'employee_name': employee.name,
+            'project_name': project.name,
+            'previous_project': previous_project,
+            'punch_id': new_punch.id,
+            'message': f'Clocked into {project.name}'
+        }
+
 
 class TimePunchAdjustmentWizard(models.TransientModel):
     """Wizard for admins to adjust time punches."""
