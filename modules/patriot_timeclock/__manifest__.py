@@ -36,7 +36,7 @@ Employees click to start/stop tracking, cannot manually enter hours.
         'web.assets_backend': [
             'patriot_timeclock/static/src/css/time_clock.css',
             'patriot_timeclock/static/src/js/time_clock_kiosk.js',
-            'patriot_timeclock/static/src/js/auto_time_tracker.js',
+            # 'patriot_timeclock/static/src/js/auto_time_tracker.js',  # Disabled until upgrade
             'patriot_timeclock/static/src/xml/time_clock_kiosk.xml',
         ],
     },
