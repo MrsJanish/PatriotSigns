@@ -220,6 +220,63 @@ class TimePunch(models.Model):
         
         return True
 
+    @api.model
+    def auto_switch_to_record(self, model, record_id):
+        """
+        Automatically switch time tracking to the specified record.
+        Called by JS activity tracker when user views a project/opportunity.
+        
+        :param model: 'project.project' or 'crm.lead'
+        :param record_id: ID of the record being viewed
+        :return: dict with result info
+        """
+        employee = self.env.user.employee_id
+        if not employee:
+            return {'success': False, 'error': 'No employee record'}
+        
+        # Check if auto-tracking is enabled for this employee
+        if not employee.auto_time_tracking:
+            return {'success': False, 'error': 'Auto tracking disabled'}
+        
+        # Determine project/opportunity from the viewed record
+        project_id = False
+        opportunity_id = False
+        
+        if model == 'project.project':
+            project_id = record_id
+        elif model == 'crm.lead':
+            opportunity_id = record_id
+        else:
+            return {'success': False, 'error': f'Unsupported model: {model}'}
+        
+        # Get current active punch
+        active_punch = self.get_active_punch(employee.id)
+        
+        # Check if already on this record
+        if active_punch:
+            if project_id and active_punch.project_id.id == project_id:
+                return {'success': True, 'action': 'already_on_record'}
+            if opportunity_id and active_punch.opportunity_id.id == opportunity_id:
+                return {'success': True, 'action': 'already_on_record'}
+            
+            # Clock out from current
+            active_punch.action_clock_out()
+        
+        # Clock in to new record
+        new_punch = self.create({
+            'employee_id': employee.id,
+            'project_id': project_id,
+            'opportunity_id': opportunity_id,
+            'notes': '[Auto-tracked]',
+            'state': 'active',
+        })
+        
+        return {
+            'success': True,
+            'action': 'switched' if active_punch else 'started',
+            'punch_id': new_punch.id,
+        }
+
 
 class TimePunchAdjustmentWizard(models.TransientModel):
     """Wizard for admins to adjust time punches."""

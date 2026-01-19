@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Extend Employee Form to add Auto Time Tracking toggle -->
+    <record id="hr_employee_form_auto_tracking" model="ir.ui.view">
+        <field name="name">hr.employee.form.auto.tracking</field>
+        <field name="model">hr.employee</field>
+        <field name="inherit_id" ref="hr.view_employee_form"/>
+        <field name="arch" type="xml">
+            <!-- Add to HR Settings tab if it exists, otherwise to Work Information -->
+            <xpath expr="//page[@name='hr_settings']//group" position="inside">
+                <group string="Time Tracking">
+                    <field name="auto_time_tracking" 
+                           widget="boolean_toggle"
+                           help="Automatically track time based on which project/opportunity you view"/>
+                </group>
+            </xpath>
+        </field>
+    </record>
+</odoo>
