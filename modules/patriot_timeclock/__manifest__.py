@@ -29,7 +29,7 @@ Employees click to start/stop tracking, cannot manually enter hours.
         'data/internal_projects.xml',
         'views/time_punch_views.xml',
         'views/time_clock_kiosk_views.xml',
-        'views/hr_employee_views.xml',
+        # 'views/hr_employee_views.xml',  # Temporarily disabled - needs upgrade first
         'views/menu.xml',
     ],
     'assets': {

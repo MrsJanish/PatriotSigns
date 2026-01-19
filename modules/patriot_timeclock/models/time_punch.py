@@ -235,8 +235,13 @@ class TimePunch(models.Model):
             return {'success': False, 'error': 'No employee record'}
         
         # Check if auto-tracking is enabled for this employee
-        if not employee.auto_time_tracking:
-            return {'success': False, 'error': 'Auto tracking disabled'}
+        # Use try/except in case module hasn't been upgraded yet (column doesn't exist)
+        try:
+            if not employee.auto_time_tracking:
+                return {'success': False, 'error': 'Auto tracking disabled'}
+        except Exception:
+            # Field doesn't exist yet - auto-tracking disabled until upgrade
+            return {'success': False, 'error': 'Auto tracking not configured'}
         
         # Determine project/opportunity from the viewed record
         project_id = False
