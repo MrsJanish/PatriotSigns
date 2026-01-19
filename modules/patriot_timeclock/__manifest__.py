@@ -29,12 +29,14 @@ Employees click to start/stop tracking, cannot manually enter hours.
         'data/internal_projects.xml',
         'views/time_punch_views.xml',
         'views/time_clock_kiosk_views.xml',
+        'views/hr_employee_views.xml',
         'views/menu.xml',
     ],
     'assets': {
         'web.assets_backend': [
             'patriot_timeclock/static/src/css/time_clock.css',
             'patriot_timeclock/static/src/js/time_clock_kiosk.js',
+            'patriot_timeclock/static/src/js/auto_time_tracker.js',
             'patriot_timeclock/static/src/xml/time_clock_kiosk.xml',
         ],
     },
