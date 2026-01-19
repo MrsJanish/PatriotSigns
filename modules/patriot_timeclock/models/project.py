@@ -31,6 +31,13 @@ class ProjectTimeTracking(models.Model):
         compute='_compute_total_hours'
     )
     
+    # Barcode for kiosk time tracking
+    project_barcode = fields.Char(
+        string='Time Clock Barcode',
+        copy=False,
+        help='Barcode for scanning at time clock kiosks'
+    )
+    
     @api.depends('time_punch_ids', 'time_punch_ids.duration_hours', 'opportunity_id')
     def _compute_total_hours(self):
         TimePunch = self.env['ps.time.punch']
