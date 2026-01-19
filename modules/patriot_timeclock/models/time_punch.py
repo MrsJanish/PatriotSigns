@@ -406,8 +406,16 @@ class TimePunch(models.Model):
             }
         
         # Look up project by barcode
-        Project = self.env['project.project'].sudo()
-        project = Project.search([('project_barcode', '=', project_barcode)], limit=1)
+        # NOTE: project_barcode field requires module upgrade to exist
+        try:
+            Project = self.env['project.project'].sudo()
+            project = Project.search([('project_barcode', '=', project_barcode)], limit=1)
+        except Exception:
+            return {
+                'success': False,
+                'error': 'not_configured',
+                'message': 'Barcode scanning requires module upgrade. Please upgrade patriot_timeclock in Apps.'
+            }
         
         if not project:
             return {
