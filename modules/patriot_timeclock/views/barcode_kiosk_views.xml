@@ -10,7 +10,7 @@
     <!-- Menu item under Time Clock -->
     <menuitem id="menu_barcode_kiosk"
               name="Barcode Scanner"
-              parent="menu_time_clock_root"
+              parent="menu_timeclock_app"
               action="action_barcode_kiosk"
-              sequence="20"/>
+              sequence="5"/>
 </odoo>
