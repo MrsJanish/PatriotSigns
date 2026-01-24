@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
-    <!-- Project Form Extension -->
+    <!-- Project Form Extension - TJ COMMENTED THIS OUT TO RESOLVE ERROR
     <record id="project_project_form_inherit_patriot" model="ir.ui.view">
         <field name="name">project.project.form.inherit.patriot</field>
         <field name="model">project.project</field>
@@ -66,6 +66,7 @@
             </page>
         </field>
     </record>
+    -->
 
     <!-- Contract Tree View -->
     <record id="ps_contract_tree" model="ir.ui.view">
