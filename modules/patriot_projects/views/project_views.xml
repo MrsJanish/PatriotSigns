@@ -12,7 +12,7 @@
                 <field name="opportunity_id"/>
             </field>
             
-            <!-- Replace Allocated Time with actual logged time 
+             Replace Allocated Time with actual logged time 
             <field name="allocated_hours" position="replace">
                 <field name="total_hours_display" string="Time Logged"/>
             </field>
