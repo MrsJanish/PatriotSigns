@@ -65,15 +65,27 @@ class PatriotGPTController(http.Controller):
                         # Logic for raw key lookup
                         # In Odoo 19, API keys are stored with raw key in 'name' field
                         _logger.info(f"GPT API AUTH: Raw token (no colon). Searching res.users.apikeys...")
+                        _logger.info(f"GPT API AUTH: Token starts with: {token[:10]}... (len={len(token)})")
                         
                         try:
                             apikeys_model = request.env['res.users.apikeys'].sudo()
+                            
+                            # DEBUG: List all keys in database to understand structure
+                            all_keys = apikeys_model.search([], limit=5)
+                            _logger.info(f"GPT API AUTH: DEBUG Total keys in DB: {len(all_keys)}")
+                            for key in all_keys:
+                                # Log field names and partial values to understand structure
+                                key_fields = key.read()[0] if key else {}
+                                # Truncate sensitive fields
+                                safe_fields = {k: (str(v)[:15] + '...' if len(str(v)) > 15 else v) for k, v in key_fields.items()}
+                                _logger.info(f"GPT API AUTH: DEBUG Key record: {safe_fields}")
+                            
                             # Search for API key by 'name' field (stores raw key in Odoo 19)
                             api_key_record = apikeys_model.search([
                                 ('name', '=', token)
                             ], limit=1)
                             
-                            _logger.info(f"GPT API AUTH: Search returned {len(api_key_record)} records")
+                            _logger.info(f"GPT API AUTH: Search by 'name' returned {len(api_key_record)} records")
                             
                             if api_key_record:
                                 uid = api_key_record.user_id.id
