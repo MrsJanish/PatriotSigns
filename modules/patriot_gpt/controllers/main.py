@@ -112,9 +112,7 @@ class PatriotGPTController(http.Controller):
             
             # Use Odoo's internal authenticate mechanism
             try:
-                import odoo
-                db = odoo.tools.config['db_name']
-                uid = request.env['res.users'].authenticate(db, login, password, {'interactive': False})
+                uid = request.env['res.users'].authenticate(login, password)
                 if uid:
                     _logger.info(f"GPT API AUTH: authenticate() SUCCESS for UID {uid}")
                     return uid
