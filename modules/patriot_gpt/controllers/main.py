@@ -186,19 +186,35 @@ class PatriotGPTController(http.Controller):
                 # Search records
                 _logger.info(f"GPT API SEARCH: model={model}, kwargs={kwargs}")
                 
-                # Parse domain - could be JSON string or already parsed
+                # Parse domain - ChatGPT may send with single quotes (not valid JSON)
                 domain_raw = kwargs.get('domain', '[]')
                 if isinstance(domain_raw, str):
-                    domain = json.loads(domain_raw)
+                    # Replace single quotes with double quotes for JSON parsing
+                    domain_str = domain_raw.replace("'", '"')
+                    try:
+                        domain = json.loads(domain_str)
+                    except json.JSONDecodeError:
+                        domain = []  # Fallback to empty domain
+                        _logger.warning(f"GPT API: Could not parse domain: {domain_raw}")
                 else:
                     domain = domain_raw
                 
-                # Parse fields - could be JSON string or already parsed
-                fields_raw = kwargs.get('fields', '[]')
+                # Parse fields - ChatGPT may send comma-separated string like "name,email"
+                fields_raw = kwargs.get('fields', '')
                 if isinstance(fields_raw, str):
-                    fields = json.loads(fields_raw)
+                    if fields_raw.startswith('['):
+                        # It's a JSON array
+                        try:
+                            fields = json.loads(fields_raw)
+                        except json.JSONDecodeError:
+                            fields = []
+                    elif fields_raw:
+                        # It's a comma-separated string
+                        fields = [f.strip() for f in fields_raw.split(',')]
+                    else:
+                        fields = []
                 else:
-                    fields = fields_raw
+                    fields = fields_raw if fields_raw else []
                 
                 limit = int(kwargs.get('limit', 10))
                 order = kwargs.get('order', '')
