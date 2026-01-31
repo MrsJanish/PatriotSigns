@@ -63,28 +63,26 @@ class PatriotGPTController(http.Controller):
                         _logger.info(f"GPT API AUTH: Token contains ':', split to login: {login}")
                     else:
                         # Logic for raw key lookup
-                        _logger.info(f"GPT API AUTH: Raw token (no colon). Attempting _check_api_key...")
+                        # In Odoo 19, API keys are stored with raw key in 'name' field
+                        _logger.info(f"GPT API AUTH: Raw token (no colon). Searching res.users.apikeys...")
                         
-                        # Check if method exists
-                        apikeys_model = request.env['res.users.apikeys'].sudo()
-                        has_method = hasattr(apikeys_model, '_check_api_key')
-                        _logger.info(f"GPT API AUTH: _check_api_key method exists: {has_method}")
-                        
-                        if has_method:
-                            try:
-                                # _check_api_key returns user_id (int) or raises AccessDenied
-                                _logger.info(f"GPT API AUTH: Calling _check_api_key with token len={len(token)}")
-                                uid = apikeys_model._check_api_key(token)
-                                _logger.info(f"GPT API AUTH: _check_api_key returned: {uid} (type: {type(uid)})")
-                                if uid:
-                                    _logger.info(f"GPT API AUTH: SUCCESS! Validated Odoo API Key for UID {uid}")
-                                    return uid
-                                else:
-                                    _logger.warning("GPT API AUTH: _check_api_key returned falsy value")
-                            except Exception as ex:
-                                _logger.warning(f"GPT API AUTH: _check_api_key exception: {type(ex).__name__}: {str(ex)}")
-                        else:
-                            _logger.error("GPT API AUTH: _check_api_key method NOT found on res.users.apikeys!")
+                        try:
+                            apikeys_model = request.env['res.users.apikeys'].sudo()
+                            # Search for API key by 'name' field (stores raw key in Odoo 19)
+                            api_key_record = apikeys_model.search([
+                                ('name', '=', token)
+                            ], limit=1)
+                            
+                            _logger.info(f"GPT API AUTH: Search returned {len(api_key_record)} records")
+                            
+                            if api_key_record:
+                                uid = api_key_record.user_id.id
+                                _logger.info(f"GPT API AUTH: SUCCESS! Found API Key for UID {uid}")
+                                return uid
+                            else:
+                                _logger.warning("GPT API AUTH: No matching API key found in database")
+                        except Exception as ex:
+                            _logger.warning(f"GPT API AUTH: API Key search failed: {type(ex).__name__}: {str(ex)}")
                 else:
                     _logger.warning("GPT API AUTH: No token extracted from headers")
 
