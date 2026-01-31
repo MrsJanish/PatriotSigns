@@ -1,4 +1,4 @@
-openapi: 3.0.0
+openapi: 3.1.0
 info:
   title: Patriot Odoo GPT Connector
   description: Generic API to interact with Odoo v19 Models via ChatGPT.
@@ -17,14 +17,27 @@ components:
   schemas:
     Record:
       type: object
-      additionalProperties: true
       description: A generic Odoo record dictionary.
-      example: {"id": 1, "name": "Example"}
+      properties:
+        id:
+          type: integer
+          description: Database ID of the record
+        display_name:
+          type: string
+          description: Display name of the record
+      additionalProperties: true
+      example: {"id": 1, "display_name": "Example Record", "other_field": "value"}
     
     RecordList:
       type: array
       items:
         $ref: '#/components/schemas/Record'
+
+    CreatePayload:
+      type: object
+      description: Fields to set on the record.
+      additionalProperties: true
+      example: {"name": "New Record", "active": true}
 
     CreateResult:
       type: object
@@ -100,7 +113,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/Record'
+              $ref: '#/components/schemas/CreatePayload'
       responses:
         '200':
           description: Record created
@@ -156,7 +169,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/Record'
+              $ref: '#/components/schemas/CreatePayload'
       responses:
         '200':
           description: Update successful
