@@ -233,3 +233,175 @@ class PatriotGPTController(http.Controller):
         except Exception as e:
              _logger.exception("GPT API Update Error:")
              return self._response({'error': str(e)}, 400)
+
+    @http.route('/api/gpt/schema/<string:model>', type='http', auth='public', methods=['GET'], csrf=False, cors='*')
+    def get_model_schema(self, model, **kwargs):
+        """
+        GET /api/gpt/schema/{model} - Get complete model introspection
+        
+        Returns:
+        - model_info: Basic model information (name, description, etc.)
+        - fields: All field definitions with type, required, help text, etc.
+        - automated_actions: All ir.actions.server (automated actions) linked to this model
+        - server_actions: All server actions for this model
+        - record_rules: Access rules for this model
+        - views: Available views (tree, form, kanban, etc.)
+        """
+        user_id = self._authenticate()
+        if not user_id:
+            return self._response({'error': 'Unauthorized'}, 401)
+
+        request.update_env(user=user_id)
+        
+        try:
+            if model not in request.env:
+                return self._response({'error': f'Model {model} not found'}, 404)
+
+            Model = request.env[model]
+            result = {
+                'model': model,
+                'model_info': {},
+                'fields': {},
+                'automated_actions': [],
+                'server_actions': [],
+                'record_rules': [],
+                'views': []
+            }
+            
+            # 1. Basic Model Info
+            ir_model = request.env['ir.model'].sudo().search([('model', '=', model)], limit=1)
+            if ir_model:
+                result['model_info'] = {
+                    'id': ir_model.id,
+                    'name': ir_model.name,
+                    'model': ir_model.model,
+                    'info': ir_model.info or '',
+                    'state': ir_model.state,
+                    'transient': ir_model.transient,
+                }
+            
+            # 2. All Fields with full metadata
+            for field_name, field in Model._fields.items():
+                field_info = {
+                    'name': field_name,
+                    'type': field.type,
+                    'string': field.string or field_name,
+                    'help': field.help or '',
+                    'required': field.required,
+                    'readonly': field.readonly,
+                    'store': field.store,
+                    'index': getattr(field, 'index', False),
+                    'compute': field.compute or None,
+                    'depends': list(field.depends) if field.depends else [],
+                    'related': field.related or None,
+                    'default': str(field.default) if field.default else None,
+                }
+                
+                # Add relational field info
+                if field.type in ('many2one', 'one2many', 'many2many'):
+                    field_info['comodel_name'] = field.comodel_name
+                if field.type == 'one2many':
+                    field_info['inverse_name'] = field.inverse_name
+                if field.type == 'selection':
+                    # Get selection options
+                    try:
+                        sel = field.selection
+                        if callable(sel):
+                            sel = sel(Model)
+                        field_info['selection'] = sel
+                    except:
+                        field_info['selection'] = []
+                
+                result['fields'][field_name] = field_info
+            
+            # 3. Automated Actions (ir.actions.server with base_automation)
+            try:
+                auto_actions = request.env['base.automation'].sudo().search([
+                    ('model_id.model', '=', model)
+                ])
+                for action in auto_actions:
+                    result['automated_actions'].append({
+                        'id': action.id,
+                        'name': action.name,
+                        'trigger': action.trigger,
+                        'trigger_field_ids': [f.name for f in action.trigger_field_ids] if action.trigger_field_ids else [],
+                        'filter_domain': action.filter_domain or '[]',
+                        'filter_pre_domain': action.filter_pre_domain or '[]',
+                        'state': action.action_server_ids[0].state if action.action_server_ids else None,
+                        'code': action.action_server_ids[0].code if action.action_server_ids and action.action_server_ids[0].state == 'code' else None,
+                        'active': action.active,
+                    })
+            except Exception as e:
+                _logger.warning(f"Could not fetch automated actions: {e}")
+            
+            # 4. Server Actions
+            try:
+                server_actions = request.env['ir.actions.server'].sudo().search([
+                    ('model_id.model', '=', model)
+                ])
+                for action in server_actions:
+                    result['server_actions'].append({
+                        'id': action.id,
+                        'name': action.name,
+                        'state': action.state,
+                        'code': action.code if action.state == 'code' else None,
+                        'crud_model_id': action.crud_model_id.model if action.crud_model_id else None,
+                    })
+            except Exception as e:
+                _logger.warning(f"Could not fetch server actions: {e}")
+            
+            # 5. Record Rules (ir.rule)
+            try:
+                rules = request.env['ir.rule'].sudo().search([
+                    ('model_id.model', '=', model)
+                ])
+                for rule in rules:
+                    result['record_rules'].append({
+                        'id': rule.id,
+                        'name': rule.name,
+                        'domain_force': rule.domain_force or '[]',
+                        'perm_read': rule.perm_read,
+                        'perm_write': rule.perm_write,
+                        'perm_create': rule.perm_create,
+                        'perm_unlink': rule.perm_unlink,
+                        'groups': [g.name for g in rule.groups] if rule.groups else ['All Users'],
+                        'active': rule.active,
+                    })
+            except Exception as e:
+                _logger.warning(f"Could not fetch record rules: {e}")
+            
+            # 6. Views
+            try:
+                views = request.env['ir.ui.view'].sudo().search([
+                    ('model', '=', model)
+                ], limit=20)
+                for view in views:
+                    result['views'].append({
+                        'id': view.id,
+                        'name': view.name,
+                        'type': view.type,
+                        'priority': view.priority,
+                        'arch': view.arch if kwargs.get('include_arch') == '1' else '[use include_arch=1 to include]',
+                    })
+            except Exception as e:
+                _logger.warning(f"Could not fetch views: {e}")
+            
+            # 7. Records Data (optional, use include_data=1 and limit=N)
+            if kwargs.get('include_data') == '1':
+                try:
+                    limit = int(kwargs.get('limit', 1000))  # Default 1000 records max
+                    domain = json.loads(kwargs.get('domain', '[]'))
+                    records = Model.search_read(domain, limit=limit)
+                    result['records'] = records
+                    result['records_count'] = len(records)
+                    result['records_total'] = Model.search_count(domain)
+                except Exception as e:
+                    _logger.warning(f"Could not fetch records: {e}")
+                    result['records'] = []
+                    result['records_error'] = str(e)
+            
+            return self._response(result)
+
+        except Exception as e:
+            _logger.exception("GPT API Schema Error:")
+            return self._response({'error': str(e)}, 400)

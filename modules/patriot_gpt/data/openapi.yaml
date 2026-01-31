@@ -182,3 +182,80 @@ paths:
              application/json:
                schema:
                  $ref: '#/components/schemas/CreateResult'
+
+  /api/gpt/schema/{model}:
+    get:
+      summary: Get Complete Model Schema and Data
+      description: |
+        Returns comprehensive model introspection including:
+        - Model metadata and description
+        - All field definitions (type, required, compute, etc.)
+        - All automated actions linked to the model
+        - All server actions
+        - Record rules and permissions
+        - Available views (form, tree, kanban)
+        - Optionally: all records data (use include_data=1)
+      operationId: getModelSchema
+      parameters:
+        - name: model
+          in: path
+          required: true
+          description: Odoo model name (e.g., res.partner, sale.order)
+          schema:
+            type: string
+        - name: include_data
+          in: query
+          required: false
+          description: Set to "1" to include all records in response
+          schema:
+            type: string
+            enum: ["0", "1"]
+        - name: include_arch
+          in: query
+          required: false
+          description: Set to "1" to include full view XML architecture
+          schema:
+            type: string
+            enum: ["0", "1"]
+        - name: limit
+          in: query
+          required: false
+          description: Max number of records to return (when include_data=1)
+          schema:
+            type: integer
+            default: 1000
+        - name: domain
+          in: query
+          required: false
+          description: JSON-encoded domain filter for records
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Complete model schema and optional data
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  model:
+                    type: string
+                  model_info:
+                    type: object
+                  fields:
+                    type: object
+                  automated_actions:
+                    type: array
+                  server_actions:
+                    type: array
+                  record_rules:
+                    type: array
+                  views:
+                    type: array
+                  records:
+                    type: array
+                    description: Only present if include_data=1
+                  records_count:
+                    type: integer
+                  records_total:
+                    type: integer
