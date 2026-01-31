@@ -9,9 +9,9 @@ class PatriotGPTController(http.Controller):
 
     def _authenticate(self):
         """
-        Authenticates the request using Odoo's native API Keys.
-        Expects 'X-Api-Key' or 'Authorization: Bearer <key>' header.
-        Returns the user_id (int) if valid, None otherwise.
+        Authenticates using Odoo's native API Keys via session.authenticate.
+        Expects 'X-Api-Key' or 'Authorization: Bearer <key>'.
+        Returns user_id if successful, None otherwise.
         """
         try:
             key = request.httprequest.headers.get('X-Api-Key')
@@ -24,16 +24,10 @@ class PatriotGPTController(http.Controller):
                 _logger.info("GPT API: Missing API Key")
                 return None
             
-            # Verify against res.users.apikeys
-            # method _check_api_key returns the user_id or raises AccessDenied
-            if hasattr(request.env['res.users.apikeys'], '_check_api_key'):
-                return request.env['res.users.apikeys']._check_api_key(key)
-            else:
-                # Fallback implementation if specific version differs slightly, 
-                # but _check_api_key is standard in recent versions.
-                # If we are here, we might be in trouble, but let's try direct search if hashing allows (unlikely)
-                _logger.error("GPT API: _check_api_key method not found on res.users.apikeys")
-                return None
+            # Native Odoo API Key validation
+            # authenticate(db, login, password) where login=None treats password as API Key
+            uid = request.session.authenticate(request.db, None, key)
+            return uid
                 
         except Exception as e:
             _logger.error(f"GPT API Auth Failed: {str(e)}")
