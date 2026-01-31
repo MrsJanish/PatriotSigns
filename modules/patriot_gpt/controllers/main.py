@@ -110,20 +110,18 @@ class PatriotGPTController(http.Controller):
                 _logger.warning(f"GPT API AUTH: User not found for login: {login}")
                 return None
             
-            # Validate password by comparing hash directly
+            # Use Odoo's internal authenticate mechanism
             try:
-                from passlib.context import CryptContext
-                crypt_context = CryptContext(schemes=['pbkdf2_sha512', 'plaintext'], deprecated=['plaintext'])
-                
-                stored_hash = user.password
-                if crypt_context.verify(password, stored_hash):
-                    uid = user.id
-                    _logger.info(f"GPT API AUTH: Password verified SUCCESS for UID {uid}")
+                import odoo
+                db = odoo.tools.config['db_name']
+                uid = request.env['res.users'].authenticate(db, login, password, {'interactive': False})
+                if uid:
+                    _logger.info(f"GPT API AUTH: authenticate() SUCCESS for UID {uid}")
                     return uid
                 else:
-                    _logger.warning("GPT API AUTH: Password hash mismatch")
+                    _logger.warning("GPT API AUTH: authenticate() returned no UID")
             except Exception as auth_err:
-                _logger.warning(f"GPT API AUTH: Password verification failed: {auth_err}")
+                _logger.warning(f"GPT API AUTH: authenticate() failed: {auth_err}")
                 
         except Exception as e:
             _logger.error(f"GPT API AUTH: Top-level exception: {type(e).__name__}: {str(e)}")
