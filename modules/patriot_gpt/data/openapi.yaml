@@ -9,10 +9,9 @@ servers:
 
 components:
   securitySchemes:
-    ApiKeyAuth:
-      type: apiKey
-      in: header
-      name: X-Api-Key
+    BasicAuth:
+      type: http
+      scheme: basic
 
   schemas:
     Record:
@@ -54,7 +53,7 @@ components:
           type: string
 
 security:
-  - ApiKeyAuth: []
+  - BasicAuth: []
 
 paths:
   /api/gpt/{model}:

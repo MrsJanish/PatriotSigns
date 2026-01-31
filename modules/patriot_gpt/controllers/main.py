@@ -9,77 +9,41 @@ class PatriotGPTController(http.Controller):
 
     def _authenticate(self):
         """
-        Authenticates using Odoo's native API Keys via session.authenticate.
-        Expects 'X-Api-Key' or 'Authorization: Bearer <key>'.
+        Authenticates using HTTP Basic Auth (Login + Password/API Key).
         Returns user_id if successful, None otherwise.
         """
+        import base64
+        
         try:
-            # DEBUG LOGGING
-            _logger.info(f"GPT API: Auth attempt. DB: {request.db}")
-            
-            key = request.httprequest.headers.get('X-Api-Key')
-            if not key:
-                auth_header = request.httprequest.headers.get('Authorization', '')
-                if auth_header.startswith('Bearer '):
-                    key = auth_header[7:]
-            
-            if not key:
-                _logger.warning("GPT API: Missing API Key in headers")
+            # Check for Authorization: Basic <base64>
+            auth_header = request.httprequest.headers.get('Authorization', '')
+            if not auth_header.startswith('Basic '):
+                # Fallback to previous logic (ApiKey/Bearer) only if header is somehow just the key 
+                # (but Basic is preferred now)
+                key = request.httprequest.headers.get('X-Api-Key')
+                if key:
+                    _logger.warning("GPT API: Received X-Api-Key but Basic Auth is required now for proper session auth.")
                 return None
-            
-            _logger.info(f"GPT API: Key received (len: {len(key)})")
 
-            # Native Odoo API Key validation logic for Controllers
-            # 1. Find the API Key record (hashed match)
-            # 2. Extract the User (Login)
-            # 3. Authenticate Session with (db, login, key)
+            # Decode Basic Auth
+            encoded = auth_header[6:]
+            decoded = base64.b64decode(encoded).decode('utf-8')
+            login, password = decoded.split(':', 1)
+            
+            _logger.info(f"GPT API: Basic Auth attempt for login: {login}")
 
-            # Note: stored keys are hashed. We need to find the user efficiently.
-            # In Odoo, res.users.apikeys stores a hash. Check via `_check_api_key` if available, 
-            # otherwise we must use the standard lookup if possible.
-            # But wait, we cannot search by unhashed key if it's hashed.
-            # actually, `_check_api_key` is the only way to verify it if we don't know the user.
-            # But wait, `res.users.apikeys` usually has `_check_api_key` in recent versions.
-            # If not, how does Odoo do it? Odoo iterates? No.
-            # Perplexity said: "apikey = request.env['res.users.apikeys'].sudo().search([('key', '=', key)])"
-            # This implies the key is stored as-is? OR we are lucky.
-            # Let's try to find it. AND verify if `_check_api_key` is available.
-            # If `_check_api_key` is missing, we might have to try to find the user another way?
-            # Actually, `res.users.apikeys` usually has a `key` field that MIGHT be the hash (or not).
-            # Let's try to find the user via `_check_api_key` first (as suggested in my first attempt, but I removed it).
-            # The issue with my first attempt might have been method visibility or `request.env` user.
+            # Authenticate (works with Real Password OR API Key)
+            uid = request.session.authenticate(request.db, login=login, password=password)
             
-            # Let's try the safest "Odoo internal" way:
-            # `request.env['res.users.apikeys']._check_api_key(key)` returns the user_id.
-            # Attempt 1: Check if `_check_api_key` exists.
-            
-            uid = None
-            if hasattr(request.env['res.users.apikeys'], '_check_api_key'):
-                 try:
-                     uid = request.env['res.users.apikeys']._check_api_key(key)
-                 except:
-                     uid = None
-            
-            if not uid:
-                # Attempt 2: Direct Search (if keys are not hashed - unlikely in v19, but worth a shot)
-                # Or if `key` field matches (sometimes it's first chars).
-                # Actually, there IS a way to authenticate with just a key if we use `res.users`? 
-                pass
-
             if uid:
-                _logger.info(f"GPT API: Found UID {uid} from key lookup.")
-                # Now we have UID, we can get the login
-                user = request.env['res.users'].sudo().browse(uid)
-                # FULL AUTHENTICATION
-                request.session.authenticate(request.db, login=user.login, password=key)
-                return uid
-            
-            _logger.warning("GPT API: key lookup failed (no user found)")
-            return None
+                _logger.info(f"GPT API: Auth success for UID {uid}")
+            else:
+                _logger.warning("GPT API: Auth returned distinct False/None")
+                
+            return uid
                 
         except Exception as e:
             _logger.error(f"GPT API Auth Failed with Exception: {type(e).__name__}: {str(e)}")
-            # Log full stack trace if needed, but error is usually clear
             return None
 
     def _response(self, data, status=200):
