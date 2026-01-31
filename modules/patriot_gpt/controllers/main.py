@@ -112,7 +112,7 @@ class PatriotGPTController(http.Controller):
             
             # Validate password using _check_credentials
             try:
-                user._check_credentials(password, {'interactive': False})
+                user._check_credentials(password, None)
                 uid = user.id
                 _logger.info(f"GPT API AUTH: _check_credentials SUCCESS for UID {uid}")
                 return uid
