@@ -184,12 +184,29 @@ class PatriotGPTController(http.Controller):
                 return self._response(data[0] if data else {})
             else:
                 # Search records
-                domain = json.loads(kwargs.get('domain', '[]'))
-                fields = json.loads(kwargs.get('fields', '[]'))
+                _logger.info(f"GPT API SEARCH: model={model}, kwargs={kwargs}")
+                
+                # Parse domain - could be JSON string or already parsed
+                domain_raw = kwargs.get('domain', '[]')
+                if isinstance(domain_raw, str):
+                    domain = json.loads(domain_raw)
+                else:
+                    domain = domain_raw
+                
+                # Parse fields - could be JSON string or already parsed
+                fields_raw = kwargs.get('fields', '[]')
+                if isinstance(fields_raw, str):
+                    fields = json.loads(fields_raw)
+                else:
+                    fields = fields_raw
+                
                 limit = int(kwargs.get('limit', 10))
                 order = kwargs.get('order', '')
                 
-                records = Model.search_read(domain, fields=fields if fields else None, limit=limit, order=order)
+                _logger.info(f"GPT API SEARCH: domain={domain}, fields={fields}, limit={limit}")
+                
+                records = Model.search_read(domain, fields=fields if fields else None, limit=limit, order=order if order else None)
+                _logger.info(f"GPT API SEARCH: Found {len(records)} records")
                 return self._response(records)
 
         except Exception as e:
