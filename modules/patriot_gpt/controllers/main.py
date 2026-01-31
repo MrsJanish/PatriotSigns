@@ -297,9 +297,17 @@ class PatriotGPTController(http.Controller):
         """
         GET /api/gpt/schema/{model} - Get complete model introspection
         
+        Params:
+        - fields_only: "1" to return compact field list (name, type, string only)
+        - field_types: comma-separated types to filter (e.g., "many2one,one2many")
+        - fields_limit: max number of fields to return (default: all)
+        - fields_offset: offset for field pagination
+        - skip_automations: "1" to skip automations/views (faster for large models)
+        
         Returns:
         - model_info: Basic model information (name, description, etc.)
-        - fields: All field definitions with type, required, help text, etc.
+        - fields: Field definitions (full or compact based on fields_only)
+        - fields_total: Total number of fields in model
         - automated_actions: All ir.actions.server (automated actions) linked to this model
         - server_actions: All server actions for this model
         - record_rules: Access rules for this model
@@ -311,6 +319,14 @@ class PatriotGPTController(http.Controller):
 
         request.update_env(user=user_id)
         
+        # Parse filtering options
+        fields_only = kwargs.get('fields_only', '0') == '1'
+        field_types_raw = kwargs.get('field_types', '')
+        field_types = [t.strip() for t in field_types_raw.split(',')] if field_types_raw else []
+        fields_limit = int(kwargs.get('fields_limit', 0)) or None  # 0 means no limit
+        fields_offset = int(kwargs.get('fields_offset', 0))
+        skip_automations = kwargs.get('skip_automations', '0') == '1'
+        
         try:
             if model not in request.env:
                 return self._response({'error': f'Model {model} not found'}, 404)
@@ -320,6 +336,7 @@ class PatriotGPTController(http.Controller):
                 'model': model,
                 'model_info': {},
                 'fields': {},
+                'fields_total': 0,
                 'automated_actions': [],
                 'server_actions': [],
                 'record_rules': [],
@@ -338,39 +355,68 @@ class PatriotGPTController(http.Controller):
                     'transient': ir_model.transient,
                 }
             
-            # 2. All Fields with full metadata
-            for field_name, field in Model._fields.items():
-                field_info = {
-                    'name': field_name,
-                    'type': field.type,
-                    'string': field.string or field_name,
-                    'help': field.help or '',
-                    'required': field.required,
-                    'readonly': field.readonly,
-                    'store': field.store,
-                    'index': getattr(field, 'index', False),
-                    'compute': field.compute or None,
-                    'depends': list(getattr(field, '_depends', [])) if getattr(field, '_depends', None) else [],
-                    'related': field.related or None,
-                    'default': str(field.default) if field.default else None,
-                }
-                
-                # Add relational field info
-                if field.type in ('many2one', 'one2many', 'many2many'):
-                    field_info['comodel_name'] = field.comodel_name
-                if field.type == 'one2many':
-                    field_info['inverse_name'] = field.inverse_name
-                if field.type == 'selection':
-                    # Get selection options
-                    try:
-                        sel = field.selection
-                        if callable(sel):
-                            sel = sel(Model)
-                        field_info['selection'] = sel
-                    except:
-                        field_info['selection'] = []
+            # 2. All Fields with filtering/pagination
+            all_fields = list(Model._fields.items())
+            result['fields_total'] = len(all_fields)
+            
+            # Filter by type if requested
+            if field_types:
+                all_fields = [(name, field) for name, field in all_fields if field.type in field_types]
+            
+            # Apply offset and limit
+            if fields_offset:
+                all_fields = all_fields[fields_offset:]
+            if fields_limit:
+                all_fields = all_fields[:fields_limit]
+            
+            for field_name, field in all_fields:
+                if fields_only:
+                    # Compact mode - just essentials
+                    field_info = {
+                        'name': field_name,
+                        'type': field.type,
+                        'string': field.string or field_name,
+                        'required': field.required,
+                    }
+                    if field.type in ('many2one', 'one2many', 'many2many'):
+                        field_info['comodel_name'] = field.comodel_name
+                else:
+                    # Full mode - all metadata
+                    field_info = {
+                        'name': field_name,
+                        'type': field.type,
+                        'string': field.string or field_name,
+                        'help': field.help or '',
+                        'required': field.required,
+                        'readonly': field.readonly,
+                        'store': field.store,
+                        'index': getattr(field, 'index', False),
+                        'compute': field.compute or None,
+                        'depends': list(getattr(field, '_depends', [])) if getattr(field, '_depends', None) else [],
+                        'related': field.related or None,
+                        'default': str(field.default) if field.default else None,
+                    }
+                    
+                    # Add relational field info
+                    if field.type in ('many2one', 'one2many', 'many2many'):
+                        field_info['comodel_name'] = field.comodel_name
+                    if field.type == 'one2many':
+                        field_info['inverse_name'] = field.inverse_name
+                    if field.type == 'selection':
+                        # Get selection options
+                        try:
+                            sel = field.selection
+                            if callable(sel):
+                                sel = sel(Model)
+                            field_info['selection'] = sel
+                        except:
+                            field_info['selection'] = []
                 
                 result['fields'][field_name] = field_info
+            
+            # Skip remaining sections if skip_automations is set (for large models)
+            if skip_automations:
+                return self._response(result)
             
             # 3. Automated Actions (ir.actions.server with base_automation)
             try:

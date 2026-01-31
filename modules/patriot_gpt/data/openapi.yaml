@@ -209,6 +209,38 @@ paths:
           schema:
             type: string
             enum: ["0", "1"]
+        - name: fields_only
+          in: query
+          required: false
+          description: Set to "1" for compact field list (name, type, string only) - use for large models
+          schema:
+            type: string
+            enum: ["0", "1"]
+        - name: field_types
+          in: query
+          required: false
+          description: Comma-separated field types to filter (e.g., "many2one,one2many,many2many")
+          schema:
+            type: string
+        - name: fields_limit
+          in: query
+          required: false
+          description: Maximum number of fields to return (for pagination)
+          schema:
+            type: integer
+        - name: fields_offset
+          in: query
+          required: false
+          description: Offset for field pagination
+          schema:
+            type: integer
+        - name: skip_automations
+          in: query
+          required: false
+          description: Set to "1" to skip automations/views sections (faster for large models)
+          schema:
+            type: string
+            enum: ["0", "1"]
         - name: limit
           in: query
           required: false
