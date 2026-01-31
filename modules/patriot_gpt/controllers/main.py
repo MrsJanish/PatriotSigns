@@ -110,14 +110,20 @@ class PatriotGPTController(http.Controller):
                 _logger.warning(f"GPT API AUTH: User not found for login: {login}")
                 return None
             
-            # Validate password using _check_credentials
+            # Validate password by comparing hash directly
             try:
-                user._check_credentials(password, None)
-                uid = user.id
-                _logger.info(f"GPT API AUTH: _check_credentials SUCCESS for UID {uid}")
-                return uid
+                from passlib.context import CryptContext
+                crypt_context = CryptContext(schemes=['pbkdf2_sha512', 'plaintext'], deprecated=['plaintext'])
+                
+                stored_hash = user.password
+                if crypt_context.verify(password, stored_hash):
+                    uid = user.id
+                    _logger.info(f"GPT API AUTH: Password verified SUCCESS for UID {uid}")
+                    return uid
+                else:
+                    _logger.warning("GPT API AUTH: Password hash mismatch")
             except Exception as auth_err:
-                _logger.warning(f"GPT API AUTH: _check_credentials failed: {auth_err}")
+                _logger.warning(f"GPT API AUTH: Password verification failed: {auth_err}")
                 
         except Exception as e:
             _logger.error(f"GPT API AUTH: Top-level exception: {type(e).__name__}: {str(e)}")
