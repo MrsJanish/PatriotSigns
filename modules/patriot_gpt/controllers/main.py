@@ -30,8 +30,8 @@ class PatriotGPTController(http.Controller):
             _logger.info(f"GPT API: Key received (len: {len(key)})")
 
             # Native Odoo API Key validation
-            # authenticate(db, login, password) where login=None treats password as API Key
-            uid = request.session.authenticate(request.db, None, key)
+            # authenticate(db, login=None, password=key)
+            uid = request.session.authenticate(request.db, password=key)
             
             if uid:
                 _logger.info(f"GPT API: Auth success for UID {uid}")
