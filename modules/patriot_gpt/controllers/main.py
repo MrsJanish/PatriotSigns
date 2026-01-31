@@ -112,8 +112,10 @@ class PatriotGPTController(http.Controller):
             
             # Odoo 19: Use _check_credentials with credential dict including 'type'
             try:
+                # Create env with 'interactive': False for API (non-web) authentication
+                api_env = request.env(context={'interactive': False})
                 # Odoo 19 expects {'type': 'password', 'password': ...} format
-                user.sudo()._check_credentials({'type': 'password', 'password': password}, request.env)
+                user.sudo()._check_credentials({'type': 'password', 'password': password}, api_env)
                 _logger.info(f"GPT API AUTH: _check_credentials() SUCCESS for UID {user.id}")
                 return user.id
             except Exception as auth_err:
