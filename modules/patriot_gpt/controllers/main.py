@@ -110,16 +110,26 @@ class PatriotGPTController(http.Controller):
                 _logger.warning(f"GPT API AUTH: User not found for login: {login}")
                 return None
             
-            # Odoo 19: Use _check_credentials with credential dict including 'type'
+            # Direct password verification using passlib (same as Odoo uses internally)
             try:
-                # Create env with 'interactive': False for API (non-web) authentication
-                api_env = request.env(context={'interactive': False})
-                # Odoo 19 expects {'type': 'password', 'password': ...} format
-                user.sudo()._check_credentials({'type': 'password', 'password': password}, api_env)
-                _logger.info(f"GPT API AUTH: _check_credentials() SUCCESS for UID {user.id}")
-                return user.id
+                from passlib.context import CryptContext
+                # Odoo's password context supports bcrypt and pbkdf2_sha512
+                crypt_context = CryptContext(schemes=['pbkdf2_sha512', 'bcrypt'])
+                
+                # Get the stored password hash
+                stored_hash = user.sudo().password
+                if not stored_hash:
+                    _logger.warning(f"GPT API AUTH: No password hash found for user {login}")
+                    return None
+                
+                # Verify the password against the stored hash
+                if crypt_context.verify(password, stored_hash):
+                    _logger.info(f"GPT API AUTH: Password verified SUCCESS for UID {user.id}")
+                    return user.id
+                else:
+                    _logger.warning(f"GPT API AUTH: Password verification FAILED for {login}")
             except Exception as auth_err:
-                _logger.warning(f"GPT API AUTH: _check_credentials() failed: {auth_err}")
+                _logger.warning(f"GPT API AUTH: passlib verification failed: {auth_err}")
                 
         except Exception as e:
             _logger.error(f"GPT API AUTH: Top-level exception: {type(e).__name__}: {str(e)}")
