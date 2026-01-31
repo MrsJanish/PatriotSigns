@@ -19,6 +19,12 @@ class PatriotGPTController(http.Controller):
         import base64
         
         try:
+            # DEBUG: Dump ALL headers to see exactly what ChatGPT sends
+            all_headers = dict(request.httprequest.headers)
+            # Redact any sensitive values but show keys
+            header_summary = {k: (v[:20] + '...' if len(v) > 20 else v) for k, v in all_headers.items()}
+            _logger.info(f"GPT API AUTH: ALL HEADERS RECEIVED: {header_summary}")
+            
             # DEBUG: Log all relevant headers
             auth_header = request.httprequest.headers.get('Authorization', '')
             api_key_header = request.httprequest.headers.get('X-Api-Key', '')
