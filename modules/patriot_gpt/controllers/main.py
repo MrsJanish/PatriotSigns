@@ -110,10 +110,10 @@ class PatriotGPTController(http.Controller):
                 _logger.warning(f"GPT API AUTH: User not found for login: {login}")
                 return None
             
-            # Odoo 19: Use _check_credentials with credential dict and env
+            # Odoo 19: Use _check_credentials with credential dict including 'type'
             try:
-                # _check_credentials expects (credential_dict, env) in v19
-                user.sudo()._check_credentials({'password': password}, request.env)
+                # Odoo 19 expects {'type': 'password', 'password': ...} format
+                user.sudo()._check_credentials({'type': 'password', 'password': password}, request.env)
                 _logger.info(f"GPT API AUTH: _check_credentials() SUCCESS for UID {user.id}")
                 return user.id
             except Exception as auth_err:
