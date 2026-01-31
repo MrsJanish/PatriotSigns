@@ -4,8 +4,8 @@ info:
   description: Generic API to interact with Odoo v19 Models via ChatGPT.
   version: 1.0.0
 servers:
-  - url: https://< YOUR_ODOO_INSTANCE_URL >
-    description: Odoo Server Base URL
+  - url: https://patriotadasigns.com
+    description: Production Odoo Server
 
 components:
   securitySchemes:
