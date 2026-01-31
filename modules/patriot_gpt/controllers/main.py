@@ -104,8 +104,8 @@ class PatriotGPTController(http.Controller):
 
             _logger.info(f"GPT API AUTH: Attempting session.authenticate for login: {login}")
 
-            # Authenticate with extracted credentials
-            uid = request.session.authenticate(request.db, login=login, password=password)
+            # Authenticate with extracted credentials (positional args only in Odoo 19)
+            uid = request.session.authenticate(request.db, login, password)
             
             if uid:
                 _logger.info(f"GPT API AUTH: session.authenticate SUCCESS for UID {uid}")
