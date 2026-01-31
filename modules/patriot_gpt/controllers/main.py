@@ -19,64 +19,87 @@ class PatriotGPTController(http.Controller):
         import base64
         
         try:
+            # DEBUG: Log all relevant headers
             auth_header = request.httprequest.headers.get('Authorization', '')
+            api_key_header = request.httprequest.headers.get('X-Api-Key', '')
+            _logger.info(f"GPT API AUTH: Authorization header present: {bool(auth_header)}, len={len(auth_header)}")
+            _logger.info(f"GPT API AUTH: X-Api-Key header present: {bool(api_key_header)}, len={len(api_key_header)}")
+            
             login = None
             password = None
             
             # 1. Handle Basic Auth
             if auth_header.startswith('Basic '):
+                _logger.info("GPT API AUTH: Detected Basic Auth header")
                 try:
                     decoded = base64.b64decode(auth_header[6:]).decode('utf-8')
                     if ':' in decoded:
                         login, password = decoded.split(':', 1)
-                except:
+                        _logger.info(f"GPT API AUTH: Basic Auth decoded to login: {login}")
+                except Exception as be:
+                    _logger.warning(f"GPT API AUTH: Basic Auth decode failed: {str(be)}")
                     pass
             
             # 2. Handle Bearer (or just raw key in header)
             if not login:
-                token = ''
+                token = None
                 if auth_header.startswith('Bearer '):
                     token = auth_header[7:]
-                else:
-                    token = request.httprequest.headers.get('X-Api-Key')
+                    _logger.info(f"GPT API AUTH: Extracted Bearer token, len={len(token)}")
+                elif api_key_header:
+                    token = api_key_header
+                    _logger.info(f"GPT API AUTH: Using X-Api-Key header, len={len(token)}")
                 
                 if token:
                     # Check if user provided 'login:password' string as the key
                     if ':' in token:
                         login, password = token.split(':', 1)
+                        _logger.info(f"GPT API AUTH: Token contains ':', split to login: {login}")
                     else:
                         # Logic for raw key lookup
-                        # Try to validate as Odoo API Key directly
-                        # MUST use sudo() because Public user cannot read res.users.apikeys
-                        if hasattr(request.env['res.users.apikeys'], '_check_api_key'):
+                        _logger.info(f"GPT API AUTH: Raw token (no colon). Attempting _check_api_key...")
+                        
+                        # Check if method exists
+                        apikeys_model = request.env['res.users.apikeys'].sudo()
+                        has_method = hasattr(apikeys_model, '_check_api_key')
+                        _logger.info(f"GPT API AUTH: _check_api_key method exists: {has_method}")
+                        
+                        if has_method:
                             try:
                                 # _check_api_key returns user_id (int) or raises AccessDenied
-                                uid = request.env['res.users.apikeys'].sudo()._check_api_key(token)
+                                _logger.info(f"GPT API AUTH: Calling _check_api_key with token len={len(token)}")
+                                uid = apikeys_model._check_api_key(token)
+                                _logger.info(f"GPT API AUTH: _check_api_key returned: {uid} (type: {type(uid)})")
                                 if uid:
-                                    _logger.info(f"GPT API: Validated Odoo API Key for UID {uid}")
+                                    _logger.info(f"GPT API AUTH: SUCCESS! Validated Odoo API Key for UID {uid}")
                                     return uid
+                                else:
+                                    _logger.warning("GPT API AUTH: _check_api_key returned falsy value")
                             except Exception as ex:
-                                _logger.warning(f"GPT API: API Key validation failed: {str(ex)}")
-                                pass
+                                _logger.warning(f"GPT API AUTH: _check_api_key exception: {type(ex).__name__}: {str(ex)}")
+                        else:
+                            _logger.error("GPT API AUTH: _check_api_key method NOT found on res.users.apikeys!")
+                else:
+                    _logger.warning("GPT API AUTH: No token extracted from headers")
 
             if not login or not password:
-                _logger.warning("GPT API: Could not extract login/password from headers and Raw Key validation failed.")
+                _logger.warning("GPT API AUTH: Could not extract login/password from headers and Raw Key validation failed.")
                 return None
 
-            _logger.info(f"GPT API: Auth attempt for login: {login}")
+            _logger.info(f"GPT API AUTH: Attempting session.authenticate for login: {login}")
 
             # Authenticate with extracted credentials
             uid = request.session.authenticate(request.db, login=login, password=password)
             
             if uid:
-                _logger.info(f"GPT API: Auth success for UID {uid}")
+                _logger.info(f"GPT API AUTH: session.authenticate SUCCESS for UID {uid}")
             else:
-                _logger.warning("GPT API: Auth returned distinct False/None")
+                _logger.warning("GPT API AUTH: session.authenticate returned False/None")
                 
             return uid
                 
         except Exception as e:
-            _logger.error(f"GPT API Auth Failed with Exception: {type(e).__name__}: {str(e)}")
+            _logger.error(f"GPT API AUTH: Top-level exception: {type(e).__name__}: {str(e)}")
             return None
 
     def _response(self, data, status=200):
