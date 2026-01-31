@@ -9,10 +9,6 @@ servers:
 
 components:
   securitySchemes:
-    BearerAuth:
-      type: http
-      scheme: bearer
-      description: "Odoo API Key (or email:password)"
     ApiKeyAuth:
       type: apiKey
       in: header
@@ -59,7 +55,6 @@ components:
           type: string
 
 security:
-  - BearerAuth: []
   - ApiKeyAuth: []
 
 paths:
