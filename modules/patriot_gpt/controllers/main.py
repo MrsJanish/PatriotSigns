@@ -14,6 +14,9 @@ class PatriotGPTController(http.Controller):
         Returns user_id if successful, None otherwise.
         """
         try:
+            # DEBUG LOGGING
+            _logger.info(f"GPT API: Auth attempt. DB: {request.db}")
+            
             key = request.httprequest.headers.get('X-Api-Key')
             if not key:
                 auth_header = request.httprequest.headers.get('Authorization', '')
@@ -21,16 +24,25 @@ class PatriotGPTController(http.Controller):
                     key = auth_header[7:]
             
             if not key:
-                _logger.info("GPT API: Missing API Key")
+                _logger.warning("GPT API: Missing API Key in headers")
                 return None
             
+            _logger.info(f"GPT API: Key received (len: {len(key)})")
+
             # Native Odoo API Key validation
             # authenticate(db, login, password) where login=None treats password as API Key
             uid = request.session.authenticate(request.db, None, key)
+            
+            if uid:
+                _logger.info(f"GPT API: Auth success for UID {uid}")
+            else:
+                _logger.warning("GPT API: Auth returned distinct False/None")
+                
             return uid
                 
         except Exception as e:
-            _logger.error(f"GPT API Auth Failed: {str(e)}")
+            _logger.error(f"GPT API Auth Failed with Exception: {type(e).__name__}: {str(e)}")
+            # Log full stack trace if needed, but error is usually clear
             return None
 
     def _response(self, data, status=200):
