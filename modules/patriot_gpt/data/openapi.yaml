@@ -186,15 +186,7 @@ paths:
   /api/gpt/schema/{model}:
     get:
       summary: Get Complete Model Schema and Data
-      description: |
-        Returns comprehensive model introspection including:
-        - Model metadata and description
-        - All field definitions (type, required, compute, etc.)
-        - All automated actions linked to the model
-        - All server actions
-        - Record rules and permissions
-        - Available views (form, tree, kanban)
-        - Optionally: all records data (use include_data=1)
+      description: Returns model introspection (fields, automations, server actions, rules, views) plus optional records export with include_data=1.
       operationId: getModelSchema
       parameters:
         - name: model
