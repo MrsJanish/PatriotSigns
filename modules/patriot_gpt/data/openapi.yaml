@@ -12,7 +12,12 @@ components:
     BearerAuth:
       type: http
       scheme: bearer
-      description: "Enter your Odoo API Key."
+      description: "Odoo API Key (or email:password)"
+    ApiKeyAuth:
+      type: apiKey
+      in: header
+      name: X-Api-Key
+      description: "Odoo API Key (Custom Header)"
 
   schemas:
     Record:
@@ -55,6 +60,7 @@ components:
 
 security:
   - BearerAuth: []
+  - ApiKeyAuth: []
 
 paths:
   /api/gpt/{model}:
