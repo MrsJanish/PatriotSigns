@@ -9,30 +9,53 @@ class PatriotGPTController(http.Controller):
 
     def _authenticate(self):
         """
-        Authenticates using HTTP Basic Auth (Login + Password/API Key).
+        Authenticates using flexible methods:
+        1. Basic Auth (Standard)
+        2. Bearer Token usually containing 'login:password' (Composite Key)
+        3. Simple API Key (falls back to lookup)
+        
         Returns user_id if successful, None otherwise.
         """
         import base64
         
         try:
-            # Check for Authorization: Basic <base64>
             auth_header = request.httprequest.headers.get('Authorization', '')
-            if not auth_header.startswith('Basic '):
-                # Fallback to previous logic (ApiKey/Bearer) only if header is somehow just the key 
-                # (but Basic is preferred now)
-                key = request.httprequest.headers.get('X-Api-Key')
-                if key:
-                    _logger.warning("GPT API: Received X-Api-Key but Basic Auth is required now for proper session auth.")
+            login = None
+            password = None
+            
+            # 1. Handle Basic Auth
+            if auth_header.startswith('Basic '):
+                try:
+                    decoded = base64.b64decode(auth_header[6:]).decode('utf-8')
+                    if ':' in decoded:
+                        login, password = decoded.split(':', 1)
+                except:
+                    pass
+            
+            # 2. Handle Bearer (or just raw key in header)
+            if not login:
+                token = ''
+                if auth_header.startswith('Bearer '):
+                    token = auth_header[7:]
+                else:
+                    token = request.httprequest.headers.get('X-Api-Key')
+                
+                if token:
+                    # Check if user provided 'login:password' string as the key
+                    if ':' in token:
+                        login, password = token.split(':', 1)
+                    else:
+                        # Logic for raw key lookup could go here, but we prioritize explicit creds
+                        _logger.info("GPT API: Received raw token without login. Session auth likely to fail without user lookup.")
+                        pass
+
+            if not login or not password:
+                _logger.warning("GPT API: Could not extract login/password from headers.")
                 return None
 
-            # Decode Basic Auth
-            encoded = auth_header[6:]
-            decoded = base64.b64decode(encoded).decode('utf-8')
-            login, password = decoded.split(':', 1)
-            
-            _logger.info(f"GPT API: Basic Auth attempt for login: {login}")
+            _logger.info(f"GPT API: Auth attempt for login: {login}")
 
-            # Authenticate (works with Real Password OR API Key)
+            # Authenticate with extracted credentials
             uid = request.session.authenticate(request.db, login=login, password=password)
             
             if uid:

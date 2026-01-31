@@ -9,9 +9,10 @@ servers:
 
 components:
   securitySchemes:
-    BasicAuth:
+    BearerAuth:
       type: http
-      scheme: basic
+      scheme: bearer
+      description: "Enter: 'email:password_or_key' (e.g. tiffany@example.com:MySecretKey)"
 
   schemas:
     Record:
@@ -53,7 +54,7 @@ components:
           type: string
 
 security:
-  - BasicAuth: []
+  - BearerAuth: []
 
 paths:
   /api/gpt/{model}:
