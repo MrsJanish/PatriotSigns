@@ -36,6 +36,10 @@ components:
     CreatePayload:
       type: object
       description: Fields to set on the record.
+      properties:
+        name:
+          type: string
+          description: Name or description of the record (generic fallback)
       additionalProperties: true
       example: {"name": "New Record", "active": true}
 
