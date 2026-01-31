@@ -1,0 +1,160 @@
+openapi: 3.1.0
+info:
+  title: Patriot Odoo GPT Connector
+  description: Generic API to interact with Odoo v19 Models via ChatGPT.
+  version: 1.0.0
+servers:
+  - url: https://< YOUR_ODOO_URL >
+    description: Production Odoo Server
+  - url: https://< YOUR_DEV_URL >
+    description: Dev Odoo Server
+
+components:
+  securitySchemes:
+    ApiKeyAuth:
+      type: apiKey
+      in: header
+      name: X-Api-Key
+    BearerAuth:
+      type: http
+      scheme: bearer
+
+security:
+  - ApiKeyAuth: []
+  - BearerAuth: []
+
+paths:
+  /api/gpt/{model}:
+    get:
+      summary: Search Records
+      operationId: searchRecords
+      parameters:
+        - name: model
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Technical name of the model (e.g., res.partner, sale.order)
+        - name: domain
+          in: query
+          schema:
+            type: string
+            default: "[]"
+          description: Odoo domain as a JSON string list (e.g. "[['name', 'ilike', 'John']]")
+        - name: fields
+          in: query
+          schema:
+            type: string
+            default: "[]"
+          description: List of fields to return as JSON string (e.g. "['id', 'name', 'email']")
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 10
+          description: Max number of records to return
+        - name: order
+          in: query
+          schema:
+            type: string
+          description: Sort order (e.g. "id desc")
+      responses:
+        '200':
+          description: List of records
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  additionalProperties: true
+        '401':
+          description: Unauthorized
+        '404':
+          description: Model not found
+
+    post:
+      summary: Create Record
+      operationId: createRecord
+      parameters:
+        - name: model
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              description: Dictionary of fields to set
+              additionalProperties: true
+      responses:
+        '200':
+          description: Record created
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: integer
+                  display_name:
+                    type: string
+                  result:
+                    type: string
+
+  /api/gpt/{model}/{id}:
+    get:
+      summary: Read One Record
+      operationId: readRecord
+      parameters:
+        - name: model
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: fields
+          in: query
+          schema:
+            type: string
+            default: "[]"
+      responses:
+        '200':
+          description: Record data
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+
+    put:
+      summary: Update Record
+      operationId: updateRecord
+      parameters:
+        - name: model
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              description: Fields to update
+      responses:
+        '200':
+          description: Update successful
