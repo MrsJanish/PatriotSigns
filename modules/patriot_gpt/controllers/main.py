@@ -317,7 +317,7 @@ class PatriotGPTController(http.Controller):
                     'store': field.store,
                     'index': getattr(field, 'index', False),
                     'compute': field.compute or None,
-                    'depends': list(field.depends) if field.depends else [],
+                    'depends': list(getattr(field, '_depends', [])) if getattr(field, '_depends', None) else [],
                     'related': field.related or None,
                     'default': str(field.default) if field.default else None,
                 }
