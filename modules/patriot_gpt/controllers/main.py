@@ -102,17 +102,22 @@ class PatriotGPTController(http.Controller):
                 _logger.warning("GPT API AUTH: Could not extract login/password from headers and Raw Key validation failed.")
                 return None
 
-            _logger.info(f"GPT API AUTH: Attempting session.authenticate for login: {login}")
+            _logger.info(f"GPT API AUTH: Attempting res.users auth for login: {login}")
 
-            # Authenticate with extracted credentials (Odoo 19 on Odoo.sh: just login + password)
-            uid = request.session.authenticate(login, password)
+            # Find user by login first
+            user = request.env['res.users'].sudo().search([('login', '=', login)], limit=1)
+            if not user:
+                _logger.warning(f"GPT API AUTH: User not found for login: {login}")
+                return None
             
-            if uid:
-                _logger.info(f"GPT API AUTH: session.authenticate SUCCESS for UID {uid}")
-            else:
-                _logger.warning("GPT API AUTH: session.authenticate returned False/None")
-                
-            return uid
+            # Validate password using _check_credentials
+            try:
+                user._check_credentials(password, {'interactive': False})
+                uid = user.id
+                _logger.info(f"GPT API AUTH: _check_credentials SUCCESS for UID {uid}")
+                return uid
+            except Exception as auth_err:
+                _logger.warning(f"GPT API AUTH: _check_credentials failed: {auth_err}")
                 
         except Exception as e:
             _logger.error(f"GPT API AUTH: Top-level exception: {type(e).__name__}: {str(e)}")
