@@ -47,10 +47,11 @@ class PatriotGPTController(http.Controller):
                     else:
                         # Logic for raw key lookup
                         # Try to validate as Odoo API Key directly
+                        # MUST use sudo() because Public user cannot read res.users.apikeys
                         if hasattr(request.env['res.users.apikeys'], '_check_api_key'):
                             try:
                                 # _check_api_key returns user_id (int) or raises AccessDenied
-                                uid = request.env['res.users.apikeys']._check_api_key(token)
+                                uid = request.env['res.users.apikeys'].sudo()._check_api_key(token)
                                 if uid:
                                     _logger.info(f"GPT API: Validated Odoo API Key for UID {uid}")
                                     return uid
