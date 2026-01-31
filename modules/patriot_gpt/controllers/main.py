@@ -45,12 +45,21 @@ class PatriotGPTController(http.Controller):
                     if ':' in token:
                         login, password = token.split(':', 1)
                     else:
-                        # Logic for raw key lookup could go here, but we prioritize explicit creds
-                        _logger.info("GPT API: Received raw token without login. Session auth likely to fail without user lookup.")
-                        pass
+                        # Logic for raw key lookup
+                        # Try to validate as Odoo API Key directly
+                        if hasattr(request.env['res.users.apikeys'], '_check_api_key'):
+                            try:
+                                # _check_api_key returns user_id (int) or raises AccessDenied
+                                uid = request.env['res.users.apikeys']._check_api_key(token)
+                                if uid:
+                                    _logger.info(f"GPT API: Validated Odoo API Key for UID {uid}")
+                                    return uid
+                            except Exception as ex:
+                                _logger.warning(f"GPT API: API Key validation failed: {str(ex)}")
+                                pass
 
             if not login or not password:
-                _logger.warning("GPT API: Could not extract login/password from headers.")
+                _logger.warning("GPT API: Could not extract login/password from headers and Raw Key validation failed.")
                 return None
 
             _logger.info(f"GPT API: Auth attempt for login: {login}")

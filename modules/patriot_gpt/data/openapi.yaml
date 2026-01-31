@@ -12,7 +12,7 @@ components:
     BearerAuth:
       type: http
       scheme: bearer
-      description: "Enter: 'email:password_or_key' (e.g. tiffany@example.com:MySecretKey)"
+      description: "Enter your Odoo API Key."
 
   schemas:
     Record:
