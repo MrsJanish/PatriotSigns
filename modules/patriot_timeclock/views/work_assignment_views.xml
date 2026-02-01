@@ -159,17 +159,15 @@
                 <field name="project_id"/>
                 <field name="phase_id"/>
                 <field name="assigned_user_ids"/>
+                <separator/>
                 <filter name="not_started" string="Not Started" domain="[('work_state', '=', 'not_started')]"/>
                 <filter name="assigned" string="Assigned" domain="[('work_state', '=', 'assigned')]"/>
                 <filter name="in_progress" string="In Progress" domain="[('work_state', '=', 'in_progress')]"/>
                 <filter name="complete" string="Complete" domain="[('work_state', '=', 'complete')]"/>
                 <separator/>
-                <group string="Group By">
-                    <filter name="group_by_project" string="Project" context="{'group_by': 'project_id'}"/>
-                    <filter name="group_by_phase" string="Phase" context="{'group_by': 'phase_id'}"/>
-                    <filter name="group_by_state" string="Work State" context="{'group_by': 'work_state'}"/>
-                    <filter name="group_by_assigned" string="Assigned To" context="{'group_by': 'assigned_user_ids'}"/>
-                </group>
+                <filter name="group_by_project" string="Project" context="{'group_by': 'project_id'}"/>
+                <filter name="group_by_phase" string="Phase" context="{'group_by': 'phase_id'}"/>
+                <filter name="group_by_state" string="Work State" context="{'group_by': 'work_state'}"/>
             </search>
         </field>
     </record>
