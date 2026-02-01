@@ -1,8 +1,7 @@
 /** @odoo-module **/
 
-import { Component, useState, useRef, onMounted } from "@odoo/owl";
+import { Component, useState, useRef } from "@odoo/owl";
 import { registry } from "@web/core/registry";
-import { useService } from "@web/core/utils/hooks";
 import { standardFieldProps } from "@web/views/fields/standard_field_props";
 import { jsonrpc } from "@web/core/network/rpc_service";
 
@@ -19,7 +18,6 @@ export class AISearch extends Component {
     };
 
     setup() {
-        this.notification = useService("notification");
         this.inputRef = useRef("searchInput");
 
         this.state = useState({
@@ -28,6 +26,7 @@ export class AISearch extends Component {
             selectedIndex: 0,
             loading: false,
             searched: false,
+            error: "",
         });
 
         this.debounceTimer = null;
@@ -93,9 +92,7 @@ export class AISearch extends Component {
             }
         } catch (error) {
             console.error("AI Search error:", error);
-            this.notification.add("Search failed. Please try again.", {
-                type: "warning"
-            });
+            this.state.error = "Search failed. Try different words.";
         } finally {
             this.state.loading = false;
         }

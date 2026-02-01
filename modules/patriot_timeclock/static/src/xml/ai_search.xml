@@ -32,8 +32,14 @@
                 </t>
             </div>
             
+            <!-- Error Message -->
+            <div t-if="state.error" class="ps_ai_error alert alert-warning mt-2">
+                <i class="fa fa-exclamation-triangle me-2"/>
+                <t t-out="state.error"/>
+            </div>
+            
             <!-- No Results Message -->
-            <div t-if="state.searched and state.results.length === 0 and !state.loading" 
+            <div t-if="state.searched and state.results.length === 0 and !state.loading and !state.error" 
                  class="ps_ai_no_results">
                 <i class="fa fa-search me-2"/>
                 No matches found. Try different words.
