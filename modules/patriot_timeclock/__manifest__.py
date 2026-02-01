@@ -46,9 +46,12 @@ Managers assign work via drag-and-drop kanban.
         'web.assets_backend': [
             'patriot_timeclock/static/src/css/time_clock.css',
             'patriot_timeclock/static/src/css/barcode_kiosk.css',
+            'patriot_timeclock/static/src/css/task_selector.css',
             'patriot_timeclock/static/src/js/time_clock_kiosk.js',
             'patriot_timeclock/static/src/js/barcode_kiosk.js',
+            'patriot_timeclock/static/src/js/task_selector.js',
             'patriot_timeclock/static/src/xml/time_clock_kiosk.xml',
+            'patriot_timeclock/static/src/xml/task_selector.xml',
         ],
         'web.assets_frontend': [
             'patriot_timeclock/static/src/css/my_work.css',

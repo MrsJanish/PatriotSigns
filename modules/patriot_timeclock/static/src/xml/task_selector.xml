@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+
+    <t t-name="patriot_timeclock.TaskSelector">
+        <div class="ps_task_selector">
+            <!-- Search Input -->
+            <div class="ps_search_container mb-3">
+                <input type="text" 
+                       class="form-control ps_search_input" 
+                       placeholder="🔍 Search projects or tasks..."
+                       t-att-value="state.searchQuery"
+                       t-on-input="onSearchInput"/>
+            </div>
+
+            <!-- Loading State -->
+            <div t-if="state.loading" class="text-center py-4">
+                <i class="fa fa-spinner fa-spin fa-2x"/>
+                <p class="mt-2">Loading...</p>
+            </div>
+
+            <div t-else="">
+                <!-- Your Tasks Section -->
+                <div t-if="filteredTasks.length" class="ps_section mb-4">
+                    <h5 class="ps_section_title">
+                        <i class="fa fa-tasks me-2"/>Your Tasks
+                    </h5>
+                    <div class="ps_card_grid">
+                        <t t-foreach="filteredTasks" t-as="task" t-key="task.id">
+                            <div t-att-class="'ps_card ps_task_card' + (isTaskSelected(task) ? ' ps_selected' : '')"
+                                 t-on-click="() => this.selectTask(task)"
+                                 t-att-style="'border-left-color: ' + getCardColor(task)">
+                                <div class="ps_card_title" t-out="task.name"/>
+                                <div class="ps_card_subtitle" t-if="task.project_id">
+                                    <i class="fa fa-folder-o me-1"/>
+                                    <t t-out="task.project_id[1]"/>
+                                </div>
+                                <span t-if="isTaskSelected(task)" class="ps_check_icon">
+                                    <i class="fa fa-check-circle"/>
+                                </span>
+                            </div>
+                        </t>
+                    </div>
+                </div>
+
+                <!-- Projects Section -->
+                <div t-if="filteredProjects.length" class="ps_section">
+                    <h5 class="ps_section_title">
+                        <i class="fa fa-folder me-2"/>Projects
+                    </h5>
+                    <div class="ps_card_grid">
+                        <t t-foreach="filteredProjects" t-as="project" t-key="project.id">
+                            <div t-att-class="'ps_card ps_project_card' + (isProjectSelected(project) ? ' ps_selected' : '')"
+                                 t-on-click="() => this.selectProject(project)"
+                                 t-att-style="'border-left-color: ' + getCardColor(project)">
+                                <div class="ps_card_title" t-out="project.name"/>
+                                <span t-if="isProjectSelected(project)" class="ps_check_icon">
+                                    <i class="fa fa-check-circle"/>
+                                </span>
+                            </div>
+                        </t>
+                    </div>
+                </div>
+
+                <!-- No Results -->
+                <div t-if="!filteredTasks.length and !filteredProjects.length" 
+                     class="text-center py-4 text-muted">
+                    <i class="fa fa-search fa-2x mb-2"/>
+                    <p>No matching projects or tasks found</p>
+                </div>
+            </div>
+        </div>
+    </t>
+
+</templates>
