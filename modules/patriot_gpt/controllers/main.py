@@ -173,13 +173,24 @@ class PatriotGPTController(http.Controller):
             
             if id:
                 # Read single record
-                fields = json.loads(kwargs.get('fields', '[]'))
+                fields_raw = kwargs.get('fields', '')
+                if isinstance(fields_raw, str):
+                    if fields_raw.startswith('['):
+                        try:
+                            fields = json.loads(fields_raw)
+                        except json.JSONDecodeError:
+                            fields = []
+                    elif fields_raw:
+                        fields = [f.strip() for f in fields_raw.split(',')]
+                    else:
+                        fields = []
+                else:
+                    fields = fields_raw if fields_raw else []
+                    
                 record = Model.browse(id)
                 if not record.exists():
                      return self._response({'error': 'Record not found'}, 404)
                 
-                # If fields not specified, read standard fields? No, read return dict.
-                # read() returns a list of dicts
                 data = record.read(fields if fields else None)
                 return self._response(data[0] if data else {})
             else:
