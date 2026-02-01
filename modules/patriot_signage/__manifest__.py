@@ -1,6 +1,6 @@
 {
     'name': 'Omega Signage',
-    'version': '19.0.1.0.0',
+    'version': '19.0.1.1.0',
     'category': 'Sales',
     'summary': 'Core sign type and instance management',
     'description': """
@@ -37,6 +37,7 @@ bid intake through production and installation.
     'auto_install': False,
     'license': 'LGPL-3',
     'pre_init_hook': '_create_sign_part_table',
+    'post_init_hook': '_create_sign_part_table',
     'demo': [
         'demo/demo_sign_types.xml',
     ],
