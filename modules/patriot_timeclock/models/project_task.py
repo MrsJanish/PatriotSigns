@@ -149,7 +149,7 @@ class ProjectTaskExtension(models.Model):
             task.is_currently_worked = bool(active)
             task.current_worker_id = active.user_id.id if active else False
 
-    @api.depends('id', 'project_id')
+    @api.depends('project_id')
     def _compute_task_barcode(self):
         """Generate a unique barcode for the task."""
         for task in self:
