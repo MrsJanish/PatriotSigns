@@ -4,6 +4,7 @@ import { Component, useState, useRef, onMounted } from "@odoo/owl";
 import { registry } from "@web/core/registry";
 import { useService } from "@web/core/utils/hooks";
 import { standardFieldProps } from "@web/views/fields/standard_field_props";
+import { jsonrpc } from "@web/core/network/rpc_service";
 
 /**
  * AISearch - AI-powered natural language search for projects/tasks
@@ -18,7 +19,6 @@ export class AISearch extends Component {
     };
 
     setup() {
-        this.rpc = useService("rpc");
         this.notification = useService("notification");
         this.inputRef = useRef("searchInput");
 
@@ -78,7 +78,7 @@ export class AISearch extends Component {
         this.state.results = [];
 
         try {
-            const response = await this.rpc('/timeclock/ai-search', {
+            const response = await jsonrpc('/timeclock/ai-search', {
                 query: this.state.query
             });
 
