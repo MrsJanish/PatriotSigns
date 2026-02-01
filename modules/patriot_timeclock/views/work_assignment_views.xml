@@ -164,8 +164,6 @@
                 <filter name="in_progress" string="In Progress" domain="[('work_state', '=', 'in_progress')]"/>
                 <filter name="complete" string="Complete" domain="[('work_state', '=', 'complete')]"/>
                 <separator/>
-                <filter name="currently_worked" string="Being Worked Now" domain="[('is_currently_worked', '=', True)]"/>
-                <separator/>
                 <group expand="0" string="Group By">
                     <filter name="group_by_project" string="Project" context="{'group_by': 'project_id'}"/>
                     <filter name="group_by_phase" string="Phase" context="{'group_by': 'phase_id'}"/>
