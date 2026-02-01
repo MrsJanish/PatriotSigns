@@ -279,7 +279,7 @@ class SignType(models.Model):
         string='Bookmarks'
     )
     bookmark_count = fields.Integer(
-        string='Bookmarks',
+        string='Bookmark Count',
         compute='_compute_bookmark_count'
     )
 
@@ -407,11 +407,11 @@ class SignType(models.Model):
     # =========================================================================
     # CONSTRAINTS
     # =========================================================================
-    _sql_constraints = [
-        ('unique_sign_type_per_project',
-         'UNIQUE(opportunity_id, name)',
-         'Sign Type ID must be unique within a project!')
-    ]
+    # Odoo 19 constraint format
+    _unique_sign_type_per_project = models.Constraint(
+        'UNIQUE(opportunity_id, name)',
+        'Sign Type ID must be unique within a project!'
+    )
 
     # =========================================================================
     # COMPUTED FIELDS

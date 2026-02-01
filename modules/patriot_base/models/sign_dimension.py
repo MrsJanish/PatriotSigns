@@ -14,7 +14,7 @@ class SignDimension(models.Model):
     _order = 'square_inches, name'
 
     name = fields.Char(
-        string='Display Name',
+        string='Dimension Name',
         compute='_compute_name',
         store=True,
         help='Auto-generated display name like "8 x 6"'
@@ -93,11 +93,11 @@ class SignDimension(models.Model):
         help='Number of sign types using this dimension'
     )
 
-    _sql_constraints = [
-        ('unique_dimensions', 
-         'UNIQUE(width_in, height_in, depth_in)', 
-         'This dimension combination already exists!')
-    ]
+    # Odoo 19 constraint format
+    _unique_dimensions = models.Constraint(
+        'UNIQUE(width_in, height_in, depth_in)',
+        'This dimension combination already exists!'
+    )
 
     @api.depends('width_in', 'height_in', 'depth_in')
     def _compute_name(self):

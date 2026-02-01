@@ -20,7 +20,7 @@ class CrmLead(models.Model):
         string='Sign Types'
     )
     sign_type_count = fields.Integer(
-        string='Sign Types',
+        string='Sign Type Count',
         compute='_compute_sign_counts',
         store=True
     )

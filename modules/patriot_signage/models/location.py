@@ -51,8 +51,7 @@ class Location(models.Model):
         domain="[('project_id', '=', project_id)]"
     )
     parent_path = fields.Char(
-        index=True,
-        unaccent=False
+        index=True
     )
     child_ids = fields.One2many(
         'ps.location',
@@ -60,7 +59,7 @@ class Location(models.Model):
         string='Sub-Locations'
     )
     child_count = fields.Integer(
-        string='Sub-Locations',
+        string='Sub-Location Count',
         compute='_compute_child_count'
     )
 

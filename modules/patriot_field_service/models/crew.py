@@ -32,7 +32,7 @@ class Crew(models.Model):
         string='Members'
     )
     member_count = fields.Integer(
-        string='Members',
+        string='Member Count',
         compute='_compute_member_count'
     )
     

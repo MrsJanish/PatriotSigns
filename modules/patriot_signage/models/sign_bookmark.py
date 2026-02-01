@@ -41,7 +41,7 @@ class SignBookmark(models.Model):
     )
     sign_type_name = fields.Char(
         related='sign_type_id.name',
-        string='Sign Type'
+        string='Sign Type Name'
     )
 
     # =========================================================================

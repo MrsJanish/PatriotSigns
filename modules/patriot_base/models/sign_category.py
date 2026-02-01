@@ -70,9 +70,11 @@ class SignCategory(models.Model):
         compute='_compute_subtype_count'
     )
 
-    _sql_constraints = [
-        ('unique_code', 'UNIQUE(code)', 'Category code must be unique!')
-    ]
+    # Odoo 19 constraint format
+    _unique_code = models.Constraint(
+        'UNIQUE(code)',
+        'Category code must be unique!'
+    )
 
     @api.depends('subtype_ids')
     def _compute_subtype_count(self):

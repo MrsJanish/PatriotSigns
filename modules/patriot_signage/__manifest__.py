@@ -36,6 +36,7 @@ bid intake through production and installation.
     'application': False,
     'auto_install': False,
     'license': 'LGPL-3',
+    'pre_init_hook': '_create_sign_part_table',
     'demo': [
         'demo/demo_sign_types.xml',
     ],

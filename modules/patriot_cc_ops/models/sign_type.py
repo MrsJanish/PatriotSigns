@@ -78,7 +78,7 @@ class SignType(models.Model):
         string='Bookmarks'
     )
     bookmark_count = fields.Integer(
-        string='Bookmarks',
+        string='Bookmark Count',
         compute='_compute_bookmark_count'
     )
     

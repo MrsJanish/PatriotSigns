@@ -49,6 +49,8 @@ class ProductionPhase(models.Model):
         help='Default estimated hours per sign (baseline for learning)'
     )
     
-    _sql_constraints = [
-        ('code_unique', 'UNIQUE(code)', 'Phase code must be unique!'),
-    ]
+    # Odoo 19 constraint format
+    _code_unique = models.Constraint(
+        'UNIQUE(code)',
+        'Phase code must be unique!'
+    )

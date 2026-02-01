@@ -19,7 +19,7 @@ class SignSubtype(models.Model):
         help='Display name, e.g., "Room Num, Insert", "Evacuation Plan"'
     )
     display_name_custom = fields.Char(
-        string='Display Name',
+        string='Custom Display Name',
         help='Custom display name for this subtype'
     )
     is_ada_default = fields.Boolean(
