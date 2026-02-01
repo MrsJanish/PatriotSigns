@@ -27,11 +27,11 @@ Employees click to start/stop tracking, cannot manually enter hours.
         'security/ir.model.access.csv',
         'security/ir_rules.xml',
         'data/internal_projects.xml',
+        'views/menu.xml',  # Must load first - defines menu_timeclock_app
         'views/time_punch_views.xml',
         'views/time_clock_kiosk_views.xml',
         'views/barcode_kiosk_views.xml',
         # 'views/hr_employee_views.xml',  # Temporarily disabled - needs upgrade first
-        'views/menu.xml',
     ],
     'assets': {
         'web.assets_backend': [
