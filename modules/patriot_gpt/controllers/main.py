@@ -509,3 +509,527 @@ class PatriotGPTController(http.Controller):
         except Exception as e:
             _logger.exception("GPT API Schema Error:")
             return self._response({'error': str(e)}, 400)
+
+    # =========================================================================
+    # DELETE Record
+    # =========================================================================
+    @http.route('/api/gpt/<string:model>/<int:id>', type='http', auth='public', methods=['DELETE'], csrf=False, cors='*')
+    def delete_record(self, model, id, **kwargs):
+        """
+        DELETE /api/gpt/{model}/{id} - Delete a record
+        """
+        user_id = self._authenticate()
+        if not user_id:
+            return self._response({'error': 'Unauthorized'}, 401)
+
+        request.update_env(user=user_id)
+        
+        try:
+            if model not in request.env:
+                return self._response({'error': f'Model {model} not found'}, 404)
+
+            record = request.env[model].browse(id)
+            if not record.exists():
+                return self._response({'error': 'Record not found'}, 404)
+            
+            display_name = record.display_name
+            record.unlink()
+            
+            return self._response({
+                'id': id,
+                'display_name': display_name,
+                'result': 'deleted'
+            })
+            
+        except Exception as e:
+            _logger.exception("GPT API Delete Error:")
+            return self._response({'error': str(e)}, 400)
+
+    # =========================================================================
+    # Call Method (Button/Workflow simulation)
+    # =========================================================================
+    @http.route('/api/gpt/<string:model>/<int:id>/call/<string:method>', type='http', auth='public', methods=['POST'], csrf=False, cors='*')
+    def call_method(self, model, id, method, **kwargs):
+        """
+        POST /api/gpt/{model}/{id}/call/{method} - Call a method on a record
+        Simulates clicking a button or triggering a workflow action.
+        Body: JSON dict of method arguments (optional)
+        """
+        user_id = self._authenticate()
+        if not user_id:
+            return self._response({'error': 'Unauthorized'}, 401)
+
+        request.update_env(user=user_id)
+        
+        try:
+            if model not in request.env:
+                return self._response({'error': f'Model {model} not found'}, 404)
+
+            record = request.env[model].browse(id)
+            if not record.exists():
+                return self._response({'error': 'Record not found'}, 404)
+            
+            # Get method arguments from body
+            try:
+                body = json.loads(request.httprequest.data or '{}')
+            except:
+                body = {}
+            
+            # Security: Only allow calling methods that don't start with underscore
+            if method.startswith('_'):
+                return self._response({'error': f'Cannot call private method: {method}'}, 403)
+            
+            if not hasattr(record, method):
+                return self._response({'error': f'Method {method} not found on {model}'}, 404)
+            
+            method_func = getattr(record, method)
+            if not callable(method_func):
+                return self._response({'error': f'{method} is not callable'}, 400)
+            
+            _logger.info(f"GPT API CALL_METHOD: {model}/{id}.{method}({body})")
+            
+            # Call the method with arguments if provided
+            if body:
+                result = method_func(**body)
+            else:
+                result = method_func()
+            
+            # Handle different return types
+            if hasattr(result, 'id'):
+                # It's a record
+                return self._response({
+                    'success': True,
+                    'method': method,
+                    'result_id': result.id,
+                    'result_model': result._name if hasattr(result, '_name') else None
+                })
+            elif isinstance(result, dict):
+                # It's a dict (possibly action)
+                return self._response({
+                    'success': True,
+                    'method': method,
+                    'result': result
+                })
+            else:
+                return self._response({
+                    'success': True,
+                    'method': method,
+                    'result': str(result) if result is not None else None
+                })
+            
+        except Exception as e:
+            _logger.exception("GPT API Call Method Error:")
+            return self._response({'error': str(e)}, 400)
+
+    # =========================================================================
+    # Batch Operations (Multiple operations in one call)
+    # =========================================================================
+    @http.route('/api/gpt/batch', type='http', auth='public', methods=['POST'], csrf=False, cors='*')
+    def batch_operations(self, **kwargs):
+        """
+        POST /api/gpt/batch - Execute multiple operations in one HTTP call
+        Body: { "operations": [ { "op": "read", "model": "res.partner", "id": 1 }, ... ] }
+        Supported ops: read, search, schema, create, update, delete, call
+        """
+        user_id = self._authenticate()
+        if not user_id:
+            return self._response({'error': 'Unauthorized'}, 401)
+
+        request.update_env(user=user_id)
+        
+        try:
+            body = json.loads(request.httprequest.data)
+            operations = body.get('operations', [])
+            results = []
+            
+            for op in operations[:10]:  # Max 10 operations per batch
+                op_type = op.get('op', 'read')
+                model = op.get('model')
+                
+                try:
+                    if model not in request.env:
+                        results.append({'error': f'Model {model} not found'})
+                        continue
+                    
+                    Model = request.env[model]
+                    
+                    if op_type == 'read':
+                        record = Model.browse(op.get('id'))
+                        fields = op.get('fields')
+                        data = record.read(fields if fields else None)
+                        results.append({'data': data[0] if data else {}})
+                    
+                    elif op_type == 'search':
+                        domain = op.get('domain', [])
+                        fields = op.get('fields')
+                        limit = op.get('limit', 10)
+                        records = Model.search_read(domain, fields=fields, limit=limit)
+                        results.append({'data': records})
+                    
+                    elif op_type == 'schema':
+                        fields_only = op.get('fields_only', False)
+                        field_data = {}
+                        for field_name, field in Model._fields.items():
+                            if fields_only:
+                                field_data[field_name] = {'type': field.type, 'string': field.string}
+                            else:
+                                field_data[field_name] = {
+                                    'type': field.type,
+                                    'string': field.string,
+                                    'required': field.required,
+                                    'comodel_name': getattr(field, 'comodel_name', None)
+                                }
+                        results.append({'fields': field_data, 'total': len(field_data)})
+                    
+                    elif op_type == 'create':
+                        new_record = Model.create(op.get('values', {}))
+                        results.append({'id': new_record.id, 'result': 'created'})
+                    
+                    elif op_type == 'update':
+                        record = Model.browse(op.get('id'))
+                        record.write(op.get('values', {}))
+                        results.append({'id': op.get('id'), 'result': 'updated'})
+                    
+                    elif op_type == 'delete':
+                        record = Model.browse(op.get('id'))
+                        record.unlink()
+                        results.append({'id': op.get('id'), 'result': 'deleted'})
+                    
+                    elif op_type == 'call':
+                        record = Model.browse(op.get('id'))
+                        method = op.get('method')
+                        method_args = op.get('args', {})
+                        if not method.startswith('_') and hasattr(record, method):
+                            result = getattr(record, method)(**method_args)
+                            results.append({'result': str(result) if result else None})
+                        else:
+                            results.append({'error': f'Invalid method: {method}'})
+                    
+                    else:
+                        results.append({'error': f'Unknown operation: {op_type}'})
+                        
+                except Exception as op_error:
+                    results.append({'error': str(op_error)})
+            
+            return self._response({'results': results})
+            
+        except Exception as e:
+            _logger.exception("GPT API Batch Error:")
+            return self._response({'error': str(e)}, 400)
+
+    # =========================================================================
+    # Module Upgrade (DevOps)
+    # =========================================================================
+    @http.route('/api/gpt/upgrade', type='http', auth='public', methods=['POST'], csrf=False, cors='*')
+    def upgrade_modules(self, **kwargs):
+        """
+        POST /api/gpt/upgrade - Upgrade specified modules
+        Body: { "modules": ["patriot_base", "patriot_gpt"] }
+        """
+        user_id = self._authenticate()
+        if not user_id:
+            return self._response({'error': 'Unauthorized'}, 401)
+
+        request.update_env(user=user_id)
+        
+        try:
+            body = json.loads(request.httprequest.data)
+            module_names = body.get('modules', [])
+            
+            if not module_names:
+                return self._response({'error': 'No modules specified'}, 400)
+            
+            # Find the modules
+            modules = request.env['ir.module.module'].sudo().search([
+                ('name', 'in', module_names)
+            ])
+            
+            if not modules:
+                return self._response({'error': f'Modules not found: {module_names}'}, 404)
+            
+            # Set modules to "to upgrade" state
+            modules.button_immediate_upgrade()
+            
+            return self._response({
+                'success': True,
+                'modules': module_names,
+                'message': f'Modules scheduled for upgrade: {", ".join(module_names)}'
+            })
+            
+        except Exception as e:
+            _logger.exception("GPT API Upgrade Error:")
+            return self._response({'error': str(e)}, 400)
+
+    # =========================================================================
+    # Server Logs Access (DevOps)
+    # =========================================================================
+    @http.route('/api/gpt/logs', type='http', auth='public', methods=['GET'], csrf=False, cors='*')
+    def get_server_logs(self, **kwargs):
+        """
+        GET /api/gpt/logs - Get recent server log entries
+        Params: lines (int, default 50), level (str: error/warning/info/all)
+        
+        Note: This reads from ir.logging if available, otherwise from Odoo.sh logs
+        """
+        user_id = self._authenticate()
+        if not user_id:
+            return self._response({'error': 'Unauthorized'}, 401)
+
+        request.update_env(user=user_id)
+        
+        try:
+            lines = int(kwargs.get('lines', 50))
+            level = kwargs.get('level', 'all')
+            
+            # Try to read from ir.logging (database logging)
+            domain = []
+            if level != 'all':
+                level_map = {'error': 'ERROR', 'warning': 'WARNING', 'info': 'INFO'}
+                odoo_level = level_map.get(level, level.upper())
+                domain.append(('level', '=', odoo_level))
+            
+            logs = request.env['ir.logging'].sudo().search(
+                domain, 
+                limit=lines, 
+                order='create_date desc'
+            )
+            
+            log_entries = []
+            for log in logs:
+                log_entries.append({
+                    'timestamp': log.create_date,
+                    'level': log.level,
+                    'name': log.name,
+                    'func': log.func,
+                    'message': log.message,
+                    'path': log.path,
+                    'line': log.line,
+                })
+            
+            return self._response({
+                'logs': log_entries,
+                'count': len(log_entries),
+                'level_filter': level
+            })
+            
+        except Exception as e:
+            # If ir.logging not available (not enabled), return helpful message
+            return self._response({
+                'error': str(e),
+                'hint': 'Database logging may not be enabled. Enable via log_db in odoo.conf.'
+            }, 400)
+
+    # =========================================================================
+    # Get View Definition (Navigation)
+    # =========================================================================
+    @http.route('/api/gpt/get_view', type='http', auth='public', methods=['GET'], csrf=False, cors='*')
+    def get_view(self, **kwargs):
+        """
+        GET /api/gpt/get_view - Get view definition for a model
+        Params: model (required), view_type (form/tree/kanban), view_id (optional)
+        """
+        user_id = self._authenticate()
+        if not user_id:
+            return self._response({'error': 'Unauthorized'}, 401)
+
+        request.update_env(user=user_id)
+        
+        try:
+            model = kwargs.get('model')
+            view_type = kwargs.get('view_type', 'form')
+            view_id = int(kwargs.get('view_id', 0)) or False
+            
+            if not model:
+                return self._response({'error': 'model parameter required'}, 400)
+            
+            if model not in request.env:
+                return self._response({'error': f'Model {model} not found'}, 404)
+            
+            Model = request.env[model]
+            
+            # Get view using fields_view_get (standard Odoo method)
+            view_data = Model.get_view(view_id=view_id, view_type=view_type)
+            
+            return self._response({
+                'model': model,
+                'view_type': view_type,
+                'view_id': view_data.get('view_id'),
+                'arch': view_data.get('arch'),
+                'fields': view_data.get('fields', {}),
+                'name': view_data.get('name'),
+                'toolbar': view_data.get('toolbar', {}),
+            })
+            
+        except Exception as e:
+            _logger.exception("GPT API Get View Error:")
+            return self._response({'error': str(e)}, 400)
+
+    # =========================================================================
+    # Onchange Simulation (Navigation)
+    # =========================================================================
+    @http.route('/api/gpt/<string:model>/onchange', type='http', auth='public', methods=['POST'], csrf=False, cors='*')
+    def run_onchange(self, model, **kwargs):
+        """
+        POST /api/gpt/{model}/onchange - Simulate onchange for a field
+        Body: { "values": {...}, "field_changed": "partner_id" }
+        Returns the values that would be updated by the onchange
+        """
+        user_id = self._authenticate()
+        if not user_id:
+            return self._response({'error': 'Unauthorized'}, 401)
+
+        request.update_env(user=user_id)
+        
+        try:
+            if model not in request.env:
+                return self._response({'error': f'Model {model} not found'}, 404)
+            
+            body = json.loads(request.httprequest.data)
+            values = body.get('values', {})
+            field_changed = body.get('field_changed')
+            
+            if not field_changed:
+                return self._response({'error': 'field_changed parameter required'}, 400)
+            
+            Model = request.env[model]
+            
+            # Create a new record in memory and trigger onchange
+            record = Model.new(values)
+            
+            # Find and call onchange method
+            onchange_method = f'_onchange_{field_changed}'
+            onchange_results = {}
+            
+            if hasattr(record, onchange_method):
+                getattr(record, onchange_method)()
+                # Read back changed values
+                for field_name in Model._fields:
+                    new_val = getattr(record, field_name, None)
+                    if field_name in values:
+                        old_val = values.get(field_name)
+                        # Compare and include if changed
+                        try:
+                            if hasattr(new_val, 'id'):
+                                if new_val.id != old_val:
+                                    onchange_results[field_name] = new_val.id
+                            elif new_val != old_val:
+                                onchange_results[field_name] = new_val
+                        except:
+                            pass
+            
+            return self._response({
+                'model': model,
+                'field_changed': field_changed,
+                'suggested_changes': onchange_results,
+            })
+            
+        except Exception as e:
+            _logger.exception("GPT API Onchange Error:")
+            return self._response({'error': str(e)}, 400)
+
+    # =========================================================================
+    # Execute Server Action (Navigation)
+    # =========================================================================
+    @http.route('/api/gpt/ir.actions.server/run', type='http', auth='public', methods=['POST'], csrf=False, cors='*')
+    def run_server_action(self, **kwargs):
+        """
+        POST /api/gpt/ir.actions.server/run - Execute a server action
+        Body: { "action_id": 123, "model": "sale.order", "record_ids": [1, 2, 3] }
+        """
+        user_id = self._authenticate()
+        if not user_id:
+            return self._response({'error': 'Unauthorized'}, 401)
+
+        request.update_env(user=user_id)
+        
+        try:
+            body = json.loads(request.httprequest.data)
+            action_id = body.get('action_id')
+            model = body.get('model')
+            record_ids = body.get('record_ids', [])
+            
+            if not action_id:
+                return self._response({'error': 'action_id required'}, 400)
+            
+            action = request.env['ir.actions.server'].browse(action_id)
+            if not action.exists():
+                return self._response({'error': f'Action {action_id} not found'}, 404)
+            
+            # Set up context for action execution
+            context = dict(request.env.context)
+            if model and record_ids:
+                context['active_model'] = model
+                context['active_ids'] = record_ids
+                context['active_id'] = record_ids[0] if record_ids else False
+            
+            # Execute the action
+            result = action.with_context(context).run()
+            
+            return self._response({
+                'success': True,
+                'action_id': action_id,
+                'action_name': action.name,
+                'result': result if isinstance(result, dict) else str(result) if result else None
+            })
+            
+        except Exception as e:
+            _logger.exception("GPT API Run Action Error:")
+            return self._response({'error': str(e)}, 400)
+
+    # =========================================================================
+    # List Available Models (Utility)
+    # =========================================================================
+    @http.route('/api/gpt/models', type='http', auth='public', methods=['GET'], csrf=False, cors='*')
+    def list_models(self, **kwargs):
+        """
+        GET /api/gpt/models - List available models
+        Params: prefix (filter by prefix, e.g., "ps." or "sale.")
+        """
+        user_id = self._authenticate()
+        if not user_id:
+            return self._response({'error': 'Unauthorized'}, 401)
+
+        request.update_env(user=user_id)
+        
+        try:
+            prefix = kwargs.get('prefix', '')
+            limit = int(kwargs.get('limit', 50))
+            
+            domain = []
+            if prefix:
+                domain.append(('model', '=like', f'{prefix}%'))
+            
+            models = request.env['ir.model'].sudo().search(domain, limit=limit, order='model')
+            
+            result = []
+            for m in models:
+                result.append({
+                    'model': m.model,
+                    'name': m.name,
+                    'transient': m.transient,
+                    'info': m.info or '',
+                })
+            
+            return self._response({
+                'models': result,
+                'count': len(result),
+            })
+            
+        except Exception as e:
+            return self._response({'error': str(e)}, 400)
+
+    # =========================================================================
+    # Health Check
+    # =========================================================================
+    @http.route('/api/gpt/health', type='http', auth='public', methods=['GET'], csrf=False, cors='*')
+    def health_check(self, **kwargs):
+        """
+        GET /api/gpt/health - Simple health check (no auth required for monitoring)
+        """
+        return self._response({
+            'status': 'ok',
+            'module': 'patriot_gpt',
+            'version': '2.0.0',
+            'timestamp': str(request.env.cr.now()),
+        })
+
