@@ -82,6 +82,43 @@ class TimeClockKiosk(models.TransientModel):
     notes = fields.Text(
         string='Notes'
     )
+    
+    # Task-based clock-in fields
+    recommended_task_id = fields.Many2one(
+        'project.task',
+        string='Recommended Task',
+        compute='_compute_recommended_task',
+        help='Your highest priority assigned task'
+    )
+    assigned_task_ids = fields.Many2many(
+        'project.task',
+        string='Your Assigned Tasks',
+        compute='_compute_recommended_task',
+        help='All tasks assigned to you, ordered by priority'
+    )
+    
+    @api.depends('employee_id')
+    def _compute_recommended_task(self):
+        """Find the highest priority task assigned to the current employee."""
+        Task = self.env['project.task']
+        for kiosk in self:
+            if not kiosk.employee_id or not kiosk.employee_id.user_id:
+                kiosk.recommended_task_id = False
+                kiosk.assigned_task_ids = False
+                continue
+            
+            user_id = kiosk.employee_id.user_id.id
+            
+            # Find all tasks assigned to this user, ordered by priority
+            # Priority: assigned first, then by priority_sequence (lower = higher priority)
+            assigned_tasks = Task.search([
+                ('assigned_user_ids', 'in', [user_id]),
+                ('work_state', 'in', ['assigned', 'in_progress']),
+                ('is_closed', '=', False),
+            ], order='priority_sequence asc, id desc', limit=20)
+            
+            kiosk.assigned_task_ids = assigned_tasks
+            kiosk.recommended_task_id = assigned_tasks[0] if assigned_tasks else False
 
     @api.depends('employee_id')
     def _compute_status(self):
@@ -117,9 +154,9 @@ class TimeClockKiosk(models.TransientModel):
 
     def action_clock_in(self):
         """
-        Clock in to a project.
+        Clock in to a task, project, or opportunity.
         
-        If already clocked into another project, auto-clock-out from it first.
+        If already clocked into another item, auto-clock-out from it first.
         This simplifies the UX - employees just select where they're working.
         """
         self.ensure_one()
@@ -130,19 +167,26 @@ class TimeClockKiosk(models.TransientModel):
                 "Please ask your administrator to create an Employee record for you."
             )
         
-        # Must select either project or opportunity
-        if not self.project_id and not self.opportunity_id:
-            raise UserError("Please select a project or opportunity to clock into.")
+        # Can clock into: recommended_task, specific task, project, or opportunity
+        target_task = self.recommended_task_id or self.task_id
+        if not target_task and not self.project_id and not self.opportunity_id:
+            raise UserError("Please select a task, project, or opportunity to clock into.")
         
         # Determine what we're clocking into
-        work_name = self.project_id.name if self.project_id else f"[Bid] {self.opportunity_id.name}"
+        if target_task:
+            work_name = f"{target_task.project_id.name} / {target_task.name}"
+        elif self.project_id:
+            work_name = self.project_id.name
+        else:
+            work_name = f"[Bid] {self.opportunity_id.name}"
         
         # If already clocked in to the SAME item, do nothing
         if self.is_clocked_in:
             current = self.active_punch_id
-            same_project = self.project_id and current.project_id == self.project_id
+            same_task = target_task and current.task_id == target_task
+            same_project = not target_task and self.project_id and current.project_id == self.project_id
             same_opp = self.opportunity_id and current.opportunity_id == self.opportunity_id
-            if same_project or same_opp:
+            if same_task or same_project or same_opp:
                 return self._get_reload_action()
         
         old_work = None
@@ -152,14 +196,18 @@ class TimeClockKiosk(models.TransientModel):
             old_work = self.active_punch_id.work_item
             self.active_punch_id.action_clock_out()
         
-        # Create new punch - can have project OR opportunity (not both)
+        # Create new punch - prioritize task, then project, then opportunity
         punch_vals = {
             'employee_id': self.employee_id.id,
             'notes': self.notes,
             'state': 'active',
         }
         
-        if self.project_id:
+        if target_task:
+            # Task-based clock-in: set both task and its project
+            punch_vals['task_id'] = target_task.id
+            punch_vals['project_id'] = target_task.project_id.id
+        elif self.project_id:
             punch_vals['project_id'] = self.project_id.id
             punch_vals['task_id'] = self.task_id.id if self.task_id else False
         else:

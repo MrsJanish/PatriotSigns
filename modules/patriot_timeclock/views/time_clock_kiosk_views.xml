@@ -10,6 +10,7 @@
                     <!-- Hidden fields -->
                     <field name="is_clocked_in" invisible="1"/>
                     <field name="active_punch_id" invisible="1"/>
+                    <field name="recommended_task_id" invisible="1"/>
                     
                     <!-- Employee Info - Large -->
                     <div class="oe_title mb-3">
@@ -37,8 +38,31 @@
 
                     <separator/>
                     
-                    <!-- Work Selection: Project OR Opportunity -->
-                    <group>
+                    <!-- RECOMMENDED TASK - Prominent when available -->
+                    <div class="alert alert-success mb-3" invisible="not recommended_task_id or is_clocked_in">
+                        <h3 class="mb-2">Your Next Task</h3>
+                        <div class="d-flex align-items-center justify-content-between">
+                            <div>
+                                <field name="recommended_task_id" readonly="1" 
+                                       options="{'no_open': True}" class="fs-5 fw-bold"/>
+                            </div>
+                            <button name="action_clock_in" 
+                                    string="Start This Task" 
+                                    type="object"
+                                    class="btn-success btn-lg oe_highlight"/>
+                        </div>
+                    </div>
+                    
+                    <!-- Your other assigned tasks -->
+                    <group string="Your Assigned Tasks" invisible="is_clocked_in">
+                        <field name="assigned_task_ids" widget="many2many_tags" 
+                               readonly="1" options="{'color_field': 'color'}"/>
+                    </group>
+                    
+                    <separator string="Or Select Manually" invisible="is_clocked_in"/>
+                    
+                    <!-- Manual Work Selection: Project OR Opportunity -->
+                    <group invisible="is_clocked_in">
                         <field name="project_id" string="Project" 
                                placeholder="Select a won project..."
                                options="{'no_create': True}"/>
@@ -58,7 +82,8 @@
                         <button name="action_clock_in" 
                                 string="Start" 
                                 type="object"
-                                class="btn-primary oe_highlight o_wide_btn"/>
+                                class="btn-primary oe_highlight o_wide_btn"
+                                invisible="recommended_task_id and not is_clocked_in"/>
                         
                         <button name="action_clock_out" 
                                 string="Stop" 
