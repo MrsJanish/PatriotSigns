@@ -59,23 +59,15 @@
                                readonly="1" options="{'color_field': 'color'}"/>
                     </group>
                     
-                    <separator string="Or Select Manually" invisible="is_clocked_in"/>
+                    <separator string="Or Search with AI" invisible="is_clocked_in"/>
                     
-                    <!-- Manual Work Selection: Project OR Opportunity -->
-                    <group invisible="is_clocked_in">
-                        <field name="project_id" string="Project" 
-                               placeholder="Select a won project..."
-                               options="{'no_create': True}"/>
-                        <field name="opportunity_id" string="Opportunity (Bidding/Submittals)"
-                               placeholder="...or select opportunity for bidding work"
-                               options="{'no_create': True}"/>
-                        <field name="task_id" string="Task" 
-                               placeholder="(Optional)"
-                               options="{'no_create': True}"
-                               invisible="not project_id"
-                               domain="[('project_id', '=', project_id), '|', ('user_ids', 'in', uid), ('user_ids', '=', False)]"/>
-                        <field name="notes" string="Notes"/>
-                    </group>
+                    <!-- AI-Powered Search -->
+                    <div invisible="is_clocked_in" class="ps_ai_search_container">
+                        <field name="project_id" widget="ai_search"/>
+                        <field name="task_id" invisible="1"/>
+                        <field name="opportunity_id" invisible="1"/>
+                        <field name="notes" string="Notes" placeholder="Optional notes..."/>
+                    </div>
                     
                     <!-- Action Buttons -->
                     <div class="mt-4">

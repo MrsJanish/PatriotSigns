@@ -1,0 +1,135 @@
+/* AI Search Widget Styles */
+
+.ps_ai_search {
+    padding: 1rem 0;
+}
+
+.ps_ai_search_input_container {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.ps_ai_icon {
+    position: absolute;
+    left: 12px;
+    color: #714b67;
+    font-size: 1.1rem;
+}
+
+.ps_ai_input {
+    padding-left: 40px;
+    padding-right: 40px;
+    height: 48px;
+    font-size: 1rem;
+    border: 2px solid #e0e0e0;
+    border-radius: 24px;
+    transition: all 0.2s;
+}
+
+.ps_ai_input:focus {
+    border-color: #714b67;
+    box-shadow: 0 0 0 4px rgba(113, 75, 103, 0.15);
+    outline: none;
+}
+
+.ps_ai_input::placeholder {
+    color: #999;
+    font-style: italic;
+}
+
+.ps_ai_loading {
+    position: absolute;
+    right: 16px;
+    color: #714b67;
+}
+
+/* Results */
+.ps_ai_results {
+    margin-top: 0.75rem;
+    border: 1px solid #e0e0e0;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.ps_ai_result {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.875rem 1rem;
+    cursor: pointer;
+    border-bottom: 1px solid #f0f0f0;
+    transition: background-color 0.15s;
+}
+
+.ps_ai_result:last-child {
+    border-bottom: none;
+}
+
+.ps_ai_result:hover {
+    background-color: #f8f5f7;
+}
+
+.ps_ai_result.ps_selected {
+    background-color: #f0e6ed;
+    border-left: 3px solid #714b67;
+}
+
+.ps_ai_result_content {
+    display: flex;
+    align-items: center;
+    flex: 1;
+}
+
+.ps_ai_result_content .fa {
+    color: #714b67;
+    width: 20px;
+}
+
+.ps_ai_result_name {
+    font-weight: 500;
+    color: #333;
+}
+
+.ps_ai_confidence {
+    font-size: 1.1rem;
+}
+
+.ps_ai_no_results {
+    margin-top: 0.75rem;
+    padding: 1rem;
+    text-align: center;
+    color: #888;
+    background: #f9f9f9;
+    border-radius: 8px;
+}
+
+.ps_ai_hint {
+    margin-top: 0.5rem;
+    padding-left: 0.5rem;
+}
+
+/* Dark mode */
+.o_dark .ps_ai_input {
+    background: #2d2d2d;
+    border-color: #444;
+    color: #eee;
+}
+
+.o_dark .ps_ai_results {
+    background: #2d2d2d;
+    border-color: #444;
+}
+
+.o_dark .ps_ai_result:hover {
+    background-color: #3d3d3d;
+}
+
+.o_dark .ps_ai_result.ps_selected {
+    background-color: #3d3d3d;
+}
+
+.o_dark .ps_ai_result_name {
+    color: #eee;
+}
