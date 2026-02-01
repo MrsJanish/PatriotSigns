@@ -62,12 +62,33 @@
                     <separator string="Or Search with AI" invisible="is_clocked_in"/>
                     
                     <!-- AI-Powered Search -->
-                    <div invisible="is_clocked_in" class="ps_ai_search_container">
-                        <field name="project_id" widget="ai_search"/>
-                        <field name="task_id" invisible="1"/>
-                        <field name="opportunity_id" invisible="1"/>
-                        <field name="notes" string="Notes" placeholder="Optional notes..."/>
+                    <group invisible="is_clocked_in">
+                        <field name="ai_search_query" 
+                               placeholder="Type naturally: 'hospital fab', 'that ada job'..."
+                               widget="char"/>
+                        <field name="ai_search_result" readonly="1" class="fw-bold text-success" invisible="not ai_search_query"/>
+                        <field name="ai_matched_project_id" invisible="1"/>
+                        <field name="ai_matched_task_id" invisible="1"/>
+                    </group>
+                    
+                    <!-- AI Search Start Button -->
+                    <div invisible="is_clocked_in or not ai_search_result" class="my-2">
+                        <button name="action_apply_ai_search" 
+                                string="✓ Start This" 
+                                type="object"
+                                class="btn-success oe_highlight"
+                                invisible="not ai_matched_project_id and not ai_matched_task_id"/>
                     </div>
+                    
+                    <separator string="Or Pick Manually" invisible="is_clocked_in"/>
+                    
+                    <!-- Manual Selection (fallback) -->
+                    <group invisible="is_clocked_in">
+                        <field name="project_id" string="Project" options="{'no_create': True}"/>
+                        <field name="task_id" invisible="not project_id" options="{'no_create': True}"/>
+                        <field name="opportunity_id" string="Opportunity" options="{'no_create': True}"/>
+                        <field name="notes" placeholder="Optional notes..."/>
+                    </group>
                     
                     <!-- Action Buttons -->
                     <div class="mt-4">

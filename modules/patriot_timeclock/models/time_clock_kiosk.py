@@ -83,6 +83,27 @@ class TimeClockKiosk(models.TransientModel):
         string='Notes'
     )
     
+    # AI Search fields
+    ai_search_query = fields.Char(
+        string='AI Search',
+        help='Type naturally to find projects or tasks'
+    )
+    ai_search_result = fields.Char(
+        string='AI Result',
+        compute='_compute_ai_search',
+        help='AI-matched project/task'
+    )
+    ai_matched_project_id = fields.Many2one(
+        'project.project',
+        string='Matched Project',
+        compute='_compute_ai_search'
+    )
+    ai_matched_task_id = fields.Many2one(
+        'project.task',
+        string='Matched Task',
+        compute='_compute_ai_search'
+    )
+    
     # Task-based clock-in fields
     recommended_task_id = fields.Many2one(
         'project.task',
@@ -120,6 +141,131 @@ class TimeClockKiosk(models.TransientModel):
             kiosk.assigned_task_ids = assigned_tasks
             kiosk.recommended_task_id = assigned_tasks[0] if assigned_tasks else False
 
+    @api.depends('ai_search_query')
+    def _compute_ai_search(self):
+        """Use AI to match search query to projects/tasks."""
+        for kiosk in self:
+            if not kiosk.ai_search_query or len(kiosk.ai_search_query) < 2:
+                kiosk.ai_search_result = ""
+                kiosk.ai_matched_project_id = False
+                kiosk.ai_matched_task_id = False
+                continue
+            
+            # Try AI search, fallback to simple search
+            result = self._do_ai_search(kiosk.ai_search_query)
+            
+            if result:
+                kiosk.ai_search_result = result.get('display', '')
+                kiosk.ai_matched_project_id = result.get('project_id', False)
+                kiosk.ai_matched_task_id = result.get('task_id', False)
+            else:
+                kiosk.ai_search_result = "No match found"
+                kiosk.ai_matched_project_id = False
+                kiosk.ai_matched_task_id = False
+    
+    def _do_ai_search(self, query):
+        """Call OpenAI to match query to projects/tasks."""
+        import json
+        import requests
+        
+        api_key = self.env['ir.config_parameter'].sudo().get_param('openai.api_key')
+        if not api_key:
+            # Fallback to simple search
+            return self._simple_search(query)
+        
+        try:
+            user = self.env.user
+            
+            # Get projects and tasks
+            projects = self.env['project.project'].search_read(
+                [('active', '=', True)], ['id', 'name'], limit=30
+            )
+            tasks = self.env['project.task'].search_read(
+                [('user_ids', 'in', [user.id]), ('is_closed', '=', False)],
+                ['id', 'name', 'project_id'], limit=30
+            )
+            
+            items = []
+            for p in projects:
+                items.append(f"PROJECT:{p['id']}:{p['name']}")
+            for t in tasks:
+                proj_name = t['project_id'][1] if t['project_id'] else ''
+                items.append(f"TASK:{t['id']}:{t['name']} ({proj_name})")
+            
+            if not items:
+                return None
+            
+            prompt = f"""Match this search to the best item:
+Search: "{query}"
+Items:
+{chr(10).join(items[:40])}
+
+Return JSON: {{"type": "PROJECT" or "TASK", "id": number}}
+Only return JSON."""
+
+            resp = requests.post(
+                'https://api.openai.com/v1/chat/completions',
+                headers={'Authorization': f'Bearer {api_key}', 'Content-Type': 'application/json'},
+                json={
+                    'model': 'gpt-4o-mini',
+                    'messages': [{'role': 'user', 'content': prompt}],
+                    'temperature': 0.2,
+                    'max_tokens': 100
+                },
+                timeout=8
+            )
+            
+            if resp.status_code != 200:
+                return self._simple_search(query)
+            
+            content = resp.json()['choices'][0]['message']['content'].strip()
+            if content.startswith('```'):
+                content = content.split('```')[1].replace('json', '').strip()
+            
+            match = json.loads(content)
+            
+            if match['type'] == 'PROJECT':
+                project = self.env['project.project'].browse(match['id'])
+                if project.exists():
+                    return {'display': f"✅ {project.name}", 'project_id': project.id, 'task_id': False}
+            elif match['type'] == 'TASK':
+                task = self.env['project.task'].browse(match['id'])
+                if task.exists():
+                    display = f"✅ {task.project_id.name} → {task.name}" if task.project_id else f"✅ {task.name}"
+                    return {'display': display, 'project_id': task.project_id.id if task.project_id else False, 'task_id': task.id}
+            
+            return self._simple_search(query)
+            
+        except Exception as e:
+            import logging
+            logging.getLogger(__name__).warning(f"AI search error: {e}")
+            return self._simple_search(query)
+    
+    def _simple_search(self, query):
+        """Simple text-based search fallback."""
+        user = self.env.user
+        
+        # Search tasks first
+        task = self.env['project.task'].search([
+            ('user_ids', 'in', [user.id]),
+            ('is_closed', '=', False),
+            '|', ('name', 'ilike', query), ('project_id.name', 'ilike', query)
+        ], limit=1)
+        
+        if task:
+            display = f"📋 {task.project_id.name} → {task.name}" if task.project_id else f"📋 {task.name}"
+            return {'display': display, 'project_id': task.project_id.id if task.project_id else False, 'task_id': task.id}
+        
+        # Search projects
+        project = self.env['project.project'].search([
+            ('name', 'ilike', query), ('active', '=', True)
+        ], limit=1)
+        
+        if project:
+            return {'display': f"📁 {project.name}", 'project_id': project.id, 'task_id': False}
+        
+        return None
+
     @api.depends('employee_id')
     def _compute_status(self):
         TimePunch = self.env['ps.time.punch']
@@ -151,6 +297,26 @@ class TimeClockKiosk(models.TransientModel):
             'target': 'current',
             'context': {'form_view_initial_mode': 'edit'},
         }
+
+    def action_apply_ai_search(self):
+        """Apply AI search result and clock in."""
+        self.ensure_one()
+        
+        # Apply the AI matched project/task
+        if self.ai_matched_task_id:
+            self.task_id = self.ai_matched_task_id
+            self.project_id = self.ai_matched_task_id.project_id
+        elif self.ai_matched_project_id:
+            self.project_id = self.ai_matched_project_id
+            self.task_id = False
+        else:
+            raise UserError("No match found. Try a different search.")
+        
+        # Clear the search
+        self.ai_search_query = False
+        
+        # Now clock in
+        return self.action_clock_in()
 
     def action_clock_in(self):
         """
