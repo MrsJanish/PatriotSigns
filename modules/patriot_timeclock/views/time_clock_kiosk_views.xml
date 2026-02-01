@@ -61,14 +61,21 @@
                     
                     <separator string="Or Select Manually" invisible="is_clocked_in"/>
                     
-                    <!-- Card-based Work Selector -->
-                    <div invisible="is_clocked_in" class="ps_selector_container">
-                        <field name="project_id" widget="task_selector" 
+                    <!-- Manual Work Selection: Project OR Opportunity -->
+                    <group invisible="is_clocked_in">
+                        <field name="project_id" string="Project" 
+                               placeholder="Select a won project..."
                                options="{'no_create': True}"/>
-                        <field name="task_id" invisible="1"/>
-                        <field name="opportunity_id" invisible="1"/>
-                        <field name="notes" string="Notes" placeholder="Optional notes..."/>
-                    </div>
+                        <field name="opportunity_id" string="Opportunity (Bidding/Submittals)"
+                               placeholder="...or select opportunity for bidding work"
+                               options="{'no_create': True}"/>
+                        <field name="task_id" string="Task" 
+                               placeholder="(Optional)"
+                               options="{'no_create': True}"
+                               invisible="not project_id"
+                               domain="[('project_id', '=', project_id), '|', ('user_ids', 'in', uid), ('user_ids', '=', False)]"/>
+                        <field name="notes" string="Notes"/>
+                    </group>
                     
                     <!-- Action Buttons -->
                     <div class="mt-4">
