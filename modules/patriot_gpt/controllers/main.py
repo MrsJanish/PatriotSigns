@@ -266,8 +266,27 @@ class PatriotGPTController(http.Controller):
             })
             
         except Exception as e:
+            error_msg = str(e)
             _logger.exception("GPT API Create Error:")
-            return self._response({'error': str(e)}, 400)
+            
+            # Check if it's a post-create hook error (record may have been created)
+            # Common pattern: "duplicate in Trash" from Odoo automations
+            if 'duplicate' in error_msg.lower() or 'trash' in error_msg.lower():
+                _logger.warning(f"GPT API Create: Post-create hook error (record may exist): {error_msg}")
+                # Try to find the recently created record
+                try:
+                    recent = request.env[model].search([], order='id desc', limit=1)
+                    if recent:
+                        return self._response({
+                            'id': recent.id,
+                            'display_name': recent.display_name,
+                            'result': 'created',
+                            'warning': 'Post-create automation failed but record was created'
+                        })
+                except:
+                    pass
+            
+            return self._response({'error': error_msg}, 400)
 
     @http.route('/api/gpt/<string:model>/<int:id>', type='http', auth='public', methods=['PUT', 'PATCH'], csrf=False, cors='*')
     def update_record(self, model, id, **kwargs):
