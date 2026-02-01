@@ -10,7 +10,6 @@
                 <field name="project_alias"/>
                 <field name="project_number"/>
                 <field name="opportunity_id"/>
-                <field name="total_hours_display" string="Time Logged"/>
             </field>
             
             <page name="settings" position="before">
