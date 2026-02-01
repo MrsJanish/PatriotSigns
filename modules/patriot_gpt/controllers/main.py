@@ -587,7 +587,13 @@ class PatriotGPTController(http.Controller):
                 body = {}
             
             # Security: Only allow calling methods that don't start with underscore
-            if method.startswith('_'):
+            # Exception: whitelist common private methods that are safe and needed
+            ALLOWED_PRIVATE_METHODS = {
+                '_create_invoices',  # sale.order - create invoices
+                '_compute_access_url',  # many models
+                '_onchange_partner_id',  # many models
+            }
+            if method.startswith('_') and method not in ALLOWED_PRIVATE_METHODS:
                 return self._response({'error': f'Cannot call private method: {method}'}, 403)
             
             if not hasattr(record, method):
