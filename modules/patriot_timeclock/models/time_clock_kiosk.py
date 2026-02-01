@@ -112,8 +112,8 @@ class TimeClockKiosk(models.TransientModel):
             # Find all tasks assigned to this user, ordered by priority
             # Priority: assigned first, then by priority_sequence (lower = higher priority)
             assigned_tasks = Task.search([
-                ('assigned_user_ids', 'in', [user_id]),
-                ('work_state', 'in', ['assigned', 'in_progress']),
+                ('user_ids', 'in', [user_id]),
+                ('work_state', 'in', ['assigned', 'in_progress', 'not_started']),
                 ('is_closed', '=', False),
             ], order='priority_sequence asc, id desc', limit=20)
             
