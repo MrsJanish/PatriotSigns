@@ -93,12 +93,9 @@ class SignPart(models.Model):
     
     production_notes = fields.Text(string='Shop Notes')
     
-    # Link to Production Batch (The "Work Order")
-    production_order_id = fields.Many2one(
-        'ps.production.order',
-        string='Production Order',
-        help='The batch this part is being made in'
-    )
+    # NOTE: Production Order link will be added by patriot_production module
+    # via model inheritance. We can't reference ps.production.order here
+    # because patriot_production loads AFTER patriot_signage.
 
     # =========================================================================
     # ACTIONS
