@@ -245,9 +245,27 @@ class SignInstance(models.Model):
     )
 
     # =========================================================================
+    # COMPONENTS (PARTS)
+    # =========================================================================
+    part_ids = fields.One2many(
+        'ps.sign.part',
+        'instance_id',
+        string='Sign Parts'
+    )
+    part_count = fields.Integer(
+        string='Parts',
+        compute='_compute_part_count'
+    )
+
+    # =========================================================================
     # COMPUTED FIELDS
     # =========================================================================
     
+    @api.depends('part_ids')
+    def _compute_part_count(self):
+        for record in self:
+            record.part_count = len(record.part_ids)
+
     @api.depends('sign_type_id.name', 'sequence', 'room_number_plans')
     def _compute_name(self):
         for record in self:

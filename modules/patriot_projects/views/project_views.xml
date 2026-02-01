@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
-    <!-- Project Form Extension - TJ COMMENTED THIS OUT TO RESOLVE ERROR
+    <!-- Project Form Extension -->
     <record id="project_project_form_inherit_patriot" model="ir.ui.view">
         <field name="name">project.project.form.inherit.patriot</field>
         <field name="model">project.project</field>
@@ -12,7 +12,7 @@
                 <field name="opportunity_id"/>
             </field>
             
-             Replace Allocated Time with actual logged time 
+            <!-- Replace Allocated Time with actual logged time -->
             <field name="allocated_hours" position="replace">
                 <field name="total_hours_display" string="Time Logged"/>
             </field>
@@ -66,7 +66,6 @@
             </page>
         </field>
     </record>
-    -->
 
     <!-- Contract Tree View -->
     <record id="ps_contract_tree" model="ir.ui.view">

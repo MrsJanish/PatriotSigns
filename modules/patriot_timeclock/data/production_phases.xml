@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+        <!--
+        Production Phases - Default workflow stages for sign manufacturing.
+        These can be customized per company but provide a solid baseline.
+        -->
+
+        <record id="phase_design" model="ps.production.phase">
+            <field name="name">Design / Layout</field>
+            <field name="code">DESIGN</field>
+            <field name="sequence">10</field>
+            <field name="color">1</field>
+            <field name="description">Design and layout preparation, artwork approval</field>
+            <field name="default_hours_per_sign">0.5</field>
+        </record>
+
+        <record id="phase_material_prep" model="ps.production.phase">
+            <field name="name">Material Prep</field>
+            <field name="code">PREP</field>
+            <field name="sequence">20</field>
+            <field name="color">2</field>
+            <field name="description">Cutting raw materials to size, gathering components</field>
+            <field name="default_hours_per_sign">0.25</field>
+        </record>
+
+        <record id="phase_fabrication" model="ps.production.phase">
+            <field name="name">Fabrication</field>
+            <field name="code">FAB</field>
+            <field name="sequence">30</field>
+            <field name="color">3</field>
+            <field name="description">CNC routing, laser cutting, primary manufacturing</field>
+            <field name="default_hours_per_sign">0.75</field>
+        </record>
+
+        <record id="phase_sanding" model="ps.production.phase">
+            <field name="name">Sanding</field>
+            <field name="code">SAND</field>
+            <field name="sequence">40</field>
+            <field name="color">4</field>
+            <field name="description">Surface sanding and edge finishing</field>
+            <field name="default_hours_per_sign">0.15</field>
+        </record>
+
+        <record id="phase_finishing" model="ps.production.phase">
+            <field name="name">Finishing</field>
+            <field name="code">FINISH</field>
+            <field name="sequence">50</field>
+            <field name="color">5</field>
+            <field name="description">Painting, vinyl application, tactile elements, braille</field>
+            <field name="default_hours_per_sign">0.5</field>
+        </record>
+
+        <record id="phase_qc" model="ps.production.phase">
+            <field name="name">Quality Check</field>
+            <field name="code">QC</field>
+            <field name="sequence">60</field>
+            <field name="color">6</field>
+            <field name="description">Quality inspection and ADA compliance verification</field>
+            <field name="default_hours_per_sign">0.1</field>
+        </record>
+
+        <record id="phase_packing" model="ps.production.phase">
+            <field name="name">Packing</field>
+            <field name="code">PACK</field>
+            <field name="sequence">70</field>
+            <field name="color">7</field>
+            <field name="description">Packaging and labeling for shipment</field>
+            <field name="default_hours_per_sign">0.1</field>
+        </record>
+
+        <record id="phase_installation" model="ps.production.phase">
+            <field name="name">Installation</field>
+            <field name="code">INSTALL</field>
+            <field name="sequence">80</field>
+            <field name="color">8</field>
+            <field name="description">On-site installation</field>
+            <field name="default_hours_per_sign">0.25</field>
+        </record>
+
+        <record id="phase_punchlist" model="ps.production.phase">
+            <field name="name">Punchlist</field>
+            <field name="code">PUNCH</field>
+            <field name="sequence">90</field>
+            <field name="color">9</field>
+            <field name="description">Final corrections and sign-off</field>
+            <field name="default_hours_per_sign">0.1</field>
+        </record>
+
+    </data>
+</odoo>

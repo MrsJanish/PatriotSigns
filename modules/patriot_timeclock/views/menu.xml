@@ -30,4 +30,26 @@
               groups="hr.group_hr_manager"
               sequence="20"/>
 
+    <!-- Work Assignment (managers) -->
+    <menuitem id="menu_work_assignment"
+              name="Work Assignment"
+              parent="menu_timeclock_app"
+              action="action_work_assignment"
+              groups="hr.group_hr_manager"
+              sequence="15"/>
+
+    <!-- Configuration -->
+    <menuitem id="menu_timeclock_config"
+              name="Configuration"
+              parent="menu_timeclock_app"
+              groups="hr.group_hr_manager"
+              sequence="100"/>
+
+    <menuitem id="menu_production_phases"
+              name="Production Phases"
+              parent="menu_timeclock_config"
+              action="action_production_phases"
+              sequence="10"/>
+
 </odoo>
+
