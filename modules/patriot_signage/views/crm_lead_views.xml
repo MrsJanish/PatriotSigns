@@ -36,7 +36,7 @@
                                 confirm="Create a quotation from the sign schedule? Each sign type becomes a line item with bid prices."/>
                     </div>
                     <field name="sign_type_ids" nolabel="1">
-                        <list editable="bottom">
+                        <list>
                             <field name="template_id" string="Template" options="{'no_create': True}"/>
                             <field name="name" string="Type ID"/>
                             <field name="category_id"/>
