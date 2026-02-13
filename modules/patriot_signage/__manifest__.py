@@ -21,6 +21,7 @@ bid intake through production and installation.
     'depends': [
         'patriot_base',
         'patriot_crm',
+        'sale_management',
     ],
     'data': [
         'security/ir.model.access.csv',

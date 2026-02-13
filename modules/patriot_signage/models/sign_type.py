@@ -47,6 +47,11 @@ class SignType(models.Model):
         string='Template',
         help='Select a template to auto-fill dimensions and category'
     )
+    product_id = fields.Many2one(
+        'product.product',
+        string='Product',
+        help='Product for quotation line. Auto-filled from template, can be overridden.'
+    )
     
     @api.onchange('template_id')
     def _onchange_template_id(self):
@@ -58,6 +63,8 @@ class SignType(models.Model):
             self.length = template.length
             self.unit_price = template.default_unit_price
             self.is_ada = template.is_ada
+            if template.product_id:
+                self.product_id = template.product_id
             if not self.name:
                 self.name = template.name
             # Increment usage counter

@@ -48,6 +48,13 @@ class SignTypeTemplate(models.Model):
         required=True
     )
     
+    # Product (for quotation generation)
+    product_id = fields.Many2one(
+        'product.product',
+        string='Product',
+        help='Product used when generating quotation lines from the sign schedule'
+    )
+
     # Pricing
     default_unit_price = fields.Float(
         string='Default Unit Price',

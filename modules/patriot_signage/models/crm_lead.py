@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 from odoo import models, fields, api
+from odoo.exceptions import UserError
 
 
 class CrmLead(models.Model):
@@ -10,6 +11,80 @@ class CrmLead(models.Model):
     Actual labor costs (from HR employee.hourly_cost) come out of PROFIT.
     """
     _inherit = 'crm.lead'
+
+    # =========================================================================
+    # GENERATE QUOTATION FROM SIGN SCHEDULE
+    # =========================================================================
+
+    def action_generate_quotation(self):
+        """
+        Create a Sale Order (quotation) from the sign schedule.
+        
+        Each sign type becomes one SO line:
+          - Product: sign_type.product_id or fallback generic product
+          - Description: sign type name + dimensions
+          - Quantity: sign_type.quantity
+          - Unit Price: sign_type.unit_price (bid price, NOT product list price)
+        """
+        self.ensure_one()
+
+        if not self.sign_type_ids:
+            raise UserError("No sign types in the schedule. Add sign types first.")
+
+        if not self.partner_id:
+            raise UserError(
+                "No customer set on this opportunity. "
+                "Set the Customer field before generating a quotation."
+            )
+
+        # Find or create a generic fallback product for sign types without one
+        fallback_product = self.env['product.product'].search(
+            [('default_code', '=', 'SIGNAGE')], limit=1
+        )
+        if not fallback_product:
+            fallback_product = self.env['product.product'].create({
+                'name': 'Signage',
+                'default_code': 'SIGNAGE',
+                'type': 'service',
+                'invoice_policy': 'order',
+                'list_price': 0.0,
+            })
+
+        # Build order lines from sign schedule
+        order_lines = []
+        for st in self.sign_type_ids:
+            product = st.product_id or fallback_product
+            desc = f"{st.name}"
+            if st.dimensions_display:
+                desc += f" ({st.dimensions_display})"
+            if st.category_id:
+                desc += f" - {st.category_id.name}"
+
+            order_lines.append((0, 0, {
+                'product_id': product.id,
+                'name': desc,
+                'product_uom_qty': st.quantity,
+                'price_unit': st.unit_price,  # Bid price, not product list price
+            }))
+
+        # Create the sale order
+        sale_order = self.env['sale.order'].create({
+            'partner_id': self.partner_id.id,
+            'opportunity_id': self.id,
+            'origin': self.name,
+            'note': f"Generated from sign schedule: {self.name}",
+            'order_line': order_lines,
+        })
+
+        # Open the new quotation
+        return {
+            'type': 'ir.actions.act_window',
+            'name': f'Quotation - {self.name}',
+            'res_model': 'sale.order',
+            'view_mode': 'form',
+            'res_id': sale_order.id,
+            'target': 'current',
+        }
 
     # =========================================================================
     # SIGN SCHEDULE
