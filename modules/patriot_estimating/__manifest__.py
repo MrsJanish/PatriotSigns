@@ -22,10 +22,12 @@ Links CRM opportunities to detailed cost estimates.
     'depends': [
         'patriot_signage',
         'patriot_field_service',
+        'hr',
     ],
     'data': [
         'security/ir.model.access.csv',
         'data/sequences.xml',
+        'views/crew_form_billing.xml',
         'views/estimate_views.xml',
         'views/waste_dashboard.xml',
         'views/menu.xml',

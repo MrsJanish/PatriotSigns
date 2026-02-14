@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Extend crew form to show billing members + combined rate -->
+    <record id="ps_crew_form_billing" model="ir.ui.view">
+        <field name="name">ps.crew.form.billing</field>
+        <field name="model">ps.crew</field>
+        <field name="inherit_id" ref="patriot_field_service.ps_crew_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='notes']" position="before">
+                <separator string="Billing"/>
+                <field name="combined_rate" readonly="1"/>
+                <field name="billing_member_ids">
+                    <list editable="bottom">
+                        <field name="employee_id"/>
+                        <field name="hourly_rate"/>
+                    </list>
+                </field>
+            </xpath>
+        </field>
+    </record>
+</odoo>
