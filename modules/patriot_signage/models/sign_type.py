@@ -281,6 +281,10 @@ class SignType(models.Model):
         compute='_compute_instance_count',
         store=True
     )
+    instance_mismatch = fields.Boolean(
+        string='Instance Mismatch',
+        compute='_compute_instance_mismatch',
+    )
     bookmark_ids = fields.One2many(
         'ps.sign.bookmark',
         'sign_type_id',
@@ -453,6 +457,14 @@ class SignType(models.Model):
     def _compute_instance_count(self):
         for record in self:
             record.instance_count = len(record.instance_ids)
+
+    @api.depends('instance_ids', 'quantity')
+    def _compute_instance_mismatch(self):
+        for record in self:
+            record.instance_mismatch = (
+                record.quantity > 0
+                and record.instance_count != record.quantity
+            )
 
     @api.depends('bookmark_ids')
     def _compute_bookmark_count(self):

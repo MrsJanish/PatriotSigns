@@ -178,6 +178,13 @@
                         </page>
                         
                         <page string="Instances" name="instances">
+                            <field name="instance_mismatch" invisible="1"/>
+                            <div class="alert alert-warning" role="alert"
+                                 invisible="not instance_mismatch">
+                                <strong>⚠ Quantity mismatch:</strong>
+                                Quantity is <field name="quantity" readonly="1" class="oe_inline"/>
+                                but there are <field name="instance_count" readonly="1" class="oe_inline"/> instance(s).
+                            </div>
                             <field name="instance_ids" mode="list">
                                 <list>
                                     <field name="sequence" widget="handle"/>
