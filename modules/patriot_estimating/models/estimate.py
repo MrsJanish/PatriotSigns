@@ -474,6 +474,7 @@ class Estimate(models.Model):
                 'name': desc,
                 'product_uom_qty': line.quantity,
                 'price_unit': line.unit_price,
+                'tax_id': [(5, 0, 0)],
             }))
 
         # ── Service line items (only if > 0) ─────────────────────────────
@@ -497,6 +498,7 @@ class Estimate(models.Model):
                     'name': description,
                     'product_uom_qty': 1,
                     'price_unit': total,
+                    'tax_id': [(5, 0, 0)],
                 }))
 
         # ── Create sale order ────────────────────────────────────────────
