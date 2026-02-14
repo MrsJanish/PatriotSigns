@@ -1,7 +1,8 @@
 # -*- coding: utf-8 -*-
 from odoo import models, fields, api
+import logging
 
-
+_logger = logging.getLogger(__name__)
 class SignType(models.Model):
     """
     Sign Type - Project-specific sign type definition.
@@ -572,6 +573,50 @@ class SignType(models.Model):
         
         self.unit_cost = round(estimated_cost, 2)
         self.unit_price = rounded_price
+
+    # =========================================================================
+    # CRUD OVERRIDES – Sync to Estimate Lines
+    # =========================================================================
+
+    # Fields that should propagate from sign type → estimate line
+    _SYNC_FIELDS_MAP = {
+        'width': 'sign_width',
+        'length': 'sign_height',
+        'quantity': 'quantity',
+    }
+
+    def write(self, vals):
+        """Push dimension/quantity changes to linked estimate lines."""
+        res = super().write(vals)
+
+        # Don't echo back if estimate triggered this change
+        if self.env.context.get('_syncing_from_estimate'):
+            return res
+
+        # Check if any sync-relevant fields changed
+        changed = {k: v for k, v in vals.items() if k in self._SYNC_FIELDS_MAP}
+        if not changed:
+            return res
+
+        # ps.estimate.line lives in patriot_estimating (optional dependency)
+        if 'ps.estimate.line' not in self.env:
+            return res
+
+        EstLine = self.env['ps.estimate.line']
+        for sign_type in self:
+            lines = EstLine.search([('sign_type_id', '=', sign_type.id)])
+            if lines:
+                update_vals = {
+                    self._SYNC_FIELDS_MAP[k]: v
+                    for k, v in changed.items()
+                }
+                _logger.info(
+                    "Syncing sign type %s → %d estimate line(s): %s",
+                    sign_type.name, len(lines), update_vals,
+                )
+                lines.with_context(_syncing_from_sign_type=True).write(update_vals)
+
+        return res
 
     # =========================================================================
     # ACTIONS

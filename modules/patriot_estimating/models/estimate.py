@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
 from odoo import models, fields, api
+import logging
 
+_logger = logging.getLogger(__name__)
 
 class Estimate(models.Model):
     """
@@ -895,3 +897,66 @@ class EstimateLine(models.Model):
             # If sign type already has a calculated unit cost, we could use it, 
             # but we recalculate here to ensure estimate-specific logic applies.
             # self.sign_width = ...
+
+    # =====================================================================
+    # CRUD OVERRIDES – Sync back to Sign Type
+    # =====================================================================
+
+    # Estimate line field → sign type field
+    _REVERSE_SYNC_MAP = {
+        'sign_width': 'width',
+        'sign_height': 'length',
+        'quantity': 'quantity',
+    }
+
+    def write(self, vals):
+        """Push dimension/quantity changes back to linked sign type."""
+        res = super().write(vals)
+
+        # Don't echo back if sign type triggered this change
+        if self.env.context.get('_syncing_from_sign_type'):
+            return res
+
+        # Check if any sync-relevant fields changed
+        changed = {k: v for k, v in vals.items() if k in self._REVERSE_SYNC_MAP}
+        if not changed:
+            return res
+
+        for line in self:
+            if line.sign_type_id:
+                update_vals = {
+                    self._REVERSE_SYNC_MAP[k]: v
+                    for k, v in changed.items()
+                }
+                _logger.info(
+                    "Syncing estimate line → sign type %s: %s",
+                    line.sign_type_id.name, update_vals,
+                )
+                line.sign_type_id.with_context(
+                    _syncing_from_estimate=True
+                ).write(update_vals)
+
+        return res
+
+    @api.model_create_multi
+    def create(self, vals_list):
+        """Auto-create sign type when adding an estimate line without one."""
+        records = super().create(vals_list)
+
+        for line in records:
+            # If line was created without a sign_type_id, create one in the schedule
+            if not line.sign_type_id and line.estimate_id.opportunity_id:
+                sign_type = self.env['ps.sign.type'].create({
+                    'name': line.description or f'Type {line.sequence}',
+                    'opportunity_id': line.estimate_id.opportunity_id.id,
+                    'width': line.sign_width or 0,
+                    'length': line.sign_height or 0,
+                    'quantity': line.quantity or 1,
+                })
+                line.sign_type_id = sign_type
+                _logger.info(
+                    "Auto-created sign type %s from estimate line",
+                    sign_type.name,
+                )
+
+        return records

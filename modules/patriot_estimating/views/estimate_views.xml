@@ -65,7 +65,7 @@
                     <notebook>
                         <page string="Estimate Lines" name="lines">
                             <field name="line_ids" mode="list">
-                                <list editable="bottom">
+                                <list>
                                     <field name="sequence" widget="handle"/>
                                     <field name="sign_type_id"/>
                                     <field name="description"/>
@@ -82,6 +82,40 @@
                                     <field name="breakeven_price" string="Break-Even $" optional="show"/>
                                     <field name="line_total" sum="Total"/>
                                 </list>
+                                <form>
+                                    <sheet>
+                                        <group>
+                                            <group string="Sign Type">
+                                                <field name="sign_type_id"
+                                                       context="{'default_opportunity_id': parent.opportunity_id}"
+                                                       domain="[('opportunity_id', '=', parent.opportunity_id)]"/>
+                                                <field name="description"/>
+                                                <field name="category_id"/>
+                                            </group>
+                                            <group string="Dimensions">
+                                                <field name="sign_width"/>
+                                                <field name="sign_height"/>
+                                                <field name="dimensions_display" readonly="1"/>
+                                            </group>
+                                        </group>
+                                        <group>
+                                            <group string="Quantity &amp; Pricing">
+                                                <field name="quantity"/>
+                                                <field name="unit_price"/>
+                                                <field name="material_unit_cost"/>
+                                                <field name="total_unit_cost" readonly="1"/>
+                                                <field name="breakeven_price" readonly="1"/>
+                                            </group>
+                                            <group string="Costs">
+                                                <field name="material_extended" readonly="1"/>
+                                                <field name="labor_hours" readonly="1"/>
+                                                <field name="labor_extended" readonly="1"/>
+                                                <field name="profit_margin" readonly="1"/>
+                                                <field name="line_total" readonly="1"/>
+                                            </group>
+                                        </group>
+                                    </sheet>
+                                </form>
                             </field>
                         </page>
                         
