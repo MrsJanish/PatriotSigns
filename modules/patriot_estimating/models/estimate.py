@@ -801,58 +801,62 @@ class EstimateLine(models.Model):
                                       
             line.total_unit_cost = line.material_unit_cost + line.labor_unit_cost + line.overhead_unit_cost
 
-    def _get_size_markup(self, sqin):
+    def _get_size_price(self, sqin):
         """
-        Piecewise logarithmic markup: bigger signs → smaller markup.
+        Size-based reference pricing: monotonically increasing with area.
         
-        Each segment: (max_sqin, a, b) where markup = a - b × ln(sqin)
-        Segments are evaluated in order; first matching max_sqin wins.
+        Uses a reference price table approach:
+          - 6×6 (36 sqin) = $55 GC base price
+          - Price scales by square footage relative to 6×6
+          - Larger signs always cost more (guaranteed monotonic)
         
         Currently fitted to GC prices:
-          6×6 (36 sqin) → $55  →  markup ≈ 3.34×
-          8×8 (64 sqin) → $65  →  markup ≈ 1.37×
+          6×6 → $55,  8×8 → $65
         
-        To add more segments, split SEGMENTS into ranges with different
-        (a, b) coefficients. Example for future use:
-        
-          SEGMENTS = [
-              (50,          18.0,  4.1),   # Small signs: steep curve
-              (150,         12.0,  2.5),   # Medium signs: gentler curve
-              (float('inf'), 8.0,  1.5),   # Large signs: near-flat
-          ]
+        Future: add trade pricing tier, adjust SIZE_FACTOR with more data.
         """
-        import math
-        
         # =====================================================================
-        # PIECEWISE SEGMENTS: (max_sqin, a_coeff, b_coeff)
-        # markup = a - b × ln(sqin)
-        # Add more segments here as pricing data becomes available
+        # REFERENCE PRICING CONSTANTS
+        # Adjust these as more pricing data becomes available
         # =====================================================================
-        SEGMENTS = [
-            # Single segment for now — fitted to 6×6=$55, 8×8=$65 GC
-            (float('inf'), 15.568, 3.413),
-        ]
+        REF_SIZE_SQIN = 36.0   # 6×6 = 36 sq in (reference size)
+        REF_PRICE = 55.0       # GC price for 6×6
+        MIN_PRICE = 35.0       # Floor for very small signs
+        SIZE_FACTOR = 0.28     # Controls how fast price grows with size
         
-        MIN_MARKUP = 1.15  # Floor: never sell below 15% above cost
+        if sqin <= REF_SIZE_SQIN:
+            # Small signs: scale down linearly from reference
+            raw_price = REF_PRICE * (sqin / REF_SIZE_SQIN)
+        else:
+            # Larger signs: scale up with diminishing returns
+            ratio = sqin / REF_SIZE_SQIN
+            raw_price = REF_PRICE * (1 + (ratio - 1) * SIZE_FACTOR)
         
-        for max_sqin, a, b in SEGMENTS:
-            if sqin <= max_sqin:
-                markup = a - b * math.log(sqin)
-                return max(markup, MIN_MARKUP)
-        
-        return MIN_MARKUP
+        return max(raw_price, MIN_PRICE)
 
     @api.depends('total_unit_cost', 'calculate_dynamic', 'sign_width', 'sign_height')
     def _compute_sell_price(self):
-        """Calculate sell price: Break-even × Size-based markup, rounded to nearest $5"""
-        round_to = 5.0
+        """
+        Hybrid pricing: max(cost_floor, size_price), rounded to nearest $5.
+        
+        - cost_floor: break-even × minimum margin (never sell below cost)
+        - size_price: reference price based on square inches (always monotonic)
+        - Final price is whichever is HIGHER
+        """
+        ROUND_TO = 5.0
+        MIN_MARGIN = 1.15  # 15% above break-even minimum
         
         for line in self:
             if line.calculate_dynamic and line.total_unit_cost:
                 sqin = (line.sign_width or 6) * (line.sign_height or 6)
-                markup = self._get_size_markup(sqin)
-                raw_price = line.total_unit_cost * markup
-                line.unit_price = round(raw_price / round_to) * round_to
+                
+                # Two pricing signals:
+                cost_floor = line.total_unit_cost * MIN_MARGIN   # never sell below cost
+                size_price = self._get_size_price(sqin)          # market-rate by size
+                
+                # Take the higher of the two
+                raw_price = max(cost_floor, size_price)
+                line.unit_price = round(raw_price / ROUND_TO) * ROUND_TO
             else:
                 line.unit_price = 0.0
 
