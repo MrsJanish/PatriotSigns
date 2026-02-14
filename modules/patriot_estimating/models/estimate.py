@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 from odoo import models, fields, api
+from odoo.exceptions import UserError
 import logging
 
 _logger = logging.getLogger(__name__)
@@ -431,10 +432,10 @@ class Estimate(models.Model):
         self.ensure_one()
 
         if not self.line_ids:
-            raise models.UserError("No estimate lines. Add lines first.")
+            raise UserError("No estimate lines. Add lines first.")
 
         if not self.opportunity_id.partner_id:
-            raise models.UserError(
+            raise UserError(
                 "No customer set on the opportunity. "
                 "Set the Customer field before generating a quotation."
             )
