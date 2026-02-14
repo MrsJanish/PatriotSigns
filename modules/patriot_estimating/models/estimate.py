@@ -478,9 +478,6 @@ class Estimate(models.Model):
 
         # ── Service line items (only if > 0) ─────────────────────────────
         service_lines = [
-            ('SHOP-LABOR', 'Shop Labor',
-             f"Shop labor – {self.total_molds} molds × {self.mold_time_minutes} min @ ${self.shop_rate}/hr",
-             self.shop_labor_total),
             ('TRAVEL', 'Travel',
              f"Travel – {self.travel_miles} mi × {self.travel_trips} trip(s) @ ${self.travel_rate}/mi",
              self.travel_total),
