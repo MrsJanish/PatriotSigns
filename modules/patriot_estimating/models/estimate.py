@@ -914,6 +914,7 @@ class EstimateLine(models.Model):
         'sign_width': 'width',
         'sign_height': 'length',
         'quantity': 'quantity',
+        'unit_price': 'unit_price',
     }
 
     def write(self, vals):

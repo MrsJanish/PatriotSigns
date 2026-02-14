@@ -580,6 +580,7 @@ class SignType(models.Model):
         'width': 'sign_width',
         'length': 'sign_height',
         'quantity': 'quantity',
+        'unit_price': 'unit_price',
     }
 
     def write(self, vals):
