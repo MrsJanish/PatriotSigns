@@ -525,53 +525,50 @@ class SignType(models.Model):
         """
         Auto-calculate unit price based on dimensions.
         
-        Uses a REFERENCE PRICE TABLE approach:
-        - 6x6 = $45 (base reference)
-        - Price scales by square footage relative to 6x6
+        Uses the SAME reference pricing formula as the estimate module:
+        - 6×6 (36 sqin) = $55 GC base price
+        - Price scales by square footage relative to 6×6
+        - SIZE_FACTOR = 0.22 controls growth rate
         - Minimum price = $35
+        - Rounded to nearest $5
+        
+        Pricing constants are kept in sync with
+        EstimateLine._get_size_price() in patriot_estimating.
         """
         if not self.length or not self.width:
             return
         
         # =====================================================================
         # REFERENCE PRICING TABLE
-        # Based on user requirement: 6x6=$45, 8x8=$55
+        # KEEP IN SYNC with EstimateLine._get_size_price()
         # =====================================================================
         
-        # Reference values
-        REF_SIZE_SQIN = 36.0  # 6x6 = 36 sq in
-        REF_PRICE = 45.0      # 6x6 base price
-        MIN_PRICE = 35.0      # Minimum for very small signs
+        REF_SIZE_SQIN = 36.0   # 6×6 = 36 sq in (reference size)
+        REF_PRICE = 55.0       # GC price for 6×6
+        MIN_PRICE = 35.0       # Floor for very small signs
+        SIZE_FACTOR = 0.22     # Controls how fast price grows with size
+        ROUND_TO = 5.0
+        MIN_MARGIN = 1.15      # 15% above break-even minimum
         
         # Calculate square inches
         sqin = self.length * self.width
         
-        # Linear scaling: price grows proportionally to size relative to 6x6
-        # 8x8 = 64 sqin → ratio = 64/36 = 1.78 → price = 45 * (1 + 0.78 * 0.28) ≈ 55
-        # Using a factor of 0.28 to get 8x8 to $55
-        SIZE_FACTOR = 0.28
-        
+        # Size-based pricing (same as estimate _get_size_price)
         if sqin <= REF_SIZE_SQIN:
-            # Small signs: scale down from reference
-            ratio = sqin / REF_SIZE_SQIN
-            raw_price = REF_PRICE * ratio
+            raw_price = REF_PRICE * (sqin / REF_SIZE_SQIN)
         else:
-            # Larger signs: scale up with diminishing returns
             ratio = sqin / REF_SIZE_SQIN
             raw_price = REF_PRICE * (1 + (ratio - 1) * SIZE_FACTOR)
         
-        # Apply minimum
         raw_price = max(raw_price, MIN_PRICE)
         
         # Round to nearest $5
-        ROUND_TO = 5.0
         rounded_price = round(raw_price / ROUND_TO) * ROUND_TO
         
-        # Estimate unit cost (for internal tracking only)
-        # Rough estimate: 40% of price
-        estimated_cost = rounded_price * 0.40
+        # Estimate unit cost: inverse of MIN_MARGIN gives break-even
+        estimated_cost = round(rounded_price / MIN_MARGIN, 2)
         
-        self.unit_cost = round(estimated_cost, 2)
+        self.unit_cost = estimated_cost
         self.unit_price = rounded_price
 
     # =========================================================================
