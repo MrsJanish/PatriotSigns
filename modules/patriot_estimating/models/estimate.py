@@ -668,7 +668,7 @@ class EstimateLine(models.Model):
             mold_time = line.estimate_id.mold_time_minutes or 50.0
             line.labor_hours = (line.molds_needed * mold_time) / 60.0
 
-    @api.depends('sign_width', 'sign_height')
+    @api.depends('sign_width', 'sign_height', 'quantity')
     def _compute_batch_size(self):
         """Calculate optimization of signs on standard press sheet (13x19)"""
         PRESS_W, PRESS_H = 13.0, 19.0
