@@ -822,7 +822,7 @@ class EstimateLine(models.Model):
         REF_SIZE_SQIN = 36.0   # 6×6 = 36 sq in (reference size)
         REF_PRICE = 55.0       # GC price for 6×6
         MIN_PRICE = 35.0       # Floor for very small signs
-        SIZE_FACTOR = 0.28     # Controls how fast price grows with size
+        SIZE_FACTOR = 0.22     # Controls how fast price grows with size
         
         if sqin <= REF_SIZE_SQIN:
             # Small signs: scale down linearly from reference
