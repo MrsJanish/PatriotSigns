@@ -641,7 +641,7 @@ class EstimateLine(models.Model):
     # =========================================================================
     
     # Labor & Install inputs (for manual override or reference)
-    labor_hours = fields.Float(string='Labor Hours')
+    labor_hours = fields.Float(string='Labor Hours', compute='_compute_labor_hours', store=True)
     labor_rate = fields.Float(string='Labor Rate', default=75.0)
     install_hours = fields.Float(string='Install Hours')
     install_rate = fields.Float(string='Install Rate', default=100.0)
@@ -658,6 +658,13 @@ class EstimateLine(models.Model):
     # =========================================================================
     # COMPUTATIONS
     # =========================================================================
+
+    @api.depends('molds_needed')
+    def _compute_labor_hours(self):
+        """Calculate labor hours from molds: molds × mold_time / 60 (matches Labor & Travel tab)"""
+        for line in self:
+            mold_time = line.estimate_id.mold_time_minutes or 80.0
+            line.labor_hours = (line.molds_needed * mold_time) / 60.0
 
     @api.depends('sign_width', 'sign_height')
     def _compute_batch_size(self):
@@ -729,7 +736,7 @@ class EstimateLine(models.Model):
                  # Fallback if dimensions missing
                 line.waste_percent = 0
 
-    @api.depends('sheets_needed', 'molds_needed', 'quantity', 'calculate_dynamic')
+    @api.depends('sheets_needed', 'molds_needed', 'signs_produced', 'quantity', 'calculate_dynamic')
     def _compute_costs(self):
         """Calculate material and labor costs from product catalog"""
         company = self.env.company
@@ -761,8 +768,10 @@ class EstimateLine(models.Model):
             sheet_cost_total = (line.sheets_needed * pionite_cost) + \
                                (line.sheets_needed * abs_cost)
                                
-            consumables = (line.quantity * ink_cost) + \
-                          (line.quantity * paint_cost) + \
+            # Ink & paint applied to every sign produced (including stock)
+            signs = line.signs_produced or line.quantity or 1
+            consumables = (signs * ink_cost) + \
+                          (signs * paint_cost) + \
                           (line.molds_needed * tape_cost) + \
                           (line.molds_needed * mclube_cost)
                           
