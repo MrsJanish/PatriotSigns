@@ -179,14 +179,71 @@
                         
                         <page string="Instances" name="instances">
                             <field name="instance_ids" mode="list">
-                                <list editable="bottom">
+                                <list>
                                     <field name="sequence" widget="handle"/>
                                     <field name="room_number_plans"/>
                                     <field name="room_name_plans"/>
                                     <field name="copy_line_1"/>
                                     <field name="copy_line_2"/>
-                                    <field name="state" widget="badge"/>
+                                    <field name="floor" optional="show"/>
+                                    <field name="building" optional="hide"/>
+                                    <field name="arrow_direction" optional="hide"/>
+                                    <field name="state" widget="badge"
+                                           decoration-success="state == 'installed'"
+                                           decoration-info="state in ['approved', 'production', 'shipped']"
+                                           decoration-warning="state == 'draft'"/>
+                                    <field name="approved" optional="show"/>
+                                    <field name="installed" optional="show"/>
                                 </list>
+                                <form>
+                                    <sheet>
+                                        <group>
+                                            <group string="Location">
+                                                <field name="location_id"/>
+                                                <field name="building"/>
+                                                <field name="floor"/>
+                                                <field name="room_number_plans"/>
+                                                <field name="room_number_actual"/>
+                                                <field name="room_name_plans"/>
+                                                <field name="room_name_actual"/>
+                                            </group>
+                                            <group string="Placement">
+                                                <field name="door_id"/>
+                                                <field name="wall_location"/>
+                                                <field name="mark_id"/>
+                                                <field name="location_notes"/>
+                                            </group>
+                                        </group>
+                                        <group>
+                                            <group string="Copy Content">
+                                                <field name="copy_line_1"/>
+                                                <field name="copy_line_2"/>
+                                                <field name="copy_line_3"/>
+                                                <field name="copy_line_4"/>
+                                                <field name="copy_line_5"/>
+                                                <field name="has_custom_copy"/>
+                                            </group>
+                                            <group string="Graphics &amp; Bid">
+                                                <field name="arrow_direction"/>
+                                                <field name="pictogram_code"/>
+                                                <field name="bid_package"/>
+                                                <field name="phase"/>
+                                                <field name="added_post_bid"/>
+                                            </group>
+                                        </group>
+                                        <group>
+                                            <group string="Status">
+                                                <field name="state"/>
+                                                <field name="approved"/>
+                                                <field name="approved_date"/>
+                                            </group>
+                                            <group string="Notes">
+                                                <field name="production_notes"/>
+                                                <field name="remarks"/>
+                                            </group>
+                                        </group>
+                                    </sheet>
+                                </form>
                             </field>
                         </page>
                         
