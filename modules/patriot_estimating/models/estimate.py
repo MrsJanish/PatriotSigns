@@ -75,8 +75,8 @@ class Estimate(models.Model):
     )
     mold_time_minutes = fields.Float(
         string='Time per Mold (min)',
-        default=80.0,
-        help='Average time to make one mold (80 min worst case)'
+        default=50.0,
+        help='Average time to make one mold (default 50 min)'
     )
     shop_rate = fields.Float(
         string='Shop Rate ($/hr)',
@@ -99,8 +99,8 @@ class Estimate(models.Model):
     )
     travel_rate = fields.Float(
         string='Mileage Rate ($/mi)',
-        default=0.67,
-        help='IRS standard mileage rate or custom rate'
+        default=0.72,
+        help='IRS standard mileage rate (2025: $0.72/mi)'
     )
     travel_trips = fields.Integer(
         string='Number of Trips',
@@ -309,7 +309,8 @@ class Estimate(models.Model):
             signage = sum(estimate.line_ids.mapped('line_total'))
             
             # Shop Fee (at shop rate - customer rate, $75/hr)
-            shop_fee = estimate.shop_labor_total
+            # Shop labor is tracked but NOT included in customer estimate total
+            # shop_fee = estimate.shop_labor_total
             
             # Install Fee (at install rate - customer rate)
             install_fee = estimate.install_total
@@ -330,7 +331,6 @@ class Estimate(models.Model):
             # =================================================================
             estimate.subtotal = (
                 signage +
-                shop_fee +
                 install_fee +
                 travel_fee +
                 equipment_fee
@@ -654,6 +654,8 @@ class EstimateLine(models.Model):
     line_total = fields.Float(string='Line Total', compute='_compute_extended', store=True)
     
     profit_margin = fields.Float(string='Margin %', compute='_compute_margin', store=True)
+    breakeven_price = fields.Float(string='Break-Even $', compute='_compute_margin', store=True,
+        help='Minimum price per unit to cover all costs (material + labor + overhead)')
 
     # =========================================================================
     # COMPUTATIONS
@@ -663,7 +665,7 @@ class EstimateLine(models.Model):
     def _compute_labor_hours(self):
         """Calculate labor hours from molds: molds × mold_time / 60 (matches Labor & Travel tab)"""
         for line in self:
-            mold_time = line.estimate_id.mold_time_minutes or 80.0
+            mold_time = line.estimate_id.mold_time_minutes or 50.0
             line.labor_hours = (line.molds_needed * mold_time) / 60.0
 
     @api.depends('sign_width', 'sign_height')
@@ -787,8 +789,8 @@ class EstimateLine(models.Model):
             # Labor Cost (80 min per mold at $10/hr employee wage)
             # 80 min × ($10/hr / 60) = $13.33 labor cost per mold
             EMPLOYEE_WAGE = 10.0  # $10/hr
-            MOLD_TIME_MINUTES = 80  # worst case per mold
-            labor_cost_per_mold = (MOLD_TIME_MINUTES / 60.0) * EMPLOYEE_WAGE  # $13.33
+            mold_time = line.estimate_id.mold_time_minutes or 50.0
+            labor_cost_per_mold = (mold_time / 60.0) * EMPLOYEE_WAGE
             total_labor = line.molds_needed * labor_cost_per_mold
             
             if line.quantity:
@@ -834,6 +836,7 @@ class EstimateLine(models.Model):
     @api.depends('unit_price', 'total_unit_cost')
     def _compute_margin(self):
         for line in self:
+            line.breakeven_price = line.total_unit_cost
             if line.unit_price:
                 line.profit_margin = ((line.unit_price - line.total_unit_cost) / line.unit_price) * 100
             else:
