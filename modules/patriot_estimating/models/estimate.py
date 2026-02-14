@@ -419,15 +419,28 @@ class Estimate(models.Model):
         """Mark estimate as lost"""
         self.write({'state': 'lost'})
 
+    def _get_or_create_service_product(self, code, name):
+        """Find or create a service product by internal reference."""
+        product = self.env['product.product'].search(
+            [('default_code', '=', code)], limit=1
+        )
+        if not product:
+            product = self.env['product.product'].create({
+                'name': name,
+                'default_code': code,
+                'type': 'service',
+                'invoice_policy': 'order',
+                'list_price': 0.0,
+            })
+        return product
+
     def action_generate_quotation(self):
         """
         Create a Sale Order (quotation) from the estimate.
         
-        Each estimate line becomes one SO line:
-          - Product: line's sign_type_id.product_id or fallback generic product
-          - Description: line description + dimensions
-          - Quantity: line quantity
-          - Unit Price: line unit_price (bid price from estimate)
+        Includes:
+          - One SO line per estimate line (sign items)
+          - Shop labor, travel, installation, equipment as service lines
         """
         self.ensure_one()
 
@@ -440,26 +453,16 @@ class Estimate(models.Model):
                 "Set the Customer field before generating a quotation."
             )
 
-        # Find or create a generic fallback product
-        fallback_product = self.env['product.product'].search(
-            [('default_code', '=', 'SIGNAGE')], limit=1
-        )
-        if not fallback_product:
-            fallback_product = self.env['product.product'].create({
-                'name': 'Signage',
-                'default_code': 'SIGNAGE',
-                'type': 'service',
-                'invoice_policy': 'order',
-                'list_price': 0.0,
-            })
+        # Products for each line type
+        sign_product = self._get_or_create_service_product('SIGNAGE', 'Signage')
 
-        # Build order lines from estimate lines
+        # ── Sign line items ──────────────────────────────────────────────
         order_lines = []
         for line in self.line_ids:
             product = (
                 line.sign_type_id.product_id if line.sign_type_id
-                else fallback_product
-            ) or fallback_product
+                else sign_product
+            ) or sign_product
             desc = line.description or (line.sign_type_id.name if line.sign_type_id else 'Sign')
             if line.dimensions_display:
                 desc += f" ({line.dimensions_display})"
@@ -473,7 +476,33 @@ class Estimate(models.Model):
                 'price_unit': line.unit_price,
             }))
 
-        # Create the sale order
+        # ── Service line items (only if > 0) ─────────────────────────────
+        service_lines = [
+            ('SHOP-LABOR', 'Shop Labor',
+             f"Shop labor – {self.total_molds} molds × {self.mold_time_minutes} min @ ${self.shop_rate}/hr",
+             self.shop_labor_total),
+            ('TRAVEL', 'Travel',
+             f"Travel – {self.travel_miles} mi × {self.travel_trips} trip(s) @ ${self.travel_rate}/mi",
+             self.travel_total),
+            ('INSTALLATION', 'Installation',
+             f"Installation – {self.install_hours} hrs × {self.install_crew_size} crew @ ${self.install_rate}/hr",
+             self.install_total),
+            ('EQUIPMENT', 'Equipment Rental',
+             f"Equipment rental – {self.equipment_type or 'N/A'} × {self.equipment_days} day(s)",
+             self.equipment_total),
+        ]
+
+        for code, prod_name, description, total in service_lines:
+            if total and total > 0:
+                product = self._get_or_create_service_product(code, prod_name)
+                order_lines.append((0, 0, {
+                    'product_id': product.id,
+                    'name': description,
+                    'product_uom_qty': 1,
+                    'price_unit': total,
+                }))
+
+        # ── Create sale order ────────────────────────────────────────────
         sale_order = self.env['sale.order'].create({
             'partner_id': self.opportunity_id.partner_id.id,
             'opportunity_id': self.opportunity_id.id,
