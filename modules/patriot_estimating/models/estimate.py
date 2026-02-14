@@ -801,17 +801,57 @@ class EstimateLine(models.Model):
                                       
             line.total_unit_cost = line.material_unit_cost + line.labor_unit_cost + line.overhead_unit_cost
 
-    @api.depends('total_unit_cost', 'calculate_dynamic')
+    def _get_size_markup(self, sqin):
+        """
+        Piecewise logarithmic markup: bigger signs → smaller markup.
+        
+        Each segment: (max_sqin, a, b) where markup = a - b × ln(sqin)
+        Segments are evaluated in order; first matching max_sqin wins.
+        
+        Currently fitted to GC prices:
+          6×6 (36 sqin) → $55  →  markup ≈ 3.34×
+          8×8 (64 sqin) → $65  →  markup ≈ 1.37×
+        
+        To add more segments, split SEGMENTS into ranges with different
+        (a, b) coefficients. Example for future use:
+        
+          SEGMENTS = [
+              (50,          18.0,  4.1),   # Small signs: steep curve
+              (150,         12.0,  2.5),   # Medium signs: gentler curve
+              (float('inf'), 8.0,  1.5),   # Large signs: near-flat
+          ]
+        """
+        import math
+        
+        # =====================================================================
+        # PIECEWISE SEGMENTS: (max_sqin, a_coeff, b_coeff)
+        # markup = a - b × ln(sqin)
+        # Add more segments here as pricing data becomes available
+        # =====================================================================
+        SEGMENTS = [
+            # Single segment for now — fitted to 6×6=$55, 8×8=$65 GC
+            (float('inf'), 15.568, 3.413),
+        ]
+        
+        MIN_MARKUP = 1.15  # Floor: never sell below 15% above cost
+        
+        for max_sqin, a, b in SEGMENTS:
+            if sqin <= max_sqin:
+                markup = a - b * math.log(sqin)
+                return max(markup, MIN_MARKUP)
+        
+        return MIN_MARKUP
+
+    @api.depends('total_unit_cost', 'calculate_dynamic', 'sign_width', 'sign_height')
     def _compute_sell_price(self):
-        """Calculate sell price: Total Cost × Markup, rounded to nearest $5"""
-        company = self.env.company
-        markup = company.pricing_markup_mult or 2.4
-        round_to = 5.0  # TODO: Make configurable via settings
+        """Calculate sell price: Break-even × Size-based markup, rounded to nearest $5"""
+        round_to = 5.0
         
         for line in self:
             if line.calculate_dynamic and line.total_unit_cost:
+                sqin = (line.sign_width or 6) * (line.sign_height or 6)
+                markup = self._get_size_markup(sqin)
                 raw_price = line.total_unit_cost * markup
-                # Round to nearest increment (e.g., $5)
                 line.unit_price = round(raw_price / round_to) * round_to
             else:
                 line.unit_price = 0.0
