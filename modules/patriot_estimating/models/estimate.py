@@ -80,8 +80,8 @@ class Estimate(models.Model):
     )
     shop_rate = fields.Float(
         string='Shop Rate ($/hr)',
-        default=75.0,
-        help='Hourly rate for shop labor'
+        default=85.0,
+        help='Hourly rate for shop labor (overhead-loaded)'
     )
     shop_labor_total = fields.Float(
         string='Shop Labor',
@@ -786,11 +786,10 @@ class EstimateLine(models.Model):
             if line.quantity:
                 line.material_unit_cost = total_material / divisor
             
-            # Labor Cost (80 min per mold at $10/hr employee wage)
-            # 80 min × ($10/hr / 60) = $13.33 labor cost per mold
-            EMPLOYEE_WAGE = 10.0  # $10/hr
+            # Labor Cost: mold_time per mold at shop rate (overhead-loaded)
             mold_time = line.estimate_id.mold_time_minutes or 50.0
-            labor_cost_per_mold = (mold_time / 60.0) * EMPLOYEE_WAGE
+            shop_rate = line.estimate_id.shop_rate or 85.0
+            labor_cost_per_mold = (mold_time / 60.0) * shop_rate
             total_labor = line.molds_needed * labor_cost_per_mold
             
             if line.quantity:
