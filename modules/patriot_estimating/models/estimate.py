@@ -121,8 +121,8 @@ class Estimate(models.Model):
     # INSTALLATION
     # =========================================================================
     install_crew_id = fields.Many2one(
-        'ps.install.crew', string='Installation Crew',
-        help='Select a crew — rate and size auto-fill from crew members',
+        'ps.crew', string='Installation Crew',
+        help='Select a crew — rate auto-fills from crew billing rate',
     )
     install_hours = fields.Float(
         string='Install Hours',
@@ -283,8 +283,9 @@ class Estimate(models.Model):
     def _onchange_install_crew(self):
         """Auto-fill rate and crew size from selected crew."""
         if self.install_crew_id:
-            self.install_rate = self.install_crew_id.combined_rate
-            self.install_crew_size = self.install_crew_id.crew_size
+            if self.install_crew_id.combined_rate:
+                self.install_rate = self.install_crew_id.combined_rate
+            self.install_crew_size = self.install_crew_id.member_count
 
     @api.depends('needs_equipment', 'equipment_days', 'equipment_daily_rate', 'equipment_delivery')
     def _compute_equipment(self):

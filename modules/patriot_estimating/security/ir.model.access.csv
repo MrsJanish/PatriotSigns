@@ -2,7 +2,3 @@ id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
 access_ps_estimate_user,ps.estimate.user,model_ps_estimate,base.group_user,1,1,1,0
 access_ps_estimate_manager,ps.estimate.manager,model_ps_estimate,base.group_system,1,1,1,1
 access_ps_estimate_line_user,ps.estimate.line.user,model_ps_estimate_line,base.group_user,1,1,1,1
-access_ps_install_crew_user,ps.install.crew.user,model_ps_install_crew,base.group_user,1,1,1,0
-access_ps_install_crew_manager,ps.install.crew.manager,model_ps_install_crew,base.group_system,1,1,1,1
-access_ps_install_crew_member_user,ps.install.crew.member.user,model_ps_install_crew_member,base.group_user,1,1,1,0
-access_ps_install_crew_member_manager,ps.install.crew.member.manager,model_ps_install_crew_member,base.group_system,1,1,1,1
