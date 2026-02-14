@@ -79,8 +79,11 @@
                                     <field name="labor_hours" optional="show"/>
                                     <field name="labor_rate" optional="hide"/>
                                     <field name="labor_extended" sum="Labor"/>
-                                    <field name="breakeven_price" string="Break-Even $" optional="show"/>
-                                    <field name="line_total" sum="Total"/>
+                                    <field name="breakeven_price" string="Break-Even/Unit" optional="show"/>
+                                    <field name="unit_price" string="Sell/Unit"/>
+                                    <field name="breakeven_extended" string="Break-Even Total" sum="Break-Even"/>
+                                    <field name="line_total" sum="Sell Total"/>
+                                    <field name="profit_amount" string="Profit $" sum="Profit"/>
                                 </list>
                                 <form>
                                     <sheet>

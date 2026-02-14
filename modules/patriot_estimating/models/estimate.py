@@ -658,6 +658,10 @@ class EstimateLine(models.Model):
     profit_margin = fields.Float(string='Margin %', compute='_compute_margin', store=True)
     breakeven_price = fields.Float(string='Break-Even $', compute='_compute_margin', store=True,
         help='Minimum price per unit to cover all costs (material + labor + overhead)')
+    breakeven_extended = fields.Float(string='Break-Even Ext.', compute='_compute_margin', store=True,
+        help='Total break-even for line: break-even per unit × quantity')
+    profit_amount = fields.Float(string='Profit $', compute='_compute_margin', store=True,
+        help='Line total (sell) minus break-even extended')
 
     # =========================================================================
     # COMPUTATIONS
@@ -878,10 +882,13 @@ class EstimateLine(models.Model):
             # Line total is PRICE, not cost
             line.line_total = line.quantity * line.unit_price
 
-    @api.depends('unit_price', 'total_unit_cost')
+    @api.depends('unit_price', 'total_unit_cost', 'quantity')
     def _compute_margin(self):
         for line in self:
             line.breakeven_price = line.total_unit_cost
+            line.breakeven_extended = line.total_unit_cost * (line.quantity or 0)
+            sell_total = line.unit_price * (line.quantity or 0)
+            line.profit_amount = sell_total - line.breakeven_extended
             if line.unit_price:
                 line.profit_margin = ((line.unit_price - line.total_unit_cost) / line.unit_price) * 100
             else:
