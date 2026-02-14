@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+        <!-- Crew A: created empty, members added via post_init_hook -->
+        <record id="crew_a" model="ps.install.crew">
+            <field name="name">Crew A</field>
+        </record>
+    </data>
+</odoo>

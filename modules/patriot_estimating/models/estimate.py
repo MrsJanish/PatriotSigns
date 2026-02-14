@@ -120,6 +120,10 @@ class Estimate(models.Model):
     # =========================================================================
     # INSTALLATION
     # =========================================================================
+    install_crew_id = fields.Many2one(
+        'ps.install.crew', string='Installation Crew',
+        help='Select a crew — rate and size auto-fill from crew members',
+    )
     install_hours = fields.Float(
         string='Install Hours',
         default=8.0,
@@ -128,12 +132,12 @@ class Estimate(models.Model):
     install_rate = fields.Float(
         string='Install Rate ($/hr)',
         default=40.0,
-        help='Combined crew rate: Robert ($25) + Bryson ($15) = $40/hr'
+        help='Combined crew rate (auto-filled from crew, editable)'
     )
     install_crew_size = fields.Integer(
         string='Crew Size',
         default=2,
-        help='Number of installers (rate already includes 2-person crew at $40/hr)'
+        help='Number of installers (auto-filled from crew, editable)'
     )
     install_total = fields.Float(
         string='Installation Total',
@@ -274,6 +278,13 @@ class Estimate(models.Model):
         """Calculate installation cost: hours × rate (rate is combined crew rate)"""
         for estimate in self:
             estimate.install_total = estimate.install_hours * estimate.install_rate
+
+    @api.onchange('install_crew_id')
+    def _onchange_install_crew(self):
+        """Auto-fill rate and crew size from selected crew."""
+        if self.install_crew_id:
+            self.install_rate = self.install_crew_id.combined_rate
+            self.install_crew_size = self.install_crew_id.crew_size
 
     @api.depends('needs_equipment', 'equipment_days', 'equipment_daily_rate', 'equipment_delivery')
     def _compute_equipment(self):
@@ -483,7 +494,7 @@ class Estimate(models.Model):
              f"Travel – {self.travel_miles} mi × {self.travel_trips} trip(s) @ ${self.travel_rate}/mi",
              self.travel_total),
             ('INSTALLATION', 'Installation',
-             f"Installation – {self.install_hours} hrs × {self.install_crew_size} crew @ ${self.install_rate}/hr",
+             f"Installation – {self.install_crew_id.name + ' – ' if self.install_crew_id else ''}{self.install_hours} hrs @ ${self.install_rate}/hr",
              self.install_total),
             ('EQUIPMENT', 'Equipment Rental',
              f"Equipment rental – {self.equipment_type or 'N/A'} × {self.equipment_days} day(s)",

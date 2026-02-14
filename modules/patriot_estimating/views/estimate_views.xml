@@ -141,12 +141,17 @@
                         
                         <page string="Installation" name="installation">
                             <group>
+                                <group string="Install Crew">
+                                    <field name="install_crew_id" options="{'no_create': False}"/>
+                                    <field name="install_crew_size" readonly="1"/>
+                                    <field name="install_rate"/>
+                                </group>
                                 <group string="Install Labor">
                                     <field name="install_hours"/>
-                                    <field name="install_rate"/>
-                                    <field name="install_crew_size"/>
                                     <field name="install_total" widget="monetary" readonly="1"/>
                                 </group>
+                            </group>
+                            <group>
                                 <group string="Equipment Rental">
                                     <field name="needs_equipment"/>
                                     <field name="equipment_type" invisible="not needs_equipment"/>

@@ -20,4 +20,10 @@
               action="ps_waste_dashboard_action"
               sequence="50"/>
 
+    <menuitem id="menu_install_crews"
+              name="Installation Crews"
+              parent="patriot_base.menu_configuration"
+              action="action_install_crew"
+              sequence="55"/>
+
 </odoo>

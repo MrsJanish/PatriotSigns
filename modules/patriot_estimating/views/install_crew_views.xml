@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Crew Form View -->
+    <record id="ps_install_crew_form" model="ir.ui.view">
+        <field name="name">ps.install.crew.form</field>
+        <field name="model">ps.install.crew</field>
+        <field name="arch" type="xml">
+            <form>
+                <sheet>
+                    <div class="oe_title">
+                        <label for="name"/>
+                        <h1>
+                            <field name="name" placeholder="e.g. Crew A"/>
+                        </h1>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="crew_size"/>
+                            <field name="combined_rate"/>
+                        </group>
+                        <group>
+                            <field name="active" invisible="1"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Members" name="members">
+                            <field name="member_ids">
+                                <list editable="bottom">
+                                    <field name="employee_id"/>
+                                    <field name="hourly_rate"/>
+                                </list>
+                            </field>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- Crew List View -->
+    <record id="ps_install_crew_tree" model="ir.ui.view">
+        <field name="name">ps.install.crew.tree</field>
+        <field name="model">ps.install.crew</field>
+        <field name="arch" type="xml">
+            <list>
+                <field name="name"/>
+                <field name="crew_size"/>
+                <field name="combined_rate"/>
+            </list>
+        </field>
+    </record>
+
+    <!-- Crew Action -->
+    <record id="action_install_crew" model="ir.actions.act_window">
+        <field name="name">Installation Crews</field>
+        <field name="res_model">ps.install.crew</field>
+        <field name="view_mode">list,form</field>
+    </record>
+</odoo>
