@@ -30,10 +30,6 @@
             <page string="Sign Schedule" name="sign_schedule">
                     <div class="alert alert-info" role="alert">
                         <strong>Quick Add:</strong> Select a Template to auto-fill dimensions and pricing.
-                        <button name="action_generate_quotation" type="object"
-                                string="⚡ Generate Quotation" class="btn btn-primary float-end"
-                                invisible="sign_type_count == 0"
-                                confirm="Create a quotation from the sign schedule? Each sign type becomes a line item with bid prices."/>
                     </div>
                     <field name="sign_type_ids" nolabel="1">
                         <list>

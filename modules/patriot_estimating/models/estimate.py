@@ -418,6 +418,79 @@ class Estimate(models.Model):
         """Mark estimate as lost"""
         self.write({'state': 'lost'})
 
+    def action_generate_quotation(self):
+        """
+        Create a Sale Order (quotation) from the estimate.
+        
+        Each estimate line becomes one SO line:
+          - Product: line's sign_type_id.product_id or fallback generic product
+          - Description: line description + dimensions
+          - Quantity: line quantity
+          - Unit Price: line unit_price (bid price from estimate)
+        """
+        self.ensure_one()
+
+        if not self.line_ids:
+            raise models.UserError("No estimate lines. Add lines first.")
+
+        if not self.opportunity_id.partner_id:
+            raise models.UserError(
+                "No customer set on the opportunity. "
+                "Set the Customer field before generating a quotation."
+            )
+
+        # Find or create a generic fallback product
+        fallback_product = self.env['product.product'].search(
+            [('default_code', '=', 'SIGNAGE')], limit=1
+        )
+        if not fallback_product:
+            fallback_product = self.env['product.product'].create({
+                'name': 'Signage',
+                'default_code': 'SIGNAGE',
+                'type': 'service',
+                'invoice_policy': 'order',
+                'list_price': 0.0,
+            })
+
+        # Build order lines from estimate lines
+        order_lines = []
+        for line in self.line_ids:
+            product = (
+                line.sign_type_id.product_id if line.sign_type_id
+                else fallback_product
+            ) or fallback_product
+            desc = line.description or (line.sign_type_id.name if line.sign_type_id else 'Sign')
+            if line.dimensions_display:
+                desc += f" ({line.dimensions_display})"
+            if line.category_id:
+                desc += f" - {line.category_id.name}"
+
+            order_lines.append((0, 0, {
+                'product_id': product.id,
+                'name': desc,
+                'product_uom_qty': line.quantity,
+                'price_unit': line.unit_price,
+            }))
+
+        # Create the sale order
+        sale_order = self.env['sale.order'].create({
+            'partner_id': self.opportunity_id.partner_id.id,
+            'opportunity_id': self.opportunity_id.id,
+            'origin': self.name,
+            'note': f"Generated from estimate: {self.name}",
+            'order_line': order_lines,
+        })
+
+        # Open the new quotation
+        return {
+            'type': 'ir.actions.act_window',
+            'name': f'Quotation - {self.name}',
+            'res_model': 'sale.order',
+            'view_mode': 'form',
+            'res_id': sale_order.id,
+            'target': 'current',
+        }
+
 
 class EstimateLine(models.Model):
     """

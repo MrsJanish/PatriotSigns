@@ -166,6 +166,11 @@
                                 <field name="equipment_total" widget="monetary" readonly="1" invisible="not needs_equipment" string="Equipment"/>
                                 <field name="total" widget="monetary" readonly="1" class="oe_subtotal_footer_separator" string="Estimate Total"/>
                             </group>
+                            <div class="oe_clear"/>
+                            <button name="action_generate_quotation" type="object"
+                                    string="⚡ Generate Quotation" class="btn-primary"
+                                    invisible="state not in ['approved', 'submitted']"
+                                    confirm="Create a quotation from this estimate? Each line becomes a quotation line item with the bid prices."/>
                         </page>
                         
                         <page string="Terms" name="terms">
