@@ -181,19 +181,18 @@
                             <field name="instance_ids" mode="list">
                                 <list>
                                     <field name="sequence" widget="handle"/>
-                                    <field name="room_number_plans"/>
-                                    <field name="room_name_plans"/>
+                                    <field name="room_number_plans" string="Room #"/>
+                                    <field name="room_name_plans" string="Room Name"/>
                                     <field name="copy_line_1"/>
                                     <field name="copy_line_2"/>
-                                    <field name="floor" optional="show"/>
-                                    <field name="building" optional="hide"/>
-                                    <field name="arrow_direction" optional="hide"/>
+                                    <field name="pictogram_code" optional="show"/>
+                                    <field name="location_id" string="Location" optional="show"/>
                                     <field name="state" widget="badge"
                                            decoration-success="state == 'installed'"
                                            decoration-info="state in ['approved', 'production', 'shipped']"
-                                           decoration-warning="state == 'draft'"/>
-                                    <field name="approved" optional="show"/>
-                                    <field name="installed" optional="show"/>
+                                           decoration-warning="state == 'draft'"
+                                           decoration-danger="state == 'canceled'"/>
+                                    <field name="needs_backer" widget="boolean"/>
                                 </list>
                                 <form>
                                     <sheet>
