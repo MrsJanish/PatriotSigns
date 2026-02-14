@@ -192,7 +192,6 @@
                                            decoration-info="state in ['approved', 'production', 'shipped']"
                                            decoration-warning="state == 'draft'"
                                            decoration-danger="state == 'canceled'"/>
-                                    <field name="needs_backer" widget="boolean"/>
                                 </list>
                                 <form>
                                     <sheet>
