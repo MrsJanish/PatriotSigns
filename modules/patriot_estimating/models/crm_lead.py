@@ -7,6 +7,40 @@ _logger = logging.getLogger(__name__)
 class CrmLead(models.Model):
     _inherit = 'crm.lead'
 
+    # =========================================================================
+    # ESTIMATE RELATIONSHIP
+    # =========================================================================
+    estimate_ids = fields.One2many(
+        'ps.estimate',
+        'opportunity_id',
+        string='Estimates',
+    )
+    estimate_count = fields.Integer(
+        string='Estimates',
+        compute='_compute_estimate_count',
+    )
+
+    @api.depends('estimate_ids')
+    def _compute_estimate_count(self):
+        for lead in self:
+            lead.estimate_count = len(lead.estimate_ids)
+
+    def action_view_estimates(self):
+        """Open linked estimates"""
+        self.ensure_one()
+        action = {
+            'type': 'ir.actions.act_window',
+            'name': f'Estimates - {self.name}',
+            'res_model': 'ps.estimate',
+            'view_mode': 'list,form',
+            'domain': [('opportunity_id', '=', self.id)],
+            'context': {'default_opportunity_id': self.id},
+        }
+        if self.estimate_count == 1:
+            action['view_mode'] = 'form'
+            action['res_id'] = self.estimate_ids[0].id
+        return action
+
     def write(self, vals):
         # Look for stage change in 'vals' dictionary
         if 'stage_id' in vals:

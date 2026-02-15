@@ -536,143 +536,6 @@ class Estimate(models.Model):
 class EstimateLine(models.Model):
     """
     Estimate Line - Individual line item in an estimate.
-    """
-    _name = 'ps.estimate.line'
-    _description = 'Estimate Line'
-    _order = 'sequence, id'
-
-    estimate_id = fields.Many2one(
-        'ps.estimate',
-        string='Estimate',
-        required=True,
-        ondelete='cascade'
-    )
-    sequence = fields.Integer(
-        string='Sequence',
-        default=10
-    )
-    
-    # =========================================================================
-    # SIGN TYPE REFERENCE
-    # =========================================================================
-    sign_type_id = fields.Many2one(
-        'ps.sign.type',
-        string='Sign Type'
-    )
-    description = fields.Char(
-        string='Description'
-    )
-    
-    # From sign type
-    category_id = fields.Many2one(
-        related='sign_type_id.category_id',
-        string='Category'
-    )
-    dimensions_display = fields.Char(
-        related='sign_type_id.dimensions_display',
-        string='Size'
-    )
-    
-    # =========================================================================
-    # QUANTITY
-    # =========================================================================
-    quantity = fields.Integer(
-        string='Qty',
-        default=1
-    )
-    uom = fields.Selection([
-        ('ea', 'Each'),
-        ('sf', 'Sq Ft'),
-        ('lf', 'Lin Ft'),
-        ('set', 'Set'),
-    ], string='UoM', default='ea')
-    
-    # =========================================================================
-    # MATERIAL COSTS
-    # =========================================================================
-    material_unit_cost = fields.Float(
-        string='Material Unit Cost'
-    )
-    material_extended = fields.Float(
-        string='Material Extended',
-        compute='_compute_extended',
-        store=True
-    )
-    
-    # =========================================================================
-    # LABOR COSTS
-    # =========================================================================
-    labor_hours = fields.Float(
-        string='Labor Hours'
-    )
-    labor_rate = fields.Float(
-        string='Labor Rate',
-        default=75.0
-    )
-    labor_extended = fields.Float(
-        string='Labor Extended',
-        compute='_compute_extended',
-        store=True
-    )
-    
-    # =========================================================================
-    # INSTALLATION COSTS
-    # =========================================================================
-    install_hours = fields.Float(
-        string='Install Hours'
-    )
-    install_rate = fields.Float(
-        string='Install Rate',
-        default=85.0
-    )
-    install_extended = fields.Float(
-        string='Install Extended',
-        compute='_compute_extended',
-        store=True
-    )
-    
-    # =========================================================================
-    # LINE TOTAL
-    # =========================================================================
-    line_total = fields.Float(
-        string='Line Total',
-        compute='_compute_extended',
-        store=True
-    )
-    
-    # =========================================================================
-    # NOTES
-    # =========================================================================
-    notes = fields.Char(
-        string='Notes'
-    )
-
-    # =========================================================================
-    # COMPUTED
-    # =========================================================================
-    
-    @api.depends('quantity', 'material_unit_cost', 'labor_hours', 'labor_rate',
-                 'install_hours', 'install_rate')
-    def _compute_extended(self):
-        for line in self:
-            line.material_extended = line.quantity * line.material_unit_cost
-            line.labor_extended = line.labor_hours * line.labor_rate
-            line.install_extended = line.install_hours * line.install_rate
-            line.line_total = line.material_extended + line.labor_extended + line.install_extended
-
-    @api.onchange('sign_type_id')
-    def _onchange_sign_type_id(self):
-        """Auto-fill from sign type"""
-        if self.sign_type_id:
-            self.description = self.sign_type_id.name
-            self.quantity = self.sign_type_id.quantity
-            if self.sign_type_id.unit_cost:
-                self.material_unit_cost = self.sign_type_id.unit_cost
-
-
-class EstimateLine(models.Model):
-    """
-    Estimate Line - Individual line item in an estimate.
     
     Includes detailed cost calculation engine for panel signs:
     - Batch optimization (signs per sheet)
@@ -996,17 +859,27 @@ class EstimateLine(models.Model):
             # Line total is PRICE, not cost
             line.line_total = line.quantity * line.unit_price
 
-    @api.depends('unit_price', 'total_unit_cost', 'quantity')
+    @api.depends('unit_price', 'material_unit_cost', 'labor_unit_cost', 'quantity')
     def _compute_margin(self):
         for line in self:
-            line.breakeven_price = line.total_unit_cost
-            line.breakeven_extended = line.total_unit_cost * (line.quantity or 0)
+            # Breakeven = material + labor only (no overhead)
+            breakeven = line.material_unit_cost + line.labor_unit_cost
+            line.breakeven_price = breakeven
+            line.breakeven_extended = breakeven * (line.quantity or 0)
             sell_total = line.unit_price * (line.quantity or 0)
             line.profit_amount = sell_total - line.breakeven_extended
             if line.unit_price:
-                line.profit_margin = ((line.unit_price - line.total_unit_cost) / line.unit_price) * 100
+                line.profit_margin = ((line.unit_price - breakeven) / line.unit_price) * 100
             else:
                 line.profit_margin = 0
+
+            # Sync breakeven back to sign type as unit_cost
+            if (line.sign_type_id
+                    and not self.env.context.get('_syncing_from_sign_type')
+                    and breakeven > 0):
+                line.sign_type_id.with_context(
+                    _syncing_from_estimate=True
+                ).write({'unit_cost': breakeven})
 
     @api.onchange('sign_type_id')
     def _onchange_sign_type_id(self):
@@ -1029,6 +902,7 @@ class EstimateLine(models.Model):
         'sign_height': 'length',
         'quantity': 'quantity',
         'unit_price': 'unit_price',
+        'breakeven_price': 'unit_cost',
     }
 
     def write(self, vals):

@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- ============================================================ -->
+    <!-- CRM Lead Form: Add Estimates stat button + tab               -->
+    <!-- ============================================================ -->
+    <record id="crm_lead_view_form_inherit_estimating" model="ir.ui.view">
+        <field name="name">crm.lead.form.inherit.estimating</field>
+        <field name="model">crm.lead</field>
+        <field name="inherit_id" ref="crm.crm_lead_view_form"/>
+        <field name="priority">25</field>
+        <field name="arch" type="xml">
+
+            <!-- Stat button for estimates -->
+            <xpath expr="//div[@name='button_box']" position="inside">
+                <button name="action_view_estimates"
+                        type="object"
+                        class="oe_stat_button"
+                        icon="fa-calculator"
+                        invisible="estimate_count == 0">
+                    <field name="estimate_count" widget="statinfo" string="Estimates"/>
+                </button>
+            </xpath>
+
+            <!-- Estimates tab in the notebook -->
+            <xpath expr="//notebook" position="inside">
+                <page string="Estimates"
+                      name="estimates_tab"
+                      invisible="estimate_count == 0">
+                    <field name="estimate_ids" mode="list" readonly="1">
+                        <list>
+                            <field name="name"/>
+                            <field name="state" widget="badge"
+                                   decoration-info="state == 'draft'"
+                                   decoration-warning="state in ('approved','submitted')"
+                                   decoration-success="state == 'won'"
+                                   decoration-danger="state == 'lost'"/>
+                            <field name="total" string="Estimate Total" sum="Total"/>
+                            <field name="profit_margin_pct" string="Margin %"/>
+                            <field name="create_date" string="Created"/>
+                        </list>
+                    </field>
+                </page>
+            </xpath>
+
+        </field>
+    </record>
+
+</odoo>

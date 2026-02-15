@@ -29,6 +29,7 @@ Links CRM opportunities to detailed cost estimates.
         'data/sequences.xml',
         'views/crew_form_billing.xml',
         'views/estimate_views.xml',
+        'views/crm_lead_views.xml',
         'views/waste_dashboard.xml',
         'views/menu.xml',
         'views/res_config_settings_views.xml',
