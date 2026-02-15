@@ -21,7 +21,7 @@ class Crew(models.Model):
     
     # Members
     lead_id = fields.Many2one(
-        'res.users',
+        'hr.employee',
         string='Crew Lead'
     )
     member_ids = fields.Many2many(

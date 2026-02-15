@@ -20,6 +20,7 @@ Manages all field activities after signs leave the shop.
     'website': 'https://omegasignsco.com',
     'depends': [
         'patriot_production',
+        'hr',
     ],
     'data': [
         'security/ir.model.access.csv',
