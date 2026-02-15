@@ -43,9 +43,6 @@
                     </group>
                     
                     <group>
-                        <group string="Members">
-                            <field name="member_ids" widget="many2many_tags"/>
-                        </group>
                         <group string="Vehicle">
                             <field name="vehicle"/>
                             <field name="vehicle_capacity"/>
