@@ -15,8 +15,8 @@ class CrmLead(models.Model):
     estimate_count = fields.Integer(
         compute='_compute_estimate_count')
     estimate_line_ids = fields.One2many(
-        'ps.estimate.line', compute='_compute_estimate_line_ids',
-        string='Estimate Lines')
+        related='current_estimate_id.line_ids',
+        string='Estimate Lines', readonly=False)
     current_estimate_id = fields.Many2one(
         'ps.estimate', compute='_compute_current_estimate',
         string='Current Estimate')
@@ -120,10 +120,6 @@ class CrmLead(models.Model):
         for lead in self:
             lead.estimate_count = len(lead.estimate_ids)
 
-    @api.depends('estimate_ids', 'estimate_ids.line_ids')
-    def _compute_estimate_line_ids(self):
-        for lead in self:
-            lead.estimate_line_ids = lead.estimate_ids.mapped('line_ids')
 
     @api.depends('estimate_ids')
     def _compute_current_estimate(self):
