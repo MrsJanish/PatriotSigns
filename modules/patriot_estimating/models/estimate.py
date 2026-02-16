@@ -36,6 +36,7 @@ class Estimate(models.Model):
         related='opportunity_id.name',
         string='Project Name'
     )
+    active = fields.Boolean(default=True)
     
     # =========================================================================
     # DATES

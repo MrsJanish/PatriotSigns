@@ -552,6 +552,14 @@ class CrmLead(models.Model):
             if won_stage and new_stage_id == won_stage.id:
                 for lead in self:
                     lead._ensure_project_created()
+
+            # Check if moved to Passed On → archive everything
+            passed_on_stage = self.env['crm.stage'].search(
+                [('name', 'ilike', 'Passed On')], limit=1
+            )
+            if passed_on_stage and new_stage_id == passed_on_stage.id:
+                for lead in self:
+                    lead._archive_opportunity()
                     
         return res
     
@@ -916,6 +924,52 @@ class CrmLead(models.Model):
         """Mark opportunity as lost and archive it"""
         self.ensure_one()
         self.action_set_lost()
-        self.active = False
+        self._archive_opportunity()
         return {'type': 'ir.actions.act_window_close'}
+
+    def _archive_opportunity(self):
+        """Archive the opportunity and all related project artifacts."""
+        self.ensure_one()
+        _logger.info(f"Archiving opportunity {self.name} and all related records")
+
+        # 1) Archive linked estimates
+        Estimate = self.env.get('ps.estimate')
+        if Estimate:
+            estimates = Estimate.search([('opportunity_id', '=', self.id)])
+            if estimates:
+                estimates.write({'active': False})
+                _logger.info(f"  Archived {len(estimates)} estimate(s)")
+
+        # 2) Archive linked project + tasks
+        Project = self.env['project.project']
+        if 'opportunity_id' in Project._fields:
+            project = Project.search([('opportunity_id', '=', self.id)], limit=1)
+            if project:
+                # Archive tasks first
+                tasks = self.env['project.task'].search([('project_id', '=', project.id)])
+                if tasks:
+                    tasks.write({'active': False})
+                project.write({'active': False})
+                _logger.info(f"  Archived project {project.name}")
+
+        # 3) Archive submittals
+        Submittal = self.env.get('ps.submittal')
+        if Submittal and 'active' in Submittal._fields:
+            submittals = Submittal.search([
+                ('project_id.opportunity_id', '=', self.id)
+            ])
+            if submittals:
+                submittals.write({'active': False})
+                _logger.info(f"  Archived {len(submittals)} submittal(s)")
+
+        # 4) Archive production orders
+        ProductionOrder = self.env.get('ps.production.order')
+        if ProductionOrder and 'active' in ProductionOrder._fields:
+            orders = ProductionOrder.search([('opportunity_id', '=', self.id)])
+            if orders:
+                orders.write({'active': False})
+                _logger.info(f"  Archived {len(orders)} production order(s)")
+
+        # 5) Archive the opportunity itself
+        self.write({'active': False})
 
