@@ -38,6 +38,11 @@ Links CRM opportunities to detailed cost estimates.
     'application': False,
     'auto_install': False,
     'license': 'LGPL-3',
+    'assets': {
+        'web.assets_backend': [
+            'patriot_estimating/static/src/js/crm_form_reload.js',
+        ],
+    },
     'demo': [
         'demo/demo_estimate.xml',
     ],
