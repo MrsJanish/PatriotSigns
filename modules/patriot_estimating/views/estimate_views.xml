@@ -202,6 +202,7 @@
         <field name="arch" type="xml">
             <form>
                 <sheet>
+                    <field name="estimate_id" invisible="1"/>
                     <group>
                         <group string="Sign Type">
                             <field name="sign_type_id"
