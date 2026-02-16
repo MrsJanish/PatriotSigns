@@ -155,6 +155,37 @@ class CrmLead(models.Model):
         return action
 
     # =========================================================================
+    # ONCHANGE – Live field updates for estimate-related fields
+    # =========================================================================
+    @api.onchange('est_travel_miles', 'est_travel_rate', 'est_travel_trips')
+    def _onchange_travel(self):
+        self.est_travel_total = (
+            self.est_travel_miles * self.est_travel_rate * 2 * self.est_travel_trips
+        )
+
+    @api.onchange('est_install_hours', 'est_install_rate')
+    def _onchange_install(self):
+        self.est_install_total = self.est_install_hours * self.est_install_rate
+
+    @api.onchange('est_install_crew_id')
+    def _onchange_install_crew(self):
+        if self.est_install_crew_id:
+            if self.est_install_crew_id.combined_rate:
+                self.est_install_rate = self.est_install_crew_id.combined_rate
+            self.est_install_crew_size = self.est_install_crew_id.member_count
+
+    @api.onchange('est_needs_equipment', 'est_equipment_days',
+                   'est_equipment_daily_rate', 'est_equipment_delivery')
+    def _onchange_equipment(self):
+        if self.est_needs_equipment:
+            self.est_equipment_total = (
+                (self.est_equipment_days * self.est_equipment_daily_rate) +
+                self.est_equipment_delivery
+            )
+        else:
+            self.est_equipment_total = 0.0
+
+    # =========================================================================
     # ESTIMATE WORKFLOW BUTTONS (proxy to current estimate)
     # =========================================================================
     def action_estimate_populate(self):
