@@ -19,7 +19,7 @@ class CrmLead(models.Model):
         string='Estimate Lines', readonly=False)
     current_estimate_id = fields.Many2one(
         'ps.estimate', compute='_compute_current_estimate',
-        string='Current Estimate')
+        string='Current Estimate', store=True)
 
     # =========================================================================
     # STAGE-DRIVEN VIEW SWITCHING
