@@ -204,7 +204,8 @@
                 <sheet>
                     <group>
                         <group string="Sign Type">
-                            <field name="sign_type_id"/>
+                            <field name="sign_type_id"
+                                   domain="[('opportunity_id', '=', estimate_id.opportunity_id)]"/>
                             <field name="description"/>
                             <field name="category_id"/>
                         </group>
