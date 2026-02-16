@@ -47,6 +47,24 @@ class CrmLead(models.Model):
         readonly=True,
     )
 
+    # =========================================================================
+    # STAGE-DRIVEN VIEW SWITCHING
+    # =========================================================================
+    is_estimating_stage = fields.Boolean(
+        compute='_compute_is_estimating_stage',
+        string='Is Estimating Stage',
+    )
+
+    @api.depends('stage_id')
+    def _compute_is_estimating_stage(self):
+        estimating_stage = self.env.ref(
+            'patriot_crm.stage_estimating', raise_if_not_found=False
+        )
+        for lead in self:
+            lead.is_estimating_stage = (
+                estimating_stage and lead.stage_id == estimating_stage
+            )
+
     @api.depends('estimate_ids')
     def _compute_estimate_count(self):
         for lead in self:
@@ -102,37 +120,37 @@ class CrmLead(models.Model):
         if 'stage_id' in vals:
             # Resolve the Estimating stage ID
             estimating_stage = self.env.ref('patriot_crm.stage_estimating', raise_if_not_found=False)
-            
+
             # If changing TO global Estimating stage
             if estimating_stage and vals['stage_id'] == estimating_stage.id:
                 res = super(CrmLead, self).write(vals)
                 self._create_auto_estimate()
                 return res
-        
+
         return super(CrmLead, self).write(vals)
 
     def _create_auto_estimate(self):
         """Auto-create estimate when moving to Estimating stage"""
         Estimate = self.env['ps.estimate']
-        
+
         for lead in self:
             # Check if any active estimate already exists
             existing = Estimate.search([
                 ('opportunity_id', '=', lead.id),
                 ('state', '!=', 'lost')  # Ignore lost estimates
             ], limit=1)
-            
+
             if existing:
                 _logger.info(f"Estimate already exists for lead {lead.name}, skipping auto-create.")
                 continue
-                
+
             _logger.info(f"Auto-creating estimate for lead {lead.name}")
-            
+
             # Create the estimate header
             est = Estimate.create({
                 'opportunity_id': lead.id,
                 'gc_partner_id': lead.gc_partner_id.id if lead.gc_partner_id else False,
             })
-            
+
             # Auto-populate lines from sign types
             est.action_populate_from_sign_types()

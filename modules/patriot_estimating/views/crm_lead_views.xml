@@ -2,7 +2,9 @@
 <odoo>
 
     <!-- ============================================================ -->
-    <!-- CRM Lead Form: Estimates stat button + inline preview         -->
+    <!-- CRM Lead Form: Stage-driven content swap                      -->
+    <!-- When in Estimating stage, the entire form swaps to show the  -->
+    <!-- estimate content. Same URL, same record — different view.     -->
     <!-- ============================================================ -->
     <record id="crm_lead_view_form_inherit_estimating" model="ir.ui.view">
         <field name="name">crm.lead.form.inherit.estimating</field>
@@ -11,7 +13,12 @@
         <field name="priority">25</field>
         <field name="arch" type="xml">
 
-            <!-- Stat button for estimate navigation -->
+            <!-- Make is_estimating_stage available to the view -->
+            <xpath expr="//field[@name='won_status']" position="after">
+                <field name="is_estimating_stage" invisible="1"/>
+            </xpath>
+
+            <!-- Estimates stat button (always visible when estimates exist) -->
             <xpath expr="//div[@name='button_box']" position="inside">
                 <button name="action_view_estimates"
                         type="object"
@@ -20,6 +27,98 @@
                         invisible="estimate_count == 0">
                     <field name="estimate_count" widget="statinfo" string="Estimates"/>
                 </button>
+            </xpath>
+
+            <!-- ======================================================== -->
+            <!-- HIDE default CRM content when in Estimating stage        -->
+            <!-- ======================================================== -->
+
+            <!-- Hide the title block (name, revenue, probability) -->
+            <xpath expr="//div[hasclass('oe_title')]" position="attributes">
+                <attribute name="invisible">is_estimating_stage</attribute>
+            </xpath>
+
+            <!-- Hide the main contact/partner/salesperson groups -->
+            <xpath expr="//group/group[@name='opportunity_partner']/.." position="attributes">
+                <attribute name="invisible">is_estimating_stage</attribute>
+            </xpath>
+
+            <!-- Hide the lead_properties div -->
+            <xpath expr="//field[@name='lead_properties']/.." position="attributes">
+                <attribute name="invisible">is_estimating_stage</attribute>
+            </xpath>
+
+            <!-- Hide the notebook (all tabs) -->
+            <xpath expr="//notebook" position="attributes">
+                <attribute name="invisible">is_estimating_stage</attribute>
+            </xpath>
+
+            <!-- ======================================================== -->
+            <!-- SHOW estimate content when in Estimating stage           -->
+            <!-- This replaces the entire form body.                      -->
+            <!-- ======================================================== -->
+            <xpath expr="//notebook" position="before">
+                <div invisible="not is_estimating_stage" class="o_estimate_content">
+
+                    <!-- Estimate Header -->
+                    <div class="oe_title mb-3">
+                        <h1>
+                            <field name="name" readonly="1"/>
+                        </h1>
+                        <h3 class="text-muted">
+                            <field name="current_estimate_id" readonly="1" options="{'no_open': True}"/>
+                            <span class="mx-2">·</span>
+                            <field name="estimate_state" widget="badge"
+                                   decoration-info="estimate_state == 'draft'"
+                                   decoration-warning="estimate_state in ('approved','submitted')"
+                                   decoration-success="estimate_state == 'won'"
+                                   decoration-danger="estimate_state == 'lost'"/>
+                        </h3>
+                    </div>
+
+                    <!-- Estimate Summary Bar -->
+                    <group>
+                        <group string="Project">
+                            <field name="partner_id" readonly="1" string="Customer"/>
+                            <field name="gc_partner_id" readonly="1" string="GC"/>
+                        </group>
+                        <group string="Estimate Totals">
+                            <field name="estimate_total" widget="monetary"/>
+                            <field name="estimate_profit_margin_pct" string="Profit Margin %"/>
+                        </group>
+                    </group>
+
+                    <!-- Full Estimate Lines Table -->
+                    <field name="estimate_line_ids" mode="list" readonly="1">
+                        <list decoration-danger="profit_margin &lt; 0">
+                            <field name="sign_type_id"/>
+                            <field name="description"/>
+                            <field name="category_id" optional="show"/>
+                            <field name="dimensions_display" optional="show"/>
+                            <field name="quantity"/>
+                            <field name="material_unit_cost"/>
+                            <field name="material_extended" sum="Material"/>
+                            <field name="labor_unit_cost" optional="show"/>
+                            <field name="labor_extended" sum="Labor"/>
+                            <field name="breakeven_price" string="Break-Even/Unit"/>
+                            <field name="unit_price" string="Sell/Unit"/>
+                            <field name="breakeven_extended" string="Break-Even Total" sum="Break-Even"/>
+                            <field name="line_total" sum="Sell Total"/>
+                            <field name="profit_amount" string="Profit $" sum="Profit"/>
+                            <field name="profit_margin" string="Margin %" optional="show"/>
+                        </list>
+                    </field>
+
+                    <!-- Action buttons -->
+                    <div class="mt-3 d-flex gap-2">
+                        <button name="action_view_estimates"
+                                type="object"
+                                string="Open Full Estimate"
+                                class="btn btn-primary"
+                                icon="fa-external-link"/>
+                    </div>
+
+                </div>
             </xpath>
 
         </field>

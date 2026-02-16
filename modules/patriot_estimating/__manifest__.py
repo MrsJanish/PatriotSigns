@@ -29,7 +29,6 @@ Links CRM opportunities to detailed cost estimates.
         'data/sequences.xml',
         'views/crew_form_billing.xml',
         'views/estimate_views.xml',
-        'views/crm_lead_views.xml',
         'views/waste_dashboard.xml',
         'views/menu.xml',
         'views/res_config_settings_views.xml',
@@ -38,11 +37,6 @@ Links CRM opportunities to detailed cost estimates.
     'application': False,
     'auto_install': False,
     'license': 'LGPL-3',
-    'assets': {
-        'web.assets_backend': [
-            'patriot_estimating/static/src/js/crm_kanban_redirect.js',
-        ],
-    },
     'demo': [
         'demo/demo_estimate.xml',
     ],
