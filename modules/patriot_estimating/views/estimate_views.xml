@@ -195,6 +195,46 @@
         </field>
     </record>
 
+    <!-- Estimate Line Form View (used when clicking a line from any context) -->
+    <record id="ps_estimate_line_form" model="ir.ui.view">
+        <field name="name">ps.estimate.line.form</field>
+        <field name="model">ps.estimate.line</field>
+        <field name="arch" type="xml">
+            <form>
+                <sheet>
+                    <group>
+                        <group string="Sign Type">
+                            <field name="sign_type_id"/>
+                            <field name="description"/>
+                            <field name="category_id"/>
+                        </group>
+                        <group string="Dimensions">
+                            <field name="sign_width"/>
+                            <field name="sign_height"/>
+                            <field name="dimensions_display" readonly="1"/>
+                        </group>
+                    </group>
+                    <group>
+                        <group string="Quantity &amp; Pricing">
+                            <field name="quantity"/>
+                            <field name="unit_price"/>
+                            <field name="material_unit_cost"/>
+                            <field name="total_unit_cost" readonly="1"/>
+                            <field name="breakeven_price" readonly="1"/>
+                        </group>
+                        <group string="Costs">
+                            <field name="material_extended" readonly="1"/>
+                            <field name="labor_hours" readonly="1"/>
+                            <field name="labor_extended" readonly="1"/>
+                            <field name="profit_margin" readonly="1"/>
+                            <field name="line_total" readonly="1"/>
+                        </group>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
     <!-- Estimate Action -->
     <record id="ps_estimate_action" model="ir.actions.act_window">
         <field name="name">Estimates</field>
