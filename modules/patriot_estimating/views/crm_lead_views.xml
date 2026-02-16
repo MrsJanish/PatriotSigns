@@ -133,6 +133,17 @@
                                 </list>
                                 <form>
                                     <sheet>
+                                        <!-- Intermediate computed fields for auto-refresh -->
+                                        <field name="estimate_id" invisible="1"/>
+                                        <field name="signs_per_mold" invisible="1"/>
+                                        <field name="molds_needed" invisible="1"/>
+                                        <field name="signs_produced" invisible="1"/>
+                                        <field name="stock_generated" invisible="1"/>
+                                        <field name="sheets_needed" invisible="1"/>
+                                        <field name="waste_percent" invisible="1"/>
+                                        <field name="labor_unit_cost" invisible="1"/>
+                                        <field name="overhead_unit_cost" invisible="1"/>
+                                        <field name="calculate_dynamic" invisible="1"/>
                                         <group>
                                             <group string="Sign Type">
                                                 <field name="sign_type_id"
