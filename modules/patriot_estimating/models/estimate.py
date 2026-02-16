@@ -574,8 +574,9 @@ class EstimateLine(models.Model):
         string='Category'
     )
     dimensions_display = fields.Char(
-        related='sign_type_id.dimensions_display',
-        string='Size'
+        string='Size',
+        compute='_compute_dimensions_display',
+        store=True,
     )
     
     # Dimension inputs for calc
@@ -888,6 +889,22 @@ class EstimateLine(models.Model):
             # If sign type already has a calculated unit cost, we could use it, 
             # but we recalculate here to ensure estimate-specific logic applies.
             # self.sign_width = ...
+
+    # =====================================================================
+    # DIMENSIONS DISPLAY
+    # =====================================================================
+
+    @api.depends('sign_width', 'sign_height')
+    def _compute_dimensions_display(self):
+        for line in self:
+            h = line.sign_height
+            w = line.sign_width
+            if h and w:
+                h_str = f"{int(h)}" if h == int(h) else f"{h}"
+                w_str = f"{int(w)}" if w == int(w) else f"{w}"
+                line.dimensions_display = f'{h_str}" x {w_str}"'
+            else:
+                line.dimensions_display = ''
 
     # =====================================================================
     # CRUD OVERRIDES – Sync back to Sign Type
