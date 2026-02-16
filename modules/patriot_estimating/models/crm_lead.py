@@ -157,15 +157,42 @@ class CrmLead(models.Model):
     # =========================================================================
     # ONCHANGE – Live field updates for estimate-related fields
     # =========================================================================
+
+    def _recompute_estimate_summary(self):
+        """Recalculate summary totals from current sub-total values."""
+        signage = self.est_signage_total or 0.0
+        total = (
+            signage +
+            (self.est_install_total or 0.0) +
+            (self.est_travel_total or 0.0) +
+            (self.est_equipment_total or 0.0)
+        )
+        self.estimate_total = total
+        self.estimate_profit_amount = signage * 0.40
+        self.estimate_profit_margin_pct = (
+            (self.estimate_profit_amount / total * 100) if total else 0.0
+        )
+
+    @api.onchange('est_mold_time_minutes', 'est_shop_rate')
+    def _onchange_shop_labor(self):
+        molds = self.est_total_molds or 0
+        mold_time = self.est_mold_time_minutes or 50.0
+        shop_rate = self.est_shop_rate or 85.0
+        hours = (molds * mold_time) / 60.0
+        self.est_shop_labor_total = hours * shop_rate
+        self._recompute_estimate_summary()
+
     @api.onchange('est_travel_miles', 'est_travel_rate', 'est_travel_trips')
     def _onchange_travel(self):
         self.est_travel_total = (
             self.est_travel_miles * self.est_travel_rate * 2 * self.est_travel_trips
         )
+        self._recompute_estimate_summary()
 
     @api.onchange('est_install_hours', 'est_install_rate')
     def _onchange_install(self):
         self.est_install_total = self.est_install_hours * self.est_install_rate
+        self._recompute_estimate_summary()
 
     @api.onchange('est_install_crew_id')
     def _onchange_install_crew(self):
@@ -173,6 +200,9 @@ class CrmLead(models.Model):
             if self.est_install_crew_id.combined_rate:
                 self.est_install_rate = self.est_install_crew_id.combined_rate
             self.est_install_crew_size = self.est_install_crew_id.member_count
+            # Recompute install total with new rate
+            self.est_install_total = self.est_install_hours * self.est_install_rate
+            self._recompute_estimate_summary()
 
     @api.onchange('est_needs_equipment', 'est_equipment_days',
                    'est_equipment_daily_rate', 'est_equipment_delivery')
@@ -184,6 +214,7 @@ class CrmLead(models.Model):
             )
         else:
             self.est_equipment_total = 0.0
+        self._recompute_estimate_summary()
 
     # =========================================================================
     # ESTIMATE WORKFLOW BUTTONS (proxy to current estimate)
