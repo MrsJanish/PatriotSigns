@@ -2,9 +2,8 @@
 <odoo>
 
     <!-- ============================================================ -->
-    <!-- CRM Lead Form: Stage-driven content swap                      -->
-    <!-- When in Estimating stage, the entire form swaps to show the  -->
-    <!-- estimate content. Same URL, same record — different view.     -->
+    <!-- CRM Lead Form: Stage-driven full estimate content swap        -->
+    <!-- Same URL, same record — view adapts to the stage.             -->
     <!-- ============================================================ -->
     <record id="crm_lead_view_form_inherit_estimating" model="ir.ui.view">
         <field name="name">crm.lead.form.inherit.estimating</field>
@@ -13,12 +12,12 @@
         <field name="priority">25</field>
         <field name="arch" type="xml">
 
-            <!-- Make is_estimating_stage available to the view -->
+            <!-- Hidden fields for view logic -->
             <xpath expr="//field[@name='won_status']" position="after">
                 <field name="is_estimating_stage" invisible="1"/>
             </xpath>
 
-            <!-- Estimates stat button (always visible when estimates exist) -->
+            <!-- Estimates stat button -->
             <xpath expr="//div[@name='button_box']" position="inside">
                 <button name="action_view_estimates"
                         type="object"
@@ -32,42 +31,32 @@
             <!-- ======================================================== -->
             <!-- HIDE default CRM content when in Estimating stage        -->
             <!-- ======================================================== -->
-
-            <!-- Hide the title block (name, revenue, probability) -->
             <xpath expr="//div[hasclass('oe_title')]" position="attributes">
                 <attribute name="invisible">is_estimating_stage</attribute>
             </xpath>
-
-            <!-- Hide the main contact/partner/salesperson groups -->
             <xpath expr="//group/group[@name='opportunity_partner']/.." position="attributes">
                 <attribute name="invisible">is_estimating_stage</attribute>
             </xpath>
-
-            <!-- Hide the lead_properties div -->
             <xpath expr="//field[@name='lead_properties']/.." position="attributes">
                 <attribute name="invisible">is_estimating_stage</attribute>
             </xpath>
-
-            <!-- Hide the notebook (all tabs) -->
             <xpath expr="//notebook" position="attributes">
                 <attribute name="invisible">is_estimating_stage</attribute>
             </xpath>
 
             <!-- ======================================================== -->
-            <!-- SHOW estimate content when in Estimating stage           -->
-            <!-- This replaces the entire form body.                      -->
+            <!-- FULL ESTIMATE FORM — replaces everything when estimating -->
             <!-- ======================================================== -->
             <xpath expr="//notebook" position="before">
-                <div invisible="not is_estimating_stage" class="o_estimate_content">
+                <div invisible="not is_estimating_stage" class="o_estimate_inline">
 
-                    <!-- Estimate Header -->
-                    <div class="oe_title mb-3">
+                    <!-- Estimate Header with workflow buttons -->
+                    <div class="oe_title mb-2">
                         <h1>
                             <field name="name" readonly="1"/>
                         </h1>
-                        <h3 class="text-muted">
-                            <field name="current_estimate_id" readonly="1" options="{'no_open': True}"/>
-                            <span class="mx-2">·</span>
+                        <h3 class="d-flex align-items-center gap-2">
+                            <field name="estimate_name" readonly="1"/>
                             <field name="estimate_state" widget="badge"
                                    decoration-info="estimate_state == 'draft'"
                                    decoration-warning="estimate_state in ('approved','submitted')"
@@ -76,47 +65,138 @@
                         </h3>
                     </div>
 
-                    <!-- Estimate Summary Bar -->
+                    <!-- Workflow Action Buttons -->
+                    <div class="mb-3 d-flex gap-2">
+                        <button name="action_estimate_recalculate"
+                                string="🔄 Recalculate" type="object"
+                                class="btn-secondary"
+                                invisible="estimate_state != 'draft'"/>
+                        <button name="action_estimate_approve"
+                                string="✅ Approve" type="object"
+                                class="btn-primary"
+                                invisible="estimate_state != 'draft'"/>
+                        <button name="action_estimate_submit"
+                                string="📤 Submit" type="object"
+                                class="btn-success"
+                                invisible="estimate_state != 'approved'"/>
+                        <button name="action_estimate_generate_quotation"
+                                string="⚡ Generate Quotation" type="object"
+                                class="btn-primary"
+                                invisible="estimate_state not in ('approved', 'submitted')"
+                                confirm="Create a quotation from this estimate?"/>
+                    </div>
+
+                    <!-- Project Info -->
                     <group>
                         <group string="Project">
                             <field name="partner_id" readonly="1" string="Customer"/>
                             <field name="gc_partner_id" readonly="1" string="GC"/>
                         </group>
-                        <group string="Estimate Totals">
-                            <field name="estimate_total" widget="monetary"/>
-                            <field name="estimate_profit_margin_pct" string="Profit Margin %"/>
+                        <group string="Dates">
+                            <field name="estimate_date"/>
+                            <field name="estimate_valid_until"/>
                         </group>
                     </group>
 
-                    <!-- Full Estimate Lines Table -->
-                    <field name="estimate_line_ids" mode="list" readonly="1">
-                        <list decoration-danger="profit_margin &lt; 0">
-                            <field name="sign_type_id"/>
-                            <field name="description"/>
-                            <field name="category_id" optional="show"/>
-                            <field name="dimensions_display" optional="show"/>
-                            <field name="quantity"/>
-                            <field name="material_unit_cost"/>
-                            <field name="material_extended" sum="Material"/>
-                            <field name="labor_unit_cost" optional="show"/>
-                            <field name="labor_extended" sum="Labor"/>
-                            <field name="breakeven_price" string="Break-Even/Unit"/>
-                            <field name="unit_price" string="Sell/Unit"/>
-                            <field name="breakeven_extended" string="Break-Even Total" sum="Break-Even"/>
-                            <field name="line_total" sum="Sell Total"/>
-                            <field name="profit_amount" string="Profit $" sum="Profit"/>
-                            <field name="profit_margin" string="Margin %" optional="show"/>
-                        </list>
-                    </field>
+                    <!-- Estimate Notebook — mirrors the actual estimate form -->
+                    <notebook>
+                        <!-- TAB 1: Estimate Lines -->
+                        <page string="Estimate Lines" name="est_lines">
+                            <field name="estimate_line_ids" mode="list" readonly="1">
+                                <list decoration-danger="profit_margin &lt; 0">
+                                    <field name="sign_type_id"/>
+                                    <field name="description"/>
+                                    <field name="category_id" optional="show"/>
+                                    <field name="dimensions_display" optional="show"/>
+                                    <field name="quantity"/>
+                                    <field name="material_unit_cost"/>
+                                    <field name="material_extended" sum="Material"/>
+                                    <field name="labor_hours" optional="show"/>
+                                    <field name="labor_rate" optional="hide"/>
+                                    <field name="labor_extended" sum="Labor"/>
+                                    <field name="breakeven_price" string="Break-Even/Unit" optional="show"/>
+                                    <field name="unit_price" string="Sell/Unit"/>
+                                    <field name="breakeven_extended" string="Break-Even Total" sum="Break-Even"/>
+                                    <field name="line_total" sum="Sell Total"/>
+                                    <field name="profit_amount" string="Profit $" sum="Profit"/>
+                                </list>
+                            </field>
+                        </page>
 
-                    <!-- Action buttons -->
-                    <div class="mt-3 d-flex gap-2">
-                        <button name="action_view_estimates"
-                                type="object"
-                                string="Open Full Estimate"
-                                class="btn btn-primary"
-                                icon="fa-external-link"/>
-                    </div>
+                        <!-- TAB 2: Labor & Travel -->
+                        <page string="Labor &amp; Travel" name="est_labor_travel">
+                            <group>
+                                <group string="Shop Labor (Mold-Based)">
+                                    <field name="est_total_molds"/>
+                                    <field name="est_mold_time_minutes"/>
+                                    <field name="est_shop_rate"/>
+                                    <field name="est_shop_labor_total" widget="monetary"/>
+                                </group>
+                                <group string="Travel">
+                                    <field name="est_travel_miles"/>
+                                    <field name="est_travel_rate"/>
+                                    <field name="est_travel_trips"/>
+                                    <field name="est_travel_total" widget="monetary"/>
+                                </group>
+                            </group>
+                        </page>
+
+                        <!-- TAB 3: Installation -->
+                        <page string="Installation" name="est_installation">
+                            <group>
+                                <group string="Install Crew">
+                                    <field name="est_install_crew_id"/>
+                                    <field name="est_install_crew_size"/>
+                                    <field name="est_install_rate"/>
+                                </group>
+                                <group string="Install Labor">
+                                    <field name="est_install_hours"/>
+                                    <field name="est_install_total" widget="monetary"/>
+                                </group>
+                            </group>
+                            <group>
+                                <group string="Equipment Rental">
+                                    <field name="est_needs_equipment"/>
+                                    <field name="est_equipment_type" invisible="not est_needs_equipment"/>
+                                    <field name="est_equipment_days" invisible="not est_needs_equipment"/>
+                                    <field name="est_equipment_daily_rate" invisible="not est_needs_equipment"/>
+                                    <field name="est_equipment_delivery" invisible="not est_needs_equipment"/>
+                                    <field name="est_equipment_total" widget="monetary" invisible="not est_needs_equipment"/>
+                                </group>
+                            </group>
+                        </page>
+
+                        <!-- TAB 4: Summary -->
+                        <page string="Summary" name="est_summary">
+                            <group class="oe_subtotal_footer oe_right">
+                                <field name="est_signage_total" widget="monetary" string="Signage Total"/>
+                                <field name="est_travel_total" widget="monetary" string="Travel"/>
+                                <field name="est_install_total" widget="monetary" string="Installation"/>
+                                <field name="est_equipment_total" widget="monetary"
+                                       invisible="not est_needs_equipment" string="Equipment"/>
+                                <field name="estimate_total" widget="monetary"
+                                       class="oe_subtotal_footer_separator" string="Estimate Total"/>
+                            </group>
+                            <div class="oe_clear"/>
+                            <group>
+                                <group>
+                                    <field name="estimate_profit_amount" widget="monetary" string="Profit $"/>
+                                    <field name="estimate_profit_margin_pct" string="Profit Margin %"/>
+                                </group>
+                            </group>
+                        </page>
+
+                        <!-- TAB 5: Terms & Notes -->
+                        <page string="Terms" name="est_terms">
+                            <group>
+                                <field name="est_terms"/>
+                                <field name="est_exclusions"/>
+                            </group>
+                        </page>
+                        <page string="Notes" name="est_notes">
+                            <field name="est_notes"/>
+                        </page>
+                    </notebook>
 
                 </div>
             </xpath>
