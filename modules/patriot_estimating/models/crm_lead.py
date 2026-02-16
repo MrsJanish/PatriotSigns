@@ -216,6 +216,24 @@ class CrmLead(models.Model):
             self.est_equipment_total = 0.0
         self._recompute_estimate_summary()
 
+    @api.onchange('estimate_line_ids')
+    def _onchange_estimate_lines(self):
+        """Recompute all summary fields when estimate lines change."""
+        lines = self.estimate_line_ids
+        # Signage total from line prices
+        signage = sum(lines.mapped('line_total'))
+        self.est_signage_total = signage
+        # Total molds from lines
+        total_molds = sum(lines.mapped('molds_needed'))
+        self.est_total_molds = total_molds
+        # Shop labor from molds
+        mold_time = self.est_mold_time_minutes or 50.0
+        shop_rate = self.est_shop_rate or 85.0
+        hours = (total_molds * mold_time) / 60.0
+        self.est_shop_labor_total = hours * shop_rate
+        # Cascade to summary
+        self._recompute_estimate_summary()
+
     # =========================================================================
     # ESTIMATE WORKFLOW BUTTONS (proxy to current estimate)
     # =========================================================================
