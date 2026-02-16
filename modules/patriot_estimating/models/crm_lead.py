@@ -64,6 +64,25 @@ class CrmLead(models.Model):
             active = lead.estimate_ids.filtered(lambda e: e.state != 'lost')
             lead.current_estimate_id = active[:1] if active else False
 
+    def action_open_lead_or_estimate(self):
+        """
+        Called when clicking a kanban card in the pipeline.
+        If the lead has estimates → open the estimate form directly.
+        Otherwise → open the normal lead form.
+        """
+        self.ensure_one()
+        if self.estimate_count > 0:
+            # Redirect to the estimate form
+            return self.action_view_estimates()
+        # Default: open the lead form
+        return {
+            'type': 'ir.actions.act_window',
+            'res_model': 'crm.lead',
+            'view_mode': 'form',
+            'res_id': self.id,
+            'views': [(False, 'form')],
+        }
+
     def action_view_estimates(self):
         """Open linked estimates using the real Estimates action for proper menu context"""
         self.ensure_one()

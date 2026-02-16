@@ -2,9 +2,24 @@
 <odoo>
 
     <!-- ============================================================ -->
-    <!-- CRM Lead Form: Embed full estimate content inline             -->
-    <!-- When estimates exist, shows the estimate details directly     -->
-    <!-- on the CRM lead form — no navigation required.                -->
+    <!-- CRM Kanban: Redirect to estimate when one exists              -->
+    <!-- Clicking a lead card with estimates opens the estimate form   -->
+    <!-- directly instead of the lead form.                            -->
+    <!-- ============================================================ -->
+    <record id="crm_lead_kanban_inherit_estimating" model="ir.ui.view">
+        <field name="name">crm.lead.kanban.inherit.estimating</field>
+        <field name="model">crm.lead</field>
+        <field name="inherit_id" ref="crm.view_crm_lead_kanban"/>
+        <field name="arch" type="xml">
+            <xpath expr="//kanban" position="attributes">
+                <attribute name="action">action_open_lead_or_estimate</attribute>
+                <attribute name="type">object</attribute>
+            </xpath>
+        </field>
+    </record>
+
+    <!-- ============================================================ -->
+    <!-- CRM Lead Form: Estimates stat button + inline content         -->
     <!-- ============================================================ -->
     <record id="crm_lead_view_form_inherit_estimating" model="ir.ui.view">
         <field name="name">crm.lead.form.inherit.estimating</field>
@@ -13,7 +28,7 @@
         <field name="priority">25</field>
         <field name="arch" type="xml">
 
-            <!-- Stat button for quick estimate navigation -->
+            <!-- Stat button for estimate navigation -->
             <xpath expr="//div[@name='button_box']" position="inside">
                 <button name="action_view_estimates"
                         type="object"
@@ -24,7 +39,7 @@
                 </button>
             </xpath>
 
-            <!-- Full Estimate tab — shows estimate lines directly on the CRM form -->
+            <!-- Estimate tab with inline content -->
             <xpath expr="//notebook" position="inside">
                 <page string="📊 Estimate"
                       name="estimates_tab"
@@ -67,7 +82,7 @@
                         </list>
                     </field>
 
-                    <!-- Open full estimate button -->
+                    <!-- Open full estimate for editing -->
                     <div class="mt-3">
                         <button name="action_view_estimates"
                                 type="object"
