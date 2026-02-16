@@ -830,7 +830,7 @@ class CrmLead(models.Model):
         reviewing_stage = self.env.ref('patriot_crm.stage_reviewing', raise_if_not_found=False)
         if not reviewing_stage:
             # Fallback search if XML ID failed
-            reviewing_stage = self.env['crm.stage'].search([('name', 'ilike', 'Reviewing')], limit=1)
+            reviewing_stage = self.env['crm.stage'].search([('name', 'ilike', 'Qualifying')], limit=1)
             
         if not reviewing_stage:
             _logger.error("Cannot rescue leads: 'Reviewing' stage not found!")

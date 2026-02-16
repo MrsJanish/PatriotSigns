@@ -8,7 +8,7 @@
         <!-- PIPELINE STAGES -->
         
         <record id="stage_reviewing" model="crm.stage">
-            <field name="name">📄 Reviewing</field>
+            <field name="name">📄 Qualifying</field>
             <field name="sequence">10</field>
             <field name="is_won">False</field>
         </record>
