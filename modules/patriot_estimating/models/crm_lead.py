@@ -26,18 +26,16 @@ class CrmLead(models.Model):
             lead.estimate_count = len(lead.estimate_ids)
 
     def action_view_estimates(self):
-        """Open linked estimates"""
+        """Open linked estimates using the real Estimates action for proper menu context"""
         self.ensure_one()
-        action = {
-            'type': 'ir.actions.act_window',
-            'name': f'Estimates - {self.name}',
-            'res_model': 'ps.estimate',
-            'view_mode': 'list,form',
-            'domain': [('opportunity_id', '=', self.id)],
-            'context': {'default_opportunity_id': self.id},
-        }
+        action = self.env['ir.actions.act_window']._for_xml_id(
+            'patriot_estimating.ps_estimate_action'
+        )
+        action['domain'] = [('opportunity_id', '=', self.id)]
+        action['context'] = {'default_opportunity_id': self.id}
         if self.estimate_count == 1:
             action['view_mode'] = 'form'
+            action['views'] = [(False, 'form')]
             action['res_id'] = self.estimate_ids[0].id
         return action
 
