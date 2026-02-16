@@ -161,6 +161,11 @@ class CrmLead(models.Model):
     # =========================================================================
     # ESTIMATE WORKFLOW BUTTONS (proxy to current estimate)
     # =========================================================================
+    def action_estimate_populate(self):
+        self.ensure_one()
+        if self.current_estimate_id:
+            self.current_estimate_id.action_populate_from_sign_types()
+
     def action_estimate_recalculate(self):
         self.ensure_one()
         if self.current_estimate_id:
