@@ -886,9 +886,19 @@ class EstimateLine(models.Model):
             self.quantity = self.sign_type_id.quantity
             self.sign_width = self.sign_type_id.width
             self.sign_height = self.sign_type_id.length
-            # If sign type already has a calculated unit cost, we could use it, 
-            # but we recalculate here to ensure estimate-specific logic applies.
-            # self.sign_width = ...
+
+    @api.onchange('sign_width', 'sign_height', 'quantity', 'labor_rate',
+                   'install_hours', 'install_rate', 'calculate_dynamic')
+    def _onchange_recompute_all(self):
+        """Trigger full recomputation chain for live UI updates."""
+        self._compute_dimensions_display()
+        self._compute_batch_size()
+        self._compute_labor_hours()
+        self._compute_material_usage()
+        self._compute_costs()
+        self._compute_sell_price()
+        self._compute_extended()
+        self._compute_margin()
 
     # =====================================================================
     # DIMENSIONS DISPLAY
