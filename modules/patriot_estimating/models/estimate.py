@@ -724,7 +724,6 @@ class EstimateLine(models.Model):
     @api.depends('sheets_needed', 'molds_needed', 'signs_produced', 'quantity', 'calculate_dynamic')
     def _compute_costs(self):
         """Calculate material and labor costs from product catalog"""
-        company = self.env.company
         
         # Look up material products from catalog
         Product = self.env['product.product']
@@ -778,11 +777,9 @@ class EstimateLine(models.Model):
             if line.quantity:
                 line.labor_unit_cost = total_labor / divisor
                 
-            # Overhead
-            line.overhead_unit_cost = (line.material_unit_cost + line.labor_unit_cost) * \
-                                      (company.pricing_overhead_pct / 100.0)
-                                      
-            line.total_unit_cost = line.material_unit_cost + line.labor_unit_cost + line.overhead_unit_cost
+            # No separate overhead — shop_rate ($85/hr) is already overhead-loaded
+            line.overhead_unit_cost = 0.0
+            line.total_unit_cost = line.material_unit_cost + line.labor_unit_cost
 
     def _get_size_price(self, sqin):
         """
