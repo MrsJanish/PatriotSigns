@@ -11,8 +11,37 @@
                 <field name="project_number"/>
                 <field name="opportunity_id"/>
             </field>
-            
+
+            <!-- Stat buttons for sign types -->
+            <xpath expr="//div[@name='button_box']" position="inside">
+                <button name="action_view_sign_types"
+                        type="object"
+                        class="oe_stat_button"
+                        icon="fa-pencil-square-o"
+                        invisible="not opportunity_id">
+                    <field name="sign_type_count" widget="statinfo" string="Sign Types"/>
+                </button>
+            </xpath>
+
             <page name="settings" position="before">
+                <page string="Sign Schedule" name="sign_schedule">
+                    <group string="Signs from Estimate">
+                        <field name="sign_type_ids" mode="list" readonly="1" nolabel="1">
+                            <list>
+                                <field name="name"/>
+                                <field name="category_id"/>
+                                <field name="dimensions_display" string="Size"/>
+                                <field name="quantity" sum="Total Signs"/>
+                                <field name="unit_cost" widget="monetary" string="Unit Cost"/>
+                            </list>
+                        </field>
+                    </group>
+                    <group>
+                        <group>
+                            <field name="total_sign_quantity" string="Total Signs"/>
+                        </group>
+                    </group>
+                </page>
                 <page string="Sign Project" name="sign_project">
                     <group>
                         <group string="Project Parties">
