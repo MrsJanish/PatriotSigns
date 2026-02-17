@@ -1055,6 +1055,629 @@ class PatriotGPTController(http.Controller):
             return self._response({'error': str(e)}, 400)
 
     # =========================================================================
+    # SQL Execution (Read-Only)
+    # =========================================================================
+    @http.route('/api/gpt/sql', type='http', auth='public', methods=['POST'], csrf=False, cors='*')
+    def execute_sql(self, **kwargs):
+        """
+        POST /api/gpt/sql - Execute a read-only SQL query
+        Body: { "query": "SELECT ...", "limit": 100 }
+        Only SELECT statements are allowed.
+        """
+        user_id = self._authenticate()
+        if not user_id:
+            return self._response({'error': 'Unauthorized'}, 401)
+
+        request.update_env(user=user_id)
+        
+        try:
+            body = json.loads(request.httprequest.data)
+            query = body.get('query', '').strip()
+            limit = int(body.get('limit', 100))
+            
+            if not query:
+                return self._response({'error': 'No query provided'}, 400)
+            
+            # Security: Only allow SELECT statements
+            query_upper = query.upper().lstrip()
+            blocked_keywords = ['INSERT', 'UPDATE', 'DELETE', 'DROP', 'ALTER', 'TRUNCATE', 
+                                'CREATE', 'GRANT', 'REVOKE', 'EXECUTE', 'EXEC']
+            if not query_upper.startswith('SELECT') and not query_upper.startswith('WITH'):
+                return self._response({'error': 'Only SELECT / WITH (CTE) queries are allowed'}, 403)
+            
+            for keyword in blocked_keywords:
+                # Check for standalone keywords (not inside strings)
+                if f' {keyword} ' in f' {query_upper} ':
+                    return self._response({'error': f'Blocked keyword detected: {keyword}'}, 403)
+            
+            # Add LIMIT if not present
+            if 'LIMIT' not in query_upper:
+                query = f'{query} LIMIT {limit}'
+            
+            request.env.cr.execute(query)
+            columns = [desc[0] for desc in request.env.cr.description]
+            rows = request.env.cr.fetchall()
+            
+            # Convert to list of dicts
+            results = [dict(zip(columns, row)) for row in rows]
+            
+            return self._response({
+                'columns': columns,
+                'rows': results,
+                'row_count': len(results),
+            })
+            
+        except Exception as e:
+            _logger.exception("GPT API SQL Error:")
+            return self._response({'error': str(e)}, 400)
+
+    # =========================================================================
+    # Read Group (Aggregation)
+    # =========================================================================
+    @http.route('/api/gpt/read_group', type='http', auth='public', methods=['POST'], csrf=False, cors='*')
+    def read_group(self, **kwargs):
+        """
+        POST /api/gpt/read_group - Grouped aggregation (like SQL GROUP BY)
+        Body: { "model": "sale.order", "domain": [], "groupby": ["state"], "fields": ["amount_total"] }
+        """
+        user_id = self._authenticate()
+        if not user_id:
+            return self._response({'error': 'Unauthorized'}, 401)
+
+        request.update_env(user=user_id)
+        
+        try:
+            body = json.loads(request.httprequest.data)
+            model = body.get('model')
+            domain = body.get('domain', [])
+            groupby = body.get('groupby', [])
+            fields = body.get('fields', [])
+            limit = body.get('limit')
+            
+            if not model:
+                return self._response({'error': 'model required'}, 400)
+            if not groupby:
+                return self._response({'error': 'groupby required'}, 400)
+            if model not in request.env:
+                return self._response({'error': f'Model {model} not found'}, 404)
+            
+            Model = request.env[model]
+            result = Model.read_group(domain, fields=fields, groupby=groupby, limit=limit)
+            
+            return self._response({
+                'groups': result,
+                'group_count': len(result),
+            })
+            
+        except Exception as e:
+            _logger.exception("GPT API Read Group Error:")
+            return self._response({'error': str(e)}, 400)
+
+    # =========================================================================
+    # Execute Python Code
+    # =========================================================================
+    @http.route('/api/gpt/execute_code', type='http', auth='public', methods=['POST'], csrf=False, cors='*')
+    def execute_code(self, **kwargs):
+        """
+        POST /api/gpt/execute_code - Execute Python code in Odoo context
+        Body: { "code": "result = env['res.partner'].search_count([])" }
+        
+        Available in scope: env, request, datetime, timedelta, json, _logger, 
+                            time, date, relativedelta
+        The code should set 'result' variable to return data.
+        """
+        user_id = self._authenticate()
+        if not user_id:
+            return self._response({'error': 'Unauthorized'}, 401)
+
+        request.update_env(user=user_id)
+        
+        try:
+            body = json.loads(request.httprequest.data)
+            code = body.get('code', '').strip()
+            
+            if not code:
+                return self._response({'error': 'No code provided'}, 400)
+            
+            from datetime import datetime, timedelta, date
+            import time
+            try:
+                from dateutil.relativedelta import relativedelta
+            except ImportError:
+                relativedelta = None
+            
+            # Build execution context
+            local_vars = {
+                'env': request.env,
+                'request': request,
+                'datetime': datetime,
+                'timedelta': timedelta,
+                'date': date,
+                'time': time,
+                'relativedelta': relativedelta,
+                'json': json,
+                '_logger': _logger,
+                'result': None,
+                'output': [],
+            }
+            
+            # Custom print that captures output
+            def capture_print(*args, **kwargs):
+                local_vars['output'].append(' '.join(str(a) for a in args))
+            local_vars['print'] = capture_print
+            
+            # Execute the code
+            exec(code, {'__builtins__': __builtins__}, local_vars)
+            
+            # Get result
+            result_value = local_vars.get('result')
+            output_lines = local_vars.get('output', [])
+            
+            # Serialize the result
+            if hasattr(result_value, 'read'):
+                # It's an Odoo recordset
+                serialized = result_value.read()
+            elif hasattr(result_value, 'ids'):
+                serialized = {'ids': result_value.ids, 'model': result_value._name, 'count': len(result_value)}
+            else:
+                serialized = result_value
+            
+            return self._response({
+                'success': True,
+                'result': serialized,
+                'output': output_lines,
+            })
+            
+        except Exception as e:
+            _logger.exception("GPT API Execute Code Error:")
+            import traceback
+            return self._response({
+                'error': str(e),
+                'traceback': traceback.format_exc(),
+            }, 400)
+
+    # =========================================================================
+    # Manage Structure (Models, Fields, Views, Menus, ACLs, Rules, Automations)
+    # =========================================================================
+    @http.route('/api/gpt/manage_structure', type='http', auth='public', methods=['POST'], csrf=False, cors='*')
+    def manage_structure(self, **kwargs):
+        """
+        POST /api/gpt/manage_structure - Create/manage database structure
+        Body: { "action": "create_model|create_field|create_view|create_menu|
+                          create_access_rule|create_record_rule|create_automated_action|
+                          install_module|delete_field|update_view",
+                ...params }
+        """
+        user_id = self._authenticate()
+        if not user_id:
+            return self._response({'error': 'Unauthorized'}, 401)
+
+        request.update_env(user=user_id)
+        
+        try:
+            body = json.loads(request.httprequest.data)
+            action = body.get('action')
+            
+            if not action:
+                return self._response({'error': 'action parameter required'}, 400)
+            
+            # ---- CREATE MODEL ----
+            if action == 'create_model':
+                model_name = body.get('model')  # e.g., 'x_custom_model'
+                model_label = body.get('name', model_name)
+                model_desc = body.get('description', '')
+                
+                if not model_name:
+                    return self._response({'error': 'model name required'}, 400)
+                
+                # Ensure model name starts with x_ for custom models
+                if not model_name.startswith('x_'):
+                    model_name = 'x_' + model_name
+                
+                # Replace dots with underscores for custom models
+                model_name = model_name.replace('.', '_')
+                
+                # Create the model via ir.model
+                new_model = request.env['ir.model'].sudo().create({
+                    'name': model_label,
+                    'model': model_name,
+                    'info': model_desc,
+                    'state': 'manual',
+                })
+                
+                # Create default access rule (full access for admin)
+                request.env['ir.model.access'].sudo().create({
+                    'name': f'access_{model_name.replace(".", "_")}',
+                    'model_id': new_model.id,
+                    'group_id': request.env.ref('base.group_system').id,
+                    'perm_read': True,
+                    'perm_write': True,
+                    'perm_create': True,
+                    'perm_unlink': True,
+                })
+                
+                return self._response({
+                    'success': True,
+                    'model_id': new_model.id,
+                    'model': model_name,
+                    'name': model_label,
+                })
+            
+            # ---- CREATE FIELD ----
+            elif action == 'create_field':
+                model_name = body.get('model')
+                field_name = body.get('field_name')
+                field_type = body.get('field_type', 'char')
+                field_label = body.get('label', field_name)
+                field_help = body.get('help', '')
+                required = body.get('required', False)
+                
+                if not model_name or not field_name:
+                    return self._response({'error': 'model and field_name required'}, 400)
+                
+                # Ensure field name starts with x_ for custom fields
+                if not field_name.startswith('x_'):
+                    field_name = 'x_' + field_name
+                
+                # Find the model
+                ir_model = request.env['ir.model'].sudo().search([('model', '=', model_name)], limit=1)
+                if not ir_model:
+                    return self._response({'error': f'Model {model_name} not found'}, 404)
+                
+                # Type mapping for Odoo
+                ttype_map = {
+                    'char': 'char', 'text': 'text', 'html': 'html',
+                    'integer': 'integer', 'float': 'float', 'monetary': 'monetary',
+                    'boolean': 'boolean', 'date': 'date', 'datetime': 'datetime',
+                    'selection': 'selection', 'binary': 'binary',
+                    'many2one': 'many2one', 'one2many': 'one2many', 'many2many': 'many2many',
+                }
+                ttype = ttype_map.get(field_type, field_type)
+                
+                field_vals = {
+                    'model_id': ir_model.id,
+                    'name': field_name,
+                    'field_description': field_label,
+                    'ttype': ttype,
+                    'help': field_help,
+                    'required': required,
+                    'state': 'manual',
+                }
+                
+                # Relational field extras
+                if field_type in ('many2one', 'one2many', 'many2many'):
+                    relation = body.get('relation')
+                    if not relation:
+                        return self._response({'error': f'relation required for {field_type} field'}, 400)
+                    field_vals['relation'] = relation
+                
+                if field_type == 'one2many':
+                    inverse_name = body.get('inverse_name')
+                    if not inverse_name:
+                        return self._response({'error': 'inverse_name required for one2many field'}, 400)
+                    field_vals['relation_field'] = inverse_name
+                
+                if field_type == 'selection':
+                    selection = body.get('selection', [])
+                    # Selection should be list of [key, label] pairs
+                    field_vals['selection_ids'] = [(0, 0, {'value': s[0], 'name': s[1], 'sequence': i}) 
+                                                    for i, s in enumerate(selection)]
+                
+                # Optional size for char fields
+                if field_type == 'char' and body.get('size'):
+                    field_vals['size'] = body.get('size')
+                
+                new_field = request.env['ir.model.fields'].sudo().create(field_vals)
+                
+                return self._response({
+                    'success': True,
+                    'field_id': new_field.id,
+                    'field_name': field_name,
+                    'model': model_name,
+                    'type': ttype,
+                })
+            
+            # ---- DELETE FIELD ----
+            elif action == 'delete_field':
+                model_name = body.get('model')
+                field_name = body.get('field_name')
+                
+                if not model_name or not field_name:
+                    return self._response({'error': 'model and field_name required'}, 400)
+                
+                field = request.env['ir.model.fields'].sudo().search([
+                    ('model', '=', model_name),
+                    ('name', '=', field_name),
+                    ('state', '=', 'manual'),  # Only allow deleting custom fields
+                ], limit=1)
+                
+                if not field:
+                    return self._response({'error': f'Custom field {field_name} not found on {model_name}'}, 404)
+                
+                field.unlink()
+                return self._response({
+                    'success': True,
+                    'deleted': field_name,
+                    'model': model_name,
+                })
+            
+            # ---- CREATE VIEW ----
+            elif action == 'create_view':
+                model_name = body.get('model')
+                view_type = body.get('view_type', 'form')
+                view_name = body.get('name', f'{model_name}.{view_type}')
+                arch = body.get('arch')
+                priority = body.get('priority', 16)
+                inherit_id = body.get('inherit_id')
+                
+                if not model_name or not arch:
+                    return self._response({'error': 'model and arch required'}, 400)
+                
+                view_vals = {
+                    'name': view_name,
+                    'model': model_name,
+                    'type': view_type,
+                    'arch_db': arch,
+                    'priority': priority,
+                }
+                
+                if inherit_id:
+                    view_vals['inherit_id'] = inherit_id
+                
+                new_view = request.env['ir.ui.view'].sudo().create(view_vals)
+                
+                return self._response({
+                    'success': True,
+                    'view_id': new_view.id,
+                    'name': view_name,
+                    'model': model_name,
+                    'type': view_type,
+                })
+            
+            # ---- UPDATE VIEW ----
+            elif action == 'update_view':
+                view_id = body.get('view_id')
+                arch = body.get('arch')
+                
+                if not view_id or not arch:
+                    return self._response({'error': 'view_id and arch required'}, 400)
+                
+                view = request.env['ir.ui.view'].sudo().browse(view_id)
+                if not view.exists():
+                    return self._response({'error': f'View {view_id} not found'}, 404)
+                
+                view.write({'arch_db': arch})
+                
+                return self._response({
+                    'success': True,
+                    'view_id': view.id,
+                    'name': view.name,
+                    'model': view.model,
+                })
+            
+            # ---- CREATE MENU ----
+            elif action == 'create_menu':
+                menu_name = body.get('name')
+                model_name = body.get('model')
+                parent_id = body.get('parent_id')
+                sequence = body.get('sequence', 10)
+                
+                if not menu_name:
+                    return self._response({'error': 'name required'}, 400)
+                
+                # Create window action if model provided
+                action_id = None
+                if model_name:
+                    action = request.env['ir.actions.act_window'].sudo().create({
+                        'name': menu_name,
+                        'res_model': model_name,
+                        'view_mode': body.get('view_mode', 'tree,form'),
+                        'target': body.get('target', 'current'),
+                    })
+                    action_id = action.id
+                
+                menu_vals = {
+                    'name': menu_name,
+                    'sequence': sequence,
+                }
+                
+                if parent_id:
+                    menu_vals['parent_id'] = parent_id
+                
+                if action_id:
+                    menu_vals['action'] = f'ir.actions.act_window,{action_id}'
+                
+                new_menu = request.env['ir.ui.menu'].sudo().create(menu_vals)
+                
+                return self._response({
+                    'success': True,
+                    'menu_id': new_menu.id,
+                    'name': menu_name,
+                    'action_id': action_id,
+                })
+            
+            # ---- CREATE ACCESS RULE ----
+            elif action == 'create_access_rule':
+                model_name = body.get('model')
+                group_xmlid = body.get('group_xmlid')  # e.g., 'base.group_user'
+                
+                if not model_name:
+                    return self._response({'error': 'model required'}, 400)
+                
+                ir_model = request.env['ir.model'].sudo().search([('model', '=', model_name)], limit=1)
+                if not ir_model:
+                    return self._response({'error': f'Model {model_name} not found'}, 404)
+                
+                acl_vals = {
+                    'name': body.get('name', f'access_{model_name.replace(".", "_")}'),
+                    'model_id': ir_model.id,
+                    'perm_read': body.get('perm_read', True),
+                    'perm_write': body.get('perm_write', True),
+                    'perm_create': body.get('perm_create', True),
+                    'perm_unlink': body.get('perm_unlink', True),
+                }
+                
+                if group_xmlid:
+                    group = request.env.ref(group_xmlid, raise_if_not_found=False)
+                    if group:
+                        acl_vals['group_id'] = group.id
+                
+                acl = request.env['ir.model.access'].sudo().create(acl_vals)
+                
+                return self._response({
+                    'success': True,
+                    'access_id': acl.id,
+                    'model': model_name,
+                })
+            
+            # ---- CREATE RECORD RULE ----
+            elif action == 'create_record_rule':
+                model_name = body.get('model')
+                rule_name = body.get('name')
+                domain_force = body.get('domain_force', '[]')
+                group_xmlid = body.get('group_xmlid')
+                
+                if not model_name or not rule_name:
+                    return self._response({'error': 'model and name required'}, 400)
+                
+                ir_model = request.env['ir.model'].sudo().search([('model', '=', model_name)], limit=1)
+                if not ir_model:
+                    return self._response({'error': f'Model {model_name} not found'}, 404)
+                
+                rule_vals = {
+                    'name': rule_name,
+                    'model_id': ir_model.id,
+                    'domain_force': domain_force,
+                    'perm_read': body.get('perm_read', True),
+                    'perm_write': body.get('perm_write', True),
+                    'perm_create': body.get('perm_create', True),
+                    'perm_unlink': body.get('perm_unlink', True),
+                }
+                
+                if group_xmlid:
+                    group = request.env.ref(group_xmlid, raise_if_not_found=False)
+                    if group:
+                        rule_vals['groups'] = [(4, group.id)]
+                
+                rule = request.env['ir.rule'].sudo().create(rule_vals)
+                
+                return self._response({
+                    'success': True,
+                    'rule_id': rule.id,
+                    'name': rule_name,
+                    'model': model_name,
+                })
+            
+            # ---- CREATE AUTOMATED ACTION ----
+            elif action == 'create_automated_action':
+                model_name = body.get('model')
+                action_name = body.get('name')
+                trigger = body.get('trigger', 'on_write')
+                code = body.get('code', '')
+                filter_domain = body.get('filter_domain', '[]')
+                trigger_fields = body.get('trigger_fields', [])
+                
+                if not model_name or not action_name:
+                    return self._response({'error': 'model and name required'}, 400)
+                
+                ir_model = request.env['ir.model'].sudo().search([('model', '=', model_name)], limit=1)
+                if not ir_model:
+                    return self._response({'error': f'Model {model_name} not found'}, 404)
+                
+                # Create the server action first
+                server_action = request.env['ir.actions.server'].sudo().create({
+                    'name': action_name,
+                    'model_id': ir_model.id,
+                    'state': 'code',
+                    'code': code,
+                })
+                
+                # Create the automation
+                auto_vals = {
+                    'name': action_name,
+                    'model_id': ir_model.id,
+                    'trigger': trigger,
+                    'action_server_ids': [(4, server_action.id)],
+                    'filter_domain': filter_domain,
+                    'active': body.get('active', True),
+                }
+                
+                # Set trigger fields if applicable
+                if trigger_fields and trigger in ('on_write', 'on_create_or_write'):
+                    field_records = request.env['ir.model.fields'].sudo().search([
+                        ('model', '=', model_name),
+                        ('name', 'in', trigger_fields),
+                    ])
+                    if field_records:
+                        auto_vals['trigger_field_ids'] = [(6, 0, field_records.ids)]
+                
+                automation = request.env['base.automation'].sudo().create(auto_vals)
+                
+                return self._response({
+                    'success': True,
+                    'automation_id': automation.id,
+                    'server_action_id': server_action.id,
+                    'name': action_name,
+                    'model': model_name,
+                    'trigger': trigger,
+                })
+            
+            # ---- INSTALL MODULE ----
+            elif action == 'install_module':
+                module_name = body.get('module')
+                
+                if not module_name:
+                    return self._response({'error': 'module name required'}, 400)
+                
+                module = request.env['ir.module.module'].sudo().search([
+                    ('name', '=', module_name)
+                ], limit=1)
+                
+                if not module:
+                    # Try to update module list first
+                    request.env['ir.module.module'].sudo().update_list()
+                    module = request.env['ir.module.module'].sudo().search([
+                        ('name', '=', module_name)
+                    ], limit=1)
+                
+                if not module:
+                    return self._response({'error': f'Module {module_name} not found in addons path'}, 404)
+                
+                if module.state == 'installed':
+                    return self._response({
+                        'success': True,
+                        'module': module_name,
+                        'state': 'already_installed',
+                    })
+                
+                module.button_immediate_install()
+                
+                return self._response({
+                    'success': True,
+                    'module': module_name,
+                    'state': 'installed',
+                })
+            
+            else:
+                return self._response({
+                    'error': f'Unknown action: {action}',
+                    'valid_actions': [
+                        'create_model', 'create_field', 'delete_field',
+                        'create_view', 'update_view',
+                        'create_menu', 'create_access_rule', 'create_record_rule',
+                        'create_automated_action', 'install_module',
+                    ],
+                }, 400)
+                
+        except Exception as e:
+            _logger.exception("GPT API Manage Structure Error:")
+            import traceback
+            return self._response({
+                'error': str(e),
+                'traceback': traceback.format_exc(),
+            }, 400)
+
+    # =========================================================================
     # Health Check
     # =========================================================================
     @http.route('/api/gpt/health', type='http', auth='public', methods=['GET'], csrf=False, cors='*')
