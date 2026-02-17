@@ -1,6 +1,6 @@
 {
     'name': 'Patriot GPT API Connector',
-    'version': '2.0',
+    'version': '2.1',
     'summary': 'Full REST API for AI Agents (ChatGPT, Gemini, MCP)',
     'description': '''
         Exposes comprehensive REST endpoints for AI agents to interact with Odoo:
