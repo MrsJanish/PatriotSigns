@@ -1,8 +1,0 @@
-/* Time Clock - minimal CSS for custom elements */
-
-/* Wide Start button */
-.o_wide_btn {
-    min-width: 200px;
-    padding-left: 40px !important;
-    padding-right: 40px !important;
-}

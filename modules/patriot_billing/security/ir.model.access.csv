@@ -1,7 +1,0 @@
-id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
-access_ps_pay_application_user,ps.pay.application.user,model_ps_pay_application,base.group_user,1,1,1,0
-access_ps_pay_application_manager,ps.pay.application.manager,model_ps_pay_application,base.group_system,1,1,1,1
-access_ps_pay_application_line_user,ps.pay.application.line.user,model_ps_pay_application_line,base.group_user,1,1,1,1
-access_ps_sov_user,ps.sov.user,model_ps_sov,base.group_user,1,1,1,0
-access_ps_sov_manager,ps.sov.manager,model_ps_sov,base.group_system,1,1,1,1
-access_ps_sov_line_user,ps.sov.line.user,model_ps_sov_line,base.group_user,1,1,1,1

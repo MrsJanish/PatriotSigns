@@ -1,7 +1,0 @@
-id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
-access_sign_category_user,sign.category.user,model_sign_category,base.group_user,1,0,0,0
-access_sign_category_manager,sign.category.manager,model_sign_category,base.group_system,1,1,1,1
-access_sign_subtype_user,sign.subtype.user,model_sign_subtype,base.group_user,1,0,0,0
-access_sign_subtype_manager,sign.subtype.manager,model_sign_subtype,base.group_system,1,1,1,1
-access_sign_dimension_user,sign.dimension.user,model_sign_dimension,base.group_user,1,0,0,0
-access_sign_dimension_manager,sign.dimension.manager,model_sign_dimension,base.group_system,1,1,1,1

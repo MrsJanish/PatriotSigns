@@ -1,6 +1,0 @@
-id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
-access_ps_installation_user,ps.installation.user,model_ps_installation,base.group_user,1,1,1,0
-access_ps_installation_manager,ps.installation.manager,model_ps_installation,base.group_system,1,1,1,1
-access_ps_punchlist_item_user,ps.punchlist.item.user,model_ps_punchlist_item,base.group_user,1,1,1,1
-access_ps_crew_user,ps.crew.user,model_ps_crew,base.group_user,1,0,0,0
-access_ps_crew_manager,ps.crew.manager,model_ps_crew,base.group_system,1,1,1,1
