@@ -1846,8 +1846,11 @@ class PatriotGPTController(http.Controller):
                 try:
                     sign_num = safe_get(inst, 'x_studio_sign_seq_number', 0)
                     area = extract_area(str(safe_get(inst, 'x_studio_parent_location_display', '')))
+                    # Area/Sign# = e.g. "HS_01" or "MS_02"
+                    sn_str = str(int(sign_num)).zfill(2) if sign_num else ''
+                    area_sign = (area + '_' + sn_str) if area and sn_str else (area or sn_str)
                     data_rows.append({
-                        'sign_num': sign_num if sign_num else '',
+                        'area_sign': area_sign,
                         'sign_type': extract_sign_type_letter(str(safe_get(inst, 'x_studio_sign_type_label', ''))),
                         'needs_backer': bool(safe_get(inst, 'x_studio_needs_backer', False)),
                         'rm_num': safe_get(inst, 'x_studio_arch_rm_num', ''),
@@ -1857,7 +1860,7 @@ class PatriotGPTController(http.Controller):
                         'copy_line_3': safe_get(inst, 'x_studio_copy_line_3', ''),
                         'copy_line_4': safe_get(inst, 'x_studio_copy_line_4', ''),
                         'copy_line_5': safe_get(inst, 'x_studio_copy_line_5', ''),
-                        'remarks': area or val(safe_get(inst, 'x_studio_remarks', '')),
+                        'remarks': val(safe_get(inst, 'x_studio_remarks', '')),
                     })
                 except Exception:
                     pass
@@ -2001,22 +2004,32 @@ class PatriotGPTController(http.Controller):
                 rows_html = ""
                 for row in page_rows:
                     nb_val = "Y" if row.get('needs_backer') else ""
+                    rm_num_str = val(row.get('rm_num', ''))
+                    rm_name_str = val(row.get('rm_name', ''))
+                    # Combined room cell: bold Rm# on top, italic Room Name below
+                    if rm_num_str and rm_name_str:
+                        room_cell = '<div><b>{rn}</b></div><div style="font-size:6pt;font-style:italic;">{rm}</div>'.format(rn=rm_num_str, rm=rm_name_str)
+                    elif rm_num_str:
+                        room_cell = '<b>{rn}</b>'.format(rn=rm_num_str)
+                    elif rm_name_str:
+                        room_cell = '<i>{rm}</i>'.format(rm=rm_name_str)
+                    else:
+                        room_cell = ''
                     rows_html += """
                 <tr>
-                    <td class="center vcenter">{sn}</td>
-                    <td class="center vcenter bold">{st}</td>
+                    <td class="center vcenter">{asn}</td>
+                    <td class="vcenter">{room}</td>
                     <td class="center vcenter">{nb}</td>
-                    <td class="center vcenter">{rn}</td>
-                    <td class="vcenter">{rm}</td>
                     <td class="vcenter">{c1}</td>
                     <td class="vcenter">{c2}</td>
                     <td class="vcenter">{c3}</td>
                     <td class="vcenter">{c4}</td>
                     <td class="vcenter">{c5}</td>
+                    <td class="center vcenter bold">{st}</td>
                     <td class="vcenter">{rk}</td>
                 </tr>""".format(
-                        sn=val(row.get('sign_num', '')), st=val(row.get('sign_type', '')),
-                        nb=nb_val, rn=val(row.get('rm_num', '')), rm=val(row.get('rm_name', '')),
+                        asn=val(row.get('area_sign', '')), room=room_cell,
+                        nb=nb_val, st=val(row.get('sign_type', '')),
                         c1=val(row.get('copy_line_1', '')), c2=val(row.get('copy_line_2', '')),
                         c3=val(row.get('copy_line_3', '')), c4=val(row.get('copy_line_4', '')),
                         c5=val(row.get('copy_line_5', '')), rk=val(row.get('remarks', '')))
@@ -2027,15 +2040,14 @@ class PatriotGPTController(http.Controller):
                         rows_html += """
                 <tr>
                     <td class="center vcenter">&nbsp;</td>
+                    <td class="vcenter">&nbsp;</td>
                     <td class="center vcenter">&nbsp;</td>
+                    <td class="vcenter">&nbsp;</td>
+                    <td class="vcenter">&nbsp;</td>
+                    <td class="vcenter">&nbsp;</td>
+                    <td class="vcenter">&nbsp;</td>
+                    <td class="vcenter">&nbsp;</td>
                     <td class="center vcenter">&nbsp;</td>
-                    <td class="center vcenter">&nbsp;</td>
-                    <td class="vcenter">&nbsp;</td>
-                    <td class="vcenter">&nbsp;</td>
-                    <td class="vcenter">&nbsp;</td>
-                    <td class="vcenter">&nbsp;</td>
-                    <td class="vcenter">&nbsp;</td>
-                    <td class="vcenter">&nbsp;</td>
                     <td class="vcenter">&nbsp;</td>
                 </tr>"""
 
@@ -2057,16 +2069,15 @@ class PatriotGPTController(http.Controller):
         <table class="data-table schedule-table">
             <thead>
                 <tr>
-                    <th style="width:42pt;">Area / Sign #</th>
-                    <th style="width:32pt;">Sign Type</th>
-                    <th style="width:32pt;">Needs Backer</th>
-                    <th style="width:38pt;">Rm #</th>
-                    <th style="width:80pt;">Room Name on Plans</th>
+                    <th style="width:50pt;">Area /<br>Sign #</th>
+                    <th style="width:120pt;"><div><b>Room Number &amp; Name (current)</b></div><div style="font-size:5.5pt;font-style:italic;">Room Number &amp; Name (matching Floor Plans)</div></th>
+                    <th style="width:32pt;">Needs<br>Backer</th>
                     <th>Copy Line 1</th>
                     <th>Copy Line 2</th>
                     <th>Copy Line 3</th>
                     <th>Copy Line 4</th>
                     <th>Copy Line 5</th>
+                    <th style="width:32pt;">Sign<br>Type</th>
                     <th style="width:40pt;">Remarks</th>
                 </tr>
             </thead>
@@ -2091,15 +2102,14 @@ class PatriotGPTController(http.Controller):
                 supp_rows += """
                 <tr>
                     <td class="center vcenter">&nbsp;</td>
+                    <td class="vcenter">&nbsp;</td>
                     <td class="center vcenter">&nbsp;</td>
+                    <td class="vcenter">&nbsp;</td>
+                    <td class="vcenter">&nbsp;</td>
+                    <td class="vcenter">&nbsp;</td>
+                    <td class="vcenter">&nbsp;</td>
+                    <td class="vcenter">&nbsp;</td>
                     <td class="center vcenter">&nbsp;</td>
-                    <td class="center vcenter">&nbsp;</td>
-                    <td class="vcenter">&nbsp;</td>
-                    <td class="vcenter">&nbsp;</td>
-                    <td class="vcenter">&nbsp;</td>
-                    <td class="vcenter">&nbsp;</td>
-                    <td class="vcenter">&nbsp;</td>
-                    <td class="vcenter">&nbsp;</td>
                     <td class="vcenter">&nbsp;</td>
                 </tr>"""
 
@@ -2120,16 +2130,15 @@ class PatriotGPTController(http.Controller):
         <table class="data-table schedule-table">
             <thead>
                 <tr>
-                    <th style="width:42pt;">Area / Sign #</th>
-                    <th style="width:32pt;">Sign Type</th>
-                    <th style="width:32pt;">Needs Backer</th>
-                    <th style="width:38pt;">Rm #</th>
-                    <th style="width:80pt;">Room Name on Plans</th>
+                    <th style="width:50pt;">Area /<br>Sign #</th>
+                    <th style="width:120pt;"><div><b>Room Number &amp; Name (current)</b></div><div style="font-size:5.5pt;font-style:italic;">Room Number &amp; Name (matching Floor Plans)</div></th>
+                    <th style="width:32pt;">Needs<br>Backer</th>
                     <th>Copy Line 1</th>
                     <th>Copy Line 2</th>
                     <th>Copy Line 3</th>
                     <th>Copy Line 4</th>
                     <th>Copy Line 5</th>
+                    <th style="width:32pt;">Sign<br>Type</th>
                     <th style="width:40pt;">Remarks</th>
                 </tr>
             </thead>
