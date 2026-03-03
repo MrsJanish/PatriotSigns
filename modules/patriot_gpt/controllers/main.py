@@ -1689,16 +1689,67 @@ class PatriotGPTController(http.Controller):
         import base64
         import subprocess
         import tempfile
-        import os
+        import os as _os
         from collections import OrderedDict
         from datetime import datetime as dt
+        from markupsafe import escape as _esc
+
+        SIGN_CATEGORY_KEY = OrderedDict([
+            ("DCAS", "Dimensional-Cast"), ("DCHA", "Dimensional-Channel"),
+            ("DCUT", "Dimensional-Cut"), ("DIG", "Digital Signage"),
+            ("ETCH", "Etched"), ("FAB", "Fabricated Sign"),
+            ("FILM", "Blackout Film"), ("FOAM", "Dimensional-Foam"),
+            ("PAN", "Panel/ADA/Wayfinding"), ("PLQ", "Cast Plaque"),
+            ("POST", "Post &amp; Panel"), ("TAG", "Door/Room Tags"),
+            ("TEMP", "Paint Template"), ("VIN", "Vinyl-Letters &amp; Graphics"),
+        ])
+        ROWS_PER_PAGE = 26
+
+        def val(v):
+            if v is False or v is None:
+                return ""
+            return str(v)
+
+        def extract_sign_type_letter(label):
+            if not label:
+                return ""
+            try:
+                return str(label).split("|")[0].strip()
+            except Exception:
+                return ""
+
+        def extract_sign_type_desc(label):
+            if not label:
+                return ""
+            try:
+                parts = str(label).split("|", 1)
+                return parts[1].strip() if len(parts) > 1 else ""
+            except Exception:
+                return ""
+
+        def extract_area(parent_loc):
+            if not parent_loc:
+                return ""
+            try:
+                return str(parent_loc).split("|")[0].strip()
+            except Exception:
+                return ""
+
+        def safe_get(inst, field, default=""):
+            try:
+                v = inst.get(field)
+                if v is False or v is None:
+                    return default
+                return v
+            except Exception:
+                return default
 
         try:
             lead = request.env['crm.lead'].browse(lead_id)
             if not lead.exists():
                 return request.not_found()
 
-            # --- Lenient: use alias if available, otherwise just use lead info ---
+            # --- Lenient data gathering ---
             alias = None
             alias_id = False
             try:
@@ -1730,7 +1781,7 @@ class PatriotGPTController(http.Controller):
             now = dt.now()
             pd_str = now.strftime("%m/%d/%Y").lstrip("0").replace("/0", "/")
 
-            # --- Fetch data (lenient: try all known fields, skip any that fail) ---
+            # --- Fetch install instances (lenient) ---
             all_fields = [
                 'x_name', 'x_studio_sign_seq_number', 'x_studio_sign_type_label',
                 'x_studio_sign_type_dimensions', 'x_studio_needs_backer',
@@ -1740,7 +1791,6 @@ class PatriotGPTController(http.Controller):
                 'x_studio_remarks', 'x_studio_sign_category',
                 'x_studio_parent_location_display',
             ]
-            # Filter to fields that actually exist on the model
             try:
                 model_fields = request.env['x_install_instance'].fields_get()
                 valid_fields = [f for f in all_fields if f in model_fields]
@@ -1755,7 +1805,6 @@ class PatriotGPTController(http.Controller):
                         fields=valid_fields,
                         order='x_studio_sign_seq_number asc')
                 except Exception:
-                    # If ordering field doesn't exist, try without ordering
                     try:
                         insts = request.env['x_install_instance'].search_read(
                             [('x_studio_project_alias', '=', alias_id)],
@@ -1763,196 +1812,552 @@ class PatriotGPTController(http.Controller):
                     except Exception:
                         insts = []
 
-            # Lenient: no instances is fine, we generate an empty schedule
-
-            # --- Helpers (all return safe strings, never raise) ---
-            def _esc(x):
+            # --- Compute sign type counts ---
+            type_groups = OrderedDict()
+            category_counts = OrderedDict()
+            for inst in insts:
                 try:
-                    s = "" if x is False or x is None else str(x)
-                    return s.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
+                    cat = safe_get(inst, 'x_studio_sign_category')
+                    cat_name = cat[1] if isinstance(cat, (list, tuple)) else (val(cat) if cat else "")
+                    type_letter = extract_sign_type_letter(safe_get(inst, 'x_studio_sign_type_label', ''))
+                    type_desc = extract_sign_type_desc(safe_get(inst, 'x_studio_sign_type_label', ''))
+                    dimensions = val(safe_get(inst, 'x_studio_sign_type_dimensions', ''))
+                    needs_backer = bool(safe_get(inst, 'x_studio_needs_backer', False))
+                    key = (cat_name, type_letter)
+                    if key not in type_groups:
+                        type_groups[key] = {
+                            'sign_cat': cat_name, 'type_letter': type_letter,
+                            'type_desc': type_desc, 'dimensions': dimensions,
+                            'qty': 0, 'backer_qty': 0,
+                        }
+                    type_groups[key]['qty'] += 1
+                    if needs_backer:
+                        type_groups[key]['backer_qty'] += 1
+                    category_counts[cat_name] = category_counts.get(cat_name, 0) + 1
                 except Exception:
-                    return ""
-            def _el(l):
+                    pass
+
+            type_counts = list(type_groups.values())
+            used_categories = set(category_counts.keys())
+
+            # --- Build data rows ---
+            data_rows = []
+            for inst in insts:
                 try:
-                    return l.split("|")[0].strip() if l else ""
-                except Exception:
-                    return ""
-            def _ed(l):
-                try:
-                    return l.split("|", 1)[1].strip() if l and "|" in l else ""
-                except Exception:
-                    return ""
-            def _ea(p):
-                try:
-                    return p.split("|")[0].strip() if p else ""
-                except Exception:
-                    return ""
-            def _sg(inst, field, default=""):
-                """Safe get: returns field value or default, never raises."""
-                try:
-                    v = inst.get(field)
-                    if v is False or v is None:
-                        return default
-                    return v
-                except Exception:
-                    return default
-
-            SIGN_CAT_KEY = [
-                ("DCAS", "Dimensional-Cast"), ("DCHA", "Dimensional-Channel"),
-                ("DCUT", "Dimensional-Cut"), ("DIG", "Digital Signage"),
-                ("ETCH", "Etched"), ("FAB", "Fabricated Sign"),
-                ("FILM", "Blackout Film"), ("FOAM", "Dimensional-Foam"),
-                ("PAN", "Panel/ADA/Wayfinding"), ("PLQ", "Cast Plaque"),
-                ("POST", "Post &amp; Panel"), ("TAG", "Door/Room Tags"),
-                ("TEMP", "Paint Template"), ("VIN", "Vinyl-Letters &amp; Graphics"),
-            ]
-            RPP = 26
-
-            # --- Compute sign counts (lenient) ---
-            tg = OrderedDict()
-            cc = OrderedDict()
-            for i in insts:
-                try:
-                    cat = _sg(i, 'x_studio_sign_category')
-                    cn = cat[1] if isinstance(cat, (list, tuple)) else (_esc(cat) if cat else "")
-                    tl = _el(_sg(i, 'x_studio_sign_type_label', ''))
-                    td = _ed(_sg(i, 'x_studio_sign_type_label', ''))
-                    dm = str(_sg(i, 'x_studio_sign_type_dimensions', ''))
-                    nb = bool(_sg(i, 'x_studio_needs_backer', False))
-                    k = (cn, tl)
-                    if k not in tg:
-                        tg[k] = {'sc': cn, 'tl': tl, 'td': td, 'dm': dm, 'q': 0, 'bq': 0}
-                    tg[k]['q'] += 1
-                    if nb:
-                        tg[k]['bq'] += 1
-                    cc[cn] = cc.get(cn, 0) + 1
-                except Exception:
-                    pass  # Skip any row that has unexpected data
-
-            tcl = list(tg.values())
-            tot = sum(t['q'] for t in tcl)
-
-            # --- Cover page counts rows ---
-            cr = ""
-            for t in tcl:
-                cr += '<tr><td class="c">' + _esc(t["sc"]) + '</td><td class="c">' + str(t["q"]) + '</td><td class="c b">' + _esc(t["tl"]) + '</td><td>' + _esc(t["td"]) + '</td><td class="c">' + _esc(t["dm"]) + '</td><td></td><td></td></tr>'
-            cr += '<tr class="tot"><td></td><td class="c b">' + str(tot) + '</td><td colspan="5"></td></tr>'
-
-            ccr = ""
-            for cn2, cnt in sorted(cc.items()):
-                ccr += '<tr><td>' + _esc(cn2) + '</td><td class="c">' + str(cnt) + '</td><td></td></tr>'
-
-            ak = ""
-            for ab, fn in SIGN_CAT_KEY:
-                ak += '<tr><td class="ac">' + ab + '</td><td>' + fn + '</td></tr>'
-
-            # --- Cover page HTML ---
-            cv = '<div class="cp"><table class="ly"><tr><td style="width:55%"><div class="tb">SIGN SCHEDULE</div><div class="cn">OMEGA SIGNS</div><div class="pn">' + _esc(pname) + '</div></td>'
-            cv += '<td style="width:45%;text-align:right;vertical-align:top"><table class="mt">'
-            cv += '<tr><td class="ml">Schedule by:</td><td class="mv">' + _esc(sb_name) + '</td></tr>'
-            cv += '<tr><td></td><td class="mv" style="font-size:7pt">' + _esc(sb_email) + '</td></tr>'
-            cv += '<tr><td class="ml">Printed for:</td><td class="mv">' + _esc(pfor) + '</td></tr>'
-            cv += '<tr><td class="ml">Created on:</td><td class="mv">' + pd_str + '</td></tr>'
-            cv += '<tr><td class="ml">Print Date:</td><td class="mv">' + pd_str + '</td></tr>'
-            cv += '<tr><td class="ml">Revision No:</td><td class="mv">1</td></tr>'
-            cv += '<tr><td class="ml">Last Revised:</td><td class="mv">' + pd_str + '</td></tr>'
-            cv += '</table></td></tr></table>'
-            cv += '<table class="ly" style="margin-top:8pt"><tr>'
-            cv += '<td style="width:65%;vertical-align:top;padding-right:8pt">'
-            cv += '<div class="sh">SIGN TYPES &amp; COUNTS</div>'
-            cv += '<table class="dt"><thead><tr><th style="width:50pt">Sign Cat</th><th style="width:30pt">Qty</th><th style="width:40pt">Sign Type Backer Qty</th><th>Sign Type Description</th><th style="width:55pt">Dimensions</th><th style="width:40pt">Notes</th><th style="width:40pt">Note2</th></tr></thead>'
-            cv += '<tbody>' + cr + '</tbody></table></td>'
-            cv += '<td style="width:35%;vertical-align:top">'
-            cv += '<div class="sh">SIGN CATEGORY COUNTS</div>'
-            cv += '<table class="dt"><thead><tr><th>Sign Categories</th><th style="width:55pt">Sign Cat Total Count</th><th style="width:60pt">Approval Status</th></tr></thead>'
-            cv += '<tbody>' + ccr + '</tbody></table>'
-            cv += '<p class="bn">* Panel Backer totals per Sign Type are shown in "Backers" column in Counts section</p></td></tr></table>'
-            cv += '<div class="sh" style="margin-top:10pt">SIGN CATEGORY ABBREVIATION KEY</div>'
-            cv += '<table class="at"><tbody>' + ak + '</tbody></table>'
-            cv += '<p class="imp">IMPORTANT: ONLY SIGN TYPES SHOWN ON THIS OFFICIAL SIGN SCHEDULE WILL BE PRODUCED. PLEASE ENSURE ALL APPROVED ARE ACCURATELY LISTED.</p></div>'
-
-            # --- Data rows (lenient: skip broken rows, blank missing fields) ---
-            drs = []
-            for i in insts:
-                try:
-                    sn = _sg(i, 'x_studio_sign_seq_number', 0)
-                    ar = _ea(str(_sg(i, 'x_studio_parent_location_display', '')))
-                    drs.append({
-                        'sn': sn if sn else '',
-                        'st': _el(str(_sg(i, 'x_studio_sign_type_label', ''))),
-                        'nb': bool(_sg(i, 'x_studio_needs_backer', False)),
-                        'rn': _sg(i, 'x_studio_arch_rm_num', ''),
-                        'rm': _sg(i, 'x_studio_arch_rm_name', ''),
-                        'c1': _sg(i, 'x_studio_copy_line_1', ''),
-                        'c2': _sg(i, 'x_studio_copy_line_2', ''),
-                        'c3': _sg(i, 'x_studio_copy_line_3', ''),
-                        'c4': _sg(i, 'x_studio_copy_line_4', ''),
-                        'c5': _sg(i, 'x_studio_copy_line_5', ''),
-                        'rk': ar or str(_sg(i, 'x_studio_remarks', '')),
+                    sign_num = safe_get(inst, 'x_studio_sign_seq_number', 0)
+                    area = extract_area(str(safe_get(inst, 'x_studio_parent_location_display', '')))
+                    data_rows.append({
+                        'sign_num': sign_num if sign_num else '',
+                        'sign_type': extract_sign_type_letter(str(safe_get(inst, 'x_studio_sign_type_label', ''))),
+                        'needs_backer': bool(safe_get(inst, 'x_studio_needs_backer', False)),
+                        'rm_num': safe_get(inst, 'x_studio_arch_rm_num', ''),
+                        'rm_name': safe_get(inst, 'x_studio_arch_rm_name', ''),
+                        'copy_line_1': safe_get(inst, 'x_studio_copy_line_1', ''),
+                        'copy_line_2': safe_get(inst, 'x_studio_copy_line_2', ''),
+                        'copy_line_3': safe_get(inst, 'x_studio_copy_line_3', ''),
+                        'copy_line_4': safe_get(inst, 'x_studio_copy_line_4', ''),
+                        'copy_line_5': safe_get(inst, 'x_studio_copy_line_5', ''),
+                        'remarks': area or val(safe_get(inst, 'x_studio_remarks', '')),
                     })
                 except Exception:
-                    pass  # Skip rows that fail
+                    pass
 
             # --- Paginate ---
-            pgs = []
-            for j in range(0, max(len(drs), 1), RPP):
-                pgs.append(drs[j:j + RPP])
-            tp = 1 + len(pgs) + 1
+            pages = []
+            for i in range(0, max(len(data_rows), 1), ROWS_PER_PAGE):
+                pages.append(data_rows[i:i + ROWS_PER_PAGE])
+            total_pages = 1 + len(pages) + 1
 
-            inst_text = 'INSTRUCTIONS: 1) LOCATION (per plans) "To Rm" for installer reference, not copy; 1) COPY exact sign copy'
-            thdr = '<th style="width:42pt">Area / Sign #</th><th style="width:32pt">Sign Type</th><th style="width:32pt">Needs Backer</th><th style="width:38pt">Rm #</th><th style="width:80pt">Room Name on Plans</th><th>Copy Line 1</th><th>Copy Line 2</th><th>Copy Line 3</th><th>Copy Line 4</th><th>Copy Line 5</th><th style="width:40pt">Remarks</th>'
-            blnk = '<tr>' + ''.join(['<td class="c vc">&nbsp;</td>'] * 4) + ''.join(['<td class="vc">&nbsp;</td>'] * 7) + '</tr>'
+            # ===================================================================
+            # BUILD COVER PAGE HTML (exact match to standalone script)
+            # ===================================================================
+            count_rows = ""
+            for tc in type_counts:
+                count_rows += """
+                <tr>
+                    <td class="center">{sc}</td>
+                    <td class="center">{qty}</td>
+                    <td class="center bold">{tl}</td>
+                    <td>{td}</td>
+                    <td class="center">{dm}</td>
+                    <td></td>
+                    <td></td>
+                </tr>""".format(
+                    sc=val(tc['sign_cat']), qty=tc['qty'],
+                    tl=val(tc['type_letter']), td=val(tc['type_desc']),
+                    dm=val(tc['dimensions']))
 
-            dp = ""
-            for idx, pr in enumerate(pgs):
-                rh = ""
-                for r in pr:
-                    nbv = "Y" if r['nb'] else ""
-                    rh += '<tr><td class="c vc">' + _esc(r["sn"]) + '</td><td class="c vc b">' + _esc(r["st"]) + '</td><td class="c vc">' + nbv + '</td><td class="c vc">' + _esc(r["rn"]) + '</td><td class="vc">' + _esc(r["rm"]) + '</td><td class="vc">' + _esc(r["c1"]) + '</td><td class="vc">' + _esc(r["c2"]) + '</td><td class="vc">' + _esc(r["c3"]) + '</td><td class="vc">' + _esc(r["c4"]) + '</td><td class="vc">' + _esc(r["c5"]) + '</td><td class="vc">' + _esc(r["rk"]) + '</td></tr>'
-                if idx == len(pgs) - 1:
-                    for _ in range(max(0, RPP - len(pr))):
-                        rh += blnk
-                fl = _esc(pname) + ' - Official Sign Schedule'
-                pn = idx + 2
-                dp += '<div class="dp"><div class="dh"><div class="it">' + inst_text + '</div><table class="ly"><tr><td>' + fl + '</td><td style="text-align:right">' + pd_str + '</td></tr></table></div><table class="dt st"><thead><tr>' + thdr + '</tr></thead><tbody>' + rh + '</tbody></table><p class="imp">IMPORTANT: ONLY SIGN TYPES SHOWN ON THIS OFFICIAL SIGN SCHEDULE WILL BE PRODUCED. PLEASE ENSURE ALL APPROVED ARE ACCURATELY LISTED.</p><div class="pf"><span>Omega Signs Co.</span><span style="float:right">Page ' + str(pn) + ' of ' + str(tp) + '</span></div></div>'
+            total_count = sum(tc['qty'] for tc in type_counts)
+
+            cat_rows = ""
+            for cat_name, count in sorted(category_counts.items()):
+                cat_rows += """
+                <tr>
+                    <td>{cn}</td>
+                    <td class="center">{cnt}</td>
+                    <td></td>
+                </tr>""".format(cn=val(cat_name), cnt=count)
+
+            abbrev_html = ""
+            for abbr, full_name in SIGN_CATEGORY_KEY.items():
+                css_class = "" if abbr in used_categories else ' style="color:#999;"'
+                abbrev_html += """
+                <tr{css}>
+                    <td class="abbr-code">{ab}</td>
+                    <td>{fn}</td>
+                </tr>""".format(css=css_class, ab=abbr, fn=full_name)
+
+            cover_html = """
+    <div class="cover-page">
+        <table class="layout header-table">
+            <tr>
+                <td style="width:55%;">
+                    <div class="title-bar">SIGN SCHEDULE</div>
+                    <div class="company-name">OMEGA SIGNS</div>
+                    <div class="project-name">{pname}</div>
+                </td>
+                <td style="width:45%; text-align:right; vertical-align:top;">
+                    <table class="meta-table">
+                        <tr><td class="meta-label">Schedule by:</td><td class="meta-value">{sb_name}</td></tr>
+                        <tr><td></td><td class="meta-value" style="font-size:7pt;">{sb_email}</td></tr>
+                        <tr><td class="meta-label">Printed for:</td><td class="meta-value">{pfor}</td></tr>
+                        <tr><td class="meta-label">Created on:</td><td class="meta-value">{pd}</td></tr>
+                        <tr><td class="meta-label">Print Date:</td><td class="meta-value">{pd}</td></tr>
+                        <tr><td class="meta-label">Revision No:</td><td class="meta-value">1</td></tr>
+                        <tr><td class="meta-label">Last Revised:</td><td class="meta-value">{pd}</td></tr>
+                    </table>
+                </td>
+            </tr>
+        </table>
+
+        <table class="layout" style="margin-top:8pt;">
+            <tr>
+                <td style="width:65%; vertical-align:top; padding-right:8pt;">
+                    <div class="section-header">SIGN TYPES &amp; COUNTS</div>
+                    <table class="data-table counts-table">
+                        <thead>
+                            <tr>
+                                <th style="width:50pt;">Sign Cat</th>
+                                <th style="width:30pt;">Qty</th>
+                                <th style="width:40pt;">Sign Type Backer Qty</th>
+                                <th>Sign Type Description</th>
+                                <th style="width:55pt;">Dimensions</th>
+                                <th style="width:40pt;">Notes</th>
+                                <th style="width:40pt;">Note2</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {count_rows}
+                            <tr class="total-row">
+                                <td></td>
+                                <td class="center bold">{total_count}</td>
+                                <td colspan="5"></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </td>
+                <td style="width:35%; vertical-align:top;">
+                    <div class="section-header">SIGN CATEGORY COUNTS</div>
+                    <table class="data-table cat-counts-table">
+                        <thead>
+                            <tr>
+                                <th>Sign Categories</th>
+                                <th style="width:55pt;">Sign Cat Total Count</th>
+                                <th style="width:60pt;">Approval Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {cat_rows}
+                        </tbody>
+                    </table>
+                    <p class="backer-note">* Panel Backer totals per Sign Type are shown in "Backers" column in Counts section</p>
+                </td>
+            </tr>
+        </table>
+
+        <div class="section-header" style="margin-top:10pt;">SIGN CATEGORY ABBREVIATION KEY</div>
+        <table class="abbrev-table">
+            <tbody>
+                {abbrev_html}
+            </tbody>
+        </table>
+
+        <p class="important-notice">IMPORTANT: ONLY SIGN TYPES SHOWN ON THIS OFFICIAL SIGN SCHEDULE WILL BE PRODUCED. PLEASE ENSURE ALL APPROVED ARE ACCURATELY LISTED.</p>
+    </div>
+    """.format(
+                pname=val(pname), sb_name=val(sb_name), sb_email=val(sb_email),
+                pfor=val(pfor), pd=pd_str,
+                count_rows=count_rows, total_count=total_count,
+                cat_rows=cat_rows, abbrev_html=abbrev_html)
+
+            # ===================================================================
+            # BUILD DATA PAGES HTML (exact match to standalone script)
+            # ===================================================================
+            instruction = 'INSTRUCTIONS: 1) LOCATION (per plans) "To Rm" for installer reference, not copy; 1) COPY exact sign copy'
+
+            data_pages_html = ""
+            for idx, page_rows in enumerate(pages):
+                is_last = (idx == len(pages) - 1)
+                rows_html = ""
+                for row in page_rows:
+                    nb_val = "Y" if row.get('needs_backer') else ""
+                    rows_html += """
+                <tr>
+                    <td class="center vcenter">{sn}</td>
+                    <td class="center vcenter bold">{st}</td>
+                    <td class="center vcenter">{nb}</td>
+                    <td class="center vcenter">{rn}</td>
+                    <td class="vcenter">{rm}</td>
+                    <td class="vcenter">{c1}</td>
+                    <td class="vcenter">{c2}</td>
+                    <td class="vcenter">{c3}</td>
+                    <td class="vcenter">{c4}</td>
+                    <td class="vcenter">{c5}</td>
+                    <td class="vcenter">{rk}</td>
+                </tr>""".format(
+                        sn=val(row.get('sign_num', '')), st=val(row.get('sign_type', '')),
+                        nb=nb_val, rn=val(row.get('rm_num', '')), rm=val(row.get('rm_name', '')),
+                        c1=val(row.get('copy_line_1', '')), c2=val(row.get('copy_line_2', '')),
+                        c3=val(row.get('copy_line_3', '')), c4=val(row.get('copy_line_4', '')),
+                        c5=val(row.get('copy_line_5', '')), rk=val(row.get('remarks', '')))
+
+                # Fill blank rows on last data page
+                if is_last:
+                    for _ in range(max(0, ROWS_PER_PAGE - len(page_rows))):
+                        rows_html += """
+                <tr>
+                    <td class="center vcenter">&nbsp;</td>
+                    <td class="center vcenter">&nbsp;</td>
+                    <td class="center vcenter">&nbsp;</td>
+                    <td class="center vcenter">&nbsp;</td>
+                    <td class="vcenter">&nbsp;</td>
+                    <td class="vcenter">&nbsp;</td>
+                    <td class="vcenter">&nbsp;</td>
+                    <td class="vcenter">&nbsp;</td>
+                    <td class="vcenter">&nbsp;</td>
+                    <td class="vcenter">&nbsp;</td>
+                    <td class="vcenter">&nbsp;</td>
+                </tr>"""
+
+                file_label = val(pname) + " - Official Sign Schedule"
+                page_num = idx + 2
+
+                data_pages_html += """
+    <div class="data-page">
+        <div class="data-page-header">
+            <div class="instruction-text">{inst}</div>
+            <table class="layout">
+                <tr>
+                    <td>{fl}</td>
+                    <td style="text-align:right;">{pd}</td>
+                </tr>
+            </table>
+        </div>
+
+        <table class="data-table schedule-table">
+            <thead>
+                <tr>
+                    <th style="width:42pt;">Area / Sign #</th>
+                    <th style="width:32pt;">Sign Type</th>
+                    <th style="width:32pt;">Needs Backer</th>
+                    <th style="width:38pt;">Rm #</th>
+                    <th style="width:80pt;">Room Name on Plans</th>
+                    <th>Copy Line 1</th>
+                    <th>Copy Line 2</th>
+                    <th>Copy Line 3</th>
+                    <th>Copy Line 4</th>
+                    <th>Copy Line 5</th>
+                    <th style="width:40pt;">Remarks</th>
+                </tr>
+            </thead>
+            <tbody>
+                {rows}
+            </tbody>
+        </table>
+
+        <p class="important-notice">IMPORTANT: ONLY SIGN TYPES SHOWN ON THIS OFFICIAL SIGN SCHEDULE WILL BE PRODUCED. PLEASE ENSURE ALL APPROVED ARE ACCURATELY LISTED.</p>
+
+        <div class="page-footer">
+            <span>Omega Signs Co.</span>
+            <span class="page-num">Page {pn} of {tp}</span>
+        </div>
+    </div>
+    """.format(inst=instruction, fl=file_label, pd=pd_str,
+               rows=rows_html, pn=page_num, tp=total_pages)
 
             # --- Supplementary blank sheet ---
-            srh = ""
-            for _ in range(RPP):
-                srh += blnk
-            sfl = _esc(pname) + ' - Official Sign Schedule &mdash; SUPPLEMENTARY SHEET'
-            dp += '<div class="dp"><div class="dh"><div class="it">' + inst_text + '</div><table class="ly"><tr><td>' + sfl + '</td><td style="text-align:right">' + pd_str + '</td></tr></table></div><table class="dt st"><thead><tr>' + thdr + '</tr></thead><tbody>' + srh + '</tbody></table><p class="imp">IMPORTANT: ONLY SIGN TYPES SHOWN ON THIS OFFICIAL SIGN SCHEDULE WILL BE PRODUCED. PLEASE ENSURE ALL APPROVED ARE ACCURATELY LISTED.</p><div class="pf"><span>Omega Signs Co.</span><span style="float:right">Page ' + str(tp) + ' of ' + str(tp) + '</span></div></div>'
+            supp_rows = ""
+            for _ in range(ROWS_PER_PAGE):
+                supp_rows += """
+                <tr>
+                    <td class="center vcenter">&nbsp;</td>
+                    <td class="center vcenter">&nbsp;</td>
+                    <td class="center vcenter">&nbsp;</td>
+                    <td class="center vcenter">&nbsp;</td>
+                    <td class="vcenter">&nbsp;</td>
+                    <td class="vcenter">&nbsp;</td>
+                    <td class="vcenter">&nbsp;</td>
+                    <td class="vcenter">&nbsp;</td>
+                    <td class="vcenter">&nbsp;</td>
+                    <td class="vcenter">&nbsp;</td>
+                    <td class="vcenter">&nbsp;</td>
+                </tr>"""
 
-            # --- CSS ---
-            css = '@page{size:letter landscape;margin:0.35in 0.4in 0.3in 0.4in;}'
-            css += 'body{font-family:Arial,Helvetica,sans-serif;font-size:7.5pt;color:#222;margin:0;padding:0;}'
-            css += 'table.ly{width:100%;border-collapse:collapse;}table.ly td{vertical-align:top;padding:0;border:none;}'
-            css += '.cp{page-break-after:always;}.tb{font-size:18pt;font-weight:bold;color:#1a3a5c;letter-spacing:1pt;}'
-            css += '.cn{font-size:14pt;font-weight:bold;color:#333;margin-top:2pt;}.pn{font-size:10pt;color:#555;margin-top:2pt;}'
-            css += '.mt{border-collapse:collapse;font-size:8pt;}.mt td{padding:1pt 4pt;border:none;}'
-            css += '.ml{font-weight:bold;color:#555;text-align:right;white-space:nowrap;}.mv{color:#222;}'
-            css += '.sh{font-size:8pt;font-weight:bold;color:#1a3a5c;background:#dce6f0;padding:3pt 6pt;margin-bottom:2pt;border:1px solid #aaa;}'
-            css += '.dt{width:100%;border-collapse:collapse;font-size:7pt;}'
-            css += '.dt thead th{background:#dce6f0;color:#1a3a5c;font-size:6.5pt;font-weight:bold;padding:3pt;border:1px solid #999;text-align:center;vertical-align:middle;}'
-            css += '.dt tbody td{padding:2pt 3pt;border:1px solid #bbb;font-size:7pt;vertical-align:middle;}'
-            css += '.dt .tot td{font-weight:bold;border-top:2px solid #333;background:#f0f0f0;}'
-            css += '.st tbody td{height:16pt;vertical-align:middle;}'
-            css += '.c{text-align:center;}.b{font-weight:bold;}.vc{vertical-align:middle;}'
-            css += '.at{border-collapse:collapse;font-size:7pt;margin-top:4pt;}.at td{padding:1pt 4pt;border:none;}'
-            css += '.ac{font-weight:bold;width:40pt;color:#1a3a5c;}'
-            css += '.imp{font-size:6.5pt;font-weight:bold;color:#c00;text-align:center;margin-top:4pt;padding:3pt;border:1px solid #c00;background:#fff8f8;}'
-            css += '.bn{font-size:6pt;color:#666;font-style:italic;margin-top:4pt;}'
-            css += '.dp{page-break-after:always;}.dh{margin-bottom:4pt;}.it{font-size:6pt;color:#888;margin-bottom:2pt;}'
-            css += '.pf{font-size:7pt;color:#555;margin-top:4pt;padding-top:2pt;border-top:1px solid #ccc;}'
+            supp_label = val(pname) + " - Official Sign Schedule &mdash; SUPPLEMENTARY SHEET"
 
-            html = '<!DOCTYPE html><html><head><meta charset="utf-8"><style>' + css + '</style></head><body>' + cv + dp + '</body></html>'
+            supplementary_html = """
+    <div class="data-page">
+        <div class="data-page-header">
+            <div class="instruction-text">{inst}</div>
+            <table class="layout">
+                <tr>
+                    <td>{fl}</td>
+                    <td style="text-align:right;">{pd}</td>
+                </tr>
+            </table>
+        </div>
+
+        <table class="data-table schedule-table">
+            <thead>
+                <tr>
+                    <th style="width:42pt;">Area / Sign #</th>
+                    <th style="width:32pt;">Sign Type</th>
+                    <th style="width:32pt;">Needs Backer</th>
+                    <th style="width:38pt;">Rm #</th>
+                    <th style="width:80pt;">Room Name on Plans</th>
+                    <th>Copy Line 1</th>
+                    <th>Copy Line 2</th>
+                    <th>Copy Line 3</th>
+                    <th>Copy Line 4</th>
+                    <th>Copy Line 5</th>
+                    <th style="width:40pt;">Remarks</th>
+                </tr>
+            </thead>
+            <tbody>
+                {rows}
+            </tbody>
+        </table>
+
+        <p class="important-notice">IMPORTANT: ONLY SIGN TYPES SHOWN ON THIS OFFICIAL SIGN SCHEDULE WILL BE PRODUCED. PLEASE ENSURE ALL APPROVED ARE ACCURATELY LISTED.</p>
+
+        <div class="page-footer">
+            <span>Omega Signs Co.</span>
+            <span class="page-num">Page {pn} of {tp}</span>
+        </div>
+    </div>
+    """.format(inst=instruction, fl=supp_label, pd=pd_str,
+               rows=supp_rows, pn=total_pages, tp=total_pages)
+
+            # ===================================================================
+            # CSS - exact match to standalone script
+            # ===================================================================
+            css = """
+    @page {
+        size: letter landscape;
+        margin: 0.35in 0.4in 0.3in 0.4in;
+    }
+
+    body {
+        font-family: Arial, Helvetica, sans-serif;
+        font-size: 7.5pt;
+        color: #222;
+        margin: 0;
+        padding: 0;
+    }
+
+    /* Layout helpers */
+    table.layout {
+        width: 100%;
+        border-collapse: collapse;
+    }
+    table.layout td {
+        vertical-align: top;
+        padding: 0;
+        border: none;
+    }
+
+    /* Cover page */
+    .cover-page {
+        page-break-after: always;
+    }
+    .title-bar {
+        font-size: 18pt;
+        font-weight: bold;
+        color: #1a3a5c;
+        letter-spacing: 1pt;
+    }
+    .company-name {
+        font-size: 14pt;
+        font-weight: bold;
+        color: #333;
+        margin-top: 2pt;
+    }
+    .project-name {
+        font-size: 10pt;
+        color: #555;
+        margin-top: 2pt;
+    }
+    .meta-table {
+        border-collapse: collapse;
+        font-size: 8pt;
+    }
+    .meta-table td {
+        padding: 1pt 4pt;
+        border: none;
+    }
+    .meta-label {
+        font-weight: bold;
+        color: #555;
+        text-align: right;
+        white-space: nowrap;
+    }
+    .meta-value {
+        color: #222;
+    }
+
+    .section-header {
+        font-size: 8pt;
+        font-weight: bold;
+        color: #1a3a5c;
+        background-color: #dce6f0;
+        padding: 3pt 6pt;
+        margin-bottom: 2pt;
+        border: 1px solid #aaa;
+    }
+
+    /* Data tables */
+    .data-table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 7pt;
+    }
+    .data-table thead th {
+        background-color: #dce6f0;
+        color: #1a3a5c;
+        font-size: 6.5pt;
+        font-weight: bold;
+        padding: 3pt 3pt;
+        border: 1px solid #999;
+        text-align: center;
+        vertical-align: middle;
+    }
+    .data-table tbody td {
+        padding: 2pt 3pt;
+        border: 1px solid #bbb;
+        font-size: 7pt;
+        vertical-align: middle;
+    }
+    .data-table .total-row td {
+        font-weight: bold;
+        border-top: 2px solid #333;
+        background-color: #f0f0f0;
+    }
+
+    /* Schedule table specific */
+    .schedule-table tbody td {
+        height: 16pt;
+        vertical-align: middle;
+    }
+
+    /* Helpers */
+    .center { text-align: center; }
+    .bold { font-weight: bold; }
+    .vcenter { vertical-align: middle; }
+
+    /* Abbreviation key */
+    .abbrev-table {
+        border-collapse: collapse;
+        font-size: 7pt;
+        margin-top: 4pt;
+    }
+    .abbrev-table td {
+        padding: 1pt 4pt;
+        border: none;
+    }
+    .abbrev-table .abbr-code {
+        font-weight: bold;
+        width: 40pt;
+        color: #1a3a5c;
+    }
+
+    /* Category counts table */
+    .cat-counts-table {
+        font-size: 7pt;
+    }
+
+    /* Important notice */
+    .important-notice {
+        font-size: 6.5pt;
+        font-weight: bold;
+        color: #c00;
+        text-align: center;
+        margin-top: 4pt;
+        padding: 3pt;
+        border: 1px solid #c00;
+        background-color: #fff8f8;
+    }
+
+    .backer-note {
+        font-size: 6pt;
+        color: #666;
+        font-style: italic;
+        margin-top: 4pt;
+    }
+
+    /* Data pages */
+    .data-page {
+        page-break-after: always;
+    }
+    .data-page-header {
+        margin-bottom: 4pt;
+    }
+    .instruction-text {
+        font-size: 6pt;
+        color: #888;
+        margin-bottom: 2pt;
+    }
+
+    .page-footer {
+        display: flex;
+        justify-content: space-between;
+        font-size: 7pt;
+        color: #555;
+        margin-top: 4pt;
+        padding-top: 2pt;
+        border-top: 1px solid #ccc;
+    }
+    .page-footer .page-num {
+        float: right;
+    }
+    .page-footer span:first-child {
+        float: left;
+    }
+"""
+
+            # ===================================================================
+            # Assemble full HTML document
+            # ===================================================================
+            html_str = """<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<style>
+{css}
+</style>
+</head>
+<body>
+{cover}
+{data_pages}
+{supplementary}
+</body>
+</html>""".format(css=css, cover=cover_html, data_pages=data_pages_html, supplementary=supplementary_html)
 
             # --- Generate PDF with wkhtmltopdf ---
             html_path = tempfile.mktemp(suffix='.html')
             pdf_path = tempfile.mktemp(suffix='.pdf')
 
             with open(html_path, 'w', encoding='utf-8') as f:
-                f.write(html)
+                f.write(html_str)
 
             proc = subprocess.run(
                 ['wkhtmltopdf', '--orientation', 'Landscape', '--page-size', 'Letter',
@@ -1962,7 +2367,7 @@ class PatriotGPTController(http.Controller):
 
             if proc.returncode != 0:
                 try:
-                    os.unlink(html_path)
+                    _os.unlink(html_path)
                 except Exception:
                     pass
                 _logger.error("wkhtmltopdf failed: %s", proc.stderr[:500])
@@ -1971,10 +2376,9 @@ class PatriotGPTController(http.Controller):
             with open(pdf_path, 'rb') as f:
                 pdf_data = f.read()
 
-            # Cleanup temp files
             try:
-                os.unlink(html_path)
-                os.unlink(pdf_path)
+                _os.unlink(html_path)
+                _os.unlink(pdf_path)
             except Exception:
                 pass
 
