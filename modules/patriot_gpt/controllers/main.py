@@ -1978,18 +1978,21 @@ class PatriotGPTController(http.Controller):
             except Exception:
                 pass
 
-            # Create attachment on CRM lead
+            # Create attachment (lenient: if it fails due to other automations, still download)
             safe_name = pname.replace(' ', '_').replace('/', '_')[:50]
             filename = "SS_%s_%s.pdf" % (safe_name, now.strftime('%Y%m%d'))
 
-            request.env['ir.attachment'].create({
-                'name': filename,
-                'type': 'binary',
-                'datas': base64.b64encode(pdf_data).decode(),
-                'res_model': 'crm.lead',
-                'res_id': lead_id,
-                'mimetype': 'application/pdf',
-            })
+            try:
+                request.env['ir.attachment'].sudo().create({
+                    'name': filename,
+                    'type': 'binary',
+                    'datas': base64.b64encode(pdf_data).decode(),
+                    'res_model': 'crm.lead',
+                    'res_id': lead_id,
+                    'mimetype': 'application/pdf',
+                })
+            except Exception as att_err:
+                _logger.warning("Could not attach sign schedule PDF to lead %s: %s", lead_id, att_err)
 
             # Return PDF as download
             return Response(
