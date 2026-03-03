@@ -1698,39 +1698,104 @@ class PatriotGPTController(http.Controller):
             if not lead.exists():
                 return request.not_found()
 
-            alias = lead.x_studio_project_alias
-            if not alias:
-                return Response("This lead has no Assigned Alias. Please assign one first.", status=400)
+            # --- Lenient: use alias if available, otherwise just use lead info ---
+            alias = None
+            alias_id = False
+            try:
+                alias = lead.x_studio_project_alias
+                if alias:
+                    alias_id = alias.id
+            except Exception:
+                pass
 
-            alias_id = alias.id
-            pname = lead.name or alias.x_name or "Sign Schedule"
-            sb_name = lead.user_id.name if lead.user_id else "Tiffany Janish"
-            sb_email = lead.user_id.email if lead.user_id else "tiffany@omegasignsco.com"
-            pfor = lead.partner_id.name if lead.partner_id else ""
+            pname = lead.name or "Sign Schedule"
+            if alias and hasattr(alias, 'x_name') and alias.x_name:
+                pname = lead.name or alias.x_name
+
+            sb_name = "Tiffany Janish"
+            sb_email = "tiffany@omegasignsco.com"
+            pfor = ""
+            try:
+                if lead.user_id:
+                    sb_name = lead.user_id.name or sb_name
+                    sb_email = lead.user_id.email or sb_email
+            except Exception:
+                pass
+            try:
+                if lead.partner_id:
+                    pfor = lead.partner_id.name or ""
+            except Exception:
+                pass
 
             now = dt.now()
             pd_str = now.strftime("%m/%d/%Y").lstrip("0").replace("/0", "/")
 
-            # --- Fetch data ---
-            insts = request.env['x_install_instance'].search_read(
-                [('x_studio_project_alias', '=', alias_id)],
-                fields=['x_name', 'x_studio_sign_seq_number', 'x_studio_sign_type_label',
-                        'x_studio_sign_type_dimensions', 'x_studio_needs_backer',
-                        'x_studio_arch_rm_num', 'x_studio_arch_rm_name',
-                        'x_studio_copy_line_1', 'x_studio_copy_line_2', 'x_studio_copy_line_3',
-                        'x_studio_copy_line_4', 'x_studio_copy_line_5',
-                        'x_studio_remarks', 'x_studio_sign_category',
-                        'x_studio_parent_location_display'],
-                order='x_studio_sign_seq_number asc', limit=0)
+            # --- Fetch data (lenient: try all known fields, skip any that fail) ---
+            all_fields = [
+                'x_name', 'x_studio_sign_seq_number', 'x_studio_sign_type_label',
+                'x_studio_sign_type_dimensions', 'x_studio_needs_backer',
+                'x_studio_arch_rm_num', 'x_studio_arch_rm_name',
+                'x_studio_copy_line_1', 'x_studio_copy_line_2', 'x_studio_copy_line_3',
+                'x_studio_copy_line_4', 'x_studio_copy_line_5',
+                'x_studio_remarks', 'x_studio_sign_category',
+                'x_studio_parent_location_display',
+            ]
+            # Filter to fields that actually exist on the model
+            try:
+                model_fields = request.env['x_install_instance'].fields_get()
+                valid_fields = [f for f in all_fields if f in model_fields]
+            except Exception:
+                valid_fields = all_fields
 
-            if not insts:
-                return Response("No install instances found for alias '%s'." % alias.x_name, status=400)
+            insts = []
+            if alias_id:
+                try:
+                    insts = request.env['x_install_instance'].search_read(
+                        [('x_studio_project_alias', '=', alias_id)],
+                        fields=valid_fields,
+                        order='x_studio_sign_seq_number asc', limit=0)
+                except Exception:
+                    # If ordering field doesn't exist, try without ordering
+                    try:
+                        insts = request.env['x_install_instance'].search_read(
+                            [('x_studio_project_alias', '=', alias_id)],
+                            fields=valid_fields, limit=0)
+                    except Exception:
+                        insts = []
 
-            # --- Helpers ---
-            _esc = lambda x: ("" if x is False or x is None else str(x)).replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
-            _el = lambda l: l.split("|")[0].strip() if l else ""
-            _ed = lambda l: l.split("|", 1)[1].strip() if l and "|" in l else ""
-            _ea = lambda p: p.split("|")[0].strip() if p else ""
+            # Lenient: no instances is fine, we generate an empty schedule
+
+            # --- Helpers (all return safe strings, never raise) ---
+            def _esc(x):
+                try:
+                    s = "" if x is False or x is None else str(x)
+                    return s.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
+                except Exception:
+                    return ""
+            def _el(l):
+                try:
+                    return l.split("|")[0].strip() if l else ""
+                except Exception:
+                    return ""
+            def _ed(l):
+                try:
+                    return l.split("|", 1)[1].strip() if l and "|" in l else ""
+                except Exception:
+                    return ""
+            def _ea(p):
+                try:
+                    return p.split("|")[0].strip() if p else ""
+                except Exception:
+                    return ""
+            def _sg(inst, field, default=""):
+                """Safe get: returns field value or default, never raises."""
+                try:
+                    v = inst.get(field)
+                    if v is False or v is None:
+                        return default
+                    return v
+                except Exception:
+                    return default
 
             SIGN_CAT_KEY = [
                 ("DCAS", "Dimensional-Cast"), ("DCHA", "Dimensional-Channel"),
@@ -1743,23 +1808,26 @@ class PatriotGPTController(http.Controller):
             ]
             RPP = 26
 
-            # --- Compute sign counts ---
+            # --- Compute sign counts (lenient) ---
             tg = OrderedDict()
             cc = OrderedDict()
             for i in insts:
-                cat = i.get('x_studio_sign_category')
-                cn = cat[1] if isinstance(cat, (list, tuple)) else (cat or "")
-                tl = _el(i.get('x_studio_sign_type_label', ''))
-                td = _ed(i.get('x_studio_sign_type_label', ''))
-                dm = i.get('x_studio_sign_type_dimensions', '') or ''
-                nb = i.get('x_studio_needs_backer', False)
-                k = (cn, tl)
-                if k not in tg:
-                    tg[k] = {'sc': cn, 'tl': tl, 'td': td, 'dm': dm, 'q': 0, 'bq': 0}
-                tg[k]['q'] += 1
-                if nb:
-                    tg[k]['bq'] += 1
-                cc[cn] = cc.get(cn, 0) + 1
+                try:
+                    cat = _sg(i, 'x_studio_sign_category')
+                    cn = cat[1] if isinstance(cat, (list, tuple)) else (_esc(cat) if cat else "")
+                    tl = _el(_sg(i, 'x_studio_sign_type_label', ''))
+                    td = _ed(_sg(i, 'x_studio_sign_type_label', ''))
+                    dm = str(_sg(i, 'x_studio_sign_type_dimensions', ''))
+                    nb = bool(_sg(i, 'x_studio_needs_backer', False))
+                    k = (cn, tl)
+                    if k not in tg:
+                        tg[k] = {'sc': cn, 'tl': tl, 'td': td, 'dm': dm, 'q': 0, 'bq': 0}
+                    tg[k]['q'] += 1
+                    if nb:
+                        tg[k]['bq'] += 1
+                    cc[cn] = cc.get(cn, 0) + 1
+                except Exception:
+                    pass  # Skip any row that has unexpected data
 
             tcl = list(tg.values())
             tot = sum(t['q'] for t in tcl)
@@ -1803,20 +1871,27 @@ class PatriotGPTController(http.Controller):
             cv += '<table class="at"><tbody>' + ak + '</tbody></table>'
             cv += '<p class="imp">IMPORTANT: ONLY SIGN TYPES SHOWN ON THIS OFFICIAL SIGN SCHEDULE WILL BE PRODUCED. PLEASE ENSURE ALL APPROVED ARE ACCURATELY LISTED.</p></div>'
 
-            # --- Data rows ---
+            # --- Data rows (lenient: skip broken rows, blank missing fields) ---
             drs = []
             for i in insts:
-                sn = i.get('x_studio_sign_seq_number', 0)
-                ar = _ea(i.get('x_studio_parent_location_display', ''))
-                drs.append({
-                    'sn': sn if sn else '', 'st': _el(i.get('x_studio_sign_type_label', '')),
-                    'nb': i.get('x_studio_needs_backer', False),
-                    'rn': i.get('x_studio_arch_rm_num', ''), 'rm': i.get('x_studio_arch_rm_name', ''),
-                    'c1': i.get('x_studio_copy_line_1', ''), 'c2': i.get('x_studio_copy_line_2', ''),
-                    'c3': i.get('x_studio_copy_line_3', ''), 'c4': i.get('x_studio_copy_line_4', ''),
-                    'c5': i.get('x_studio_copy_line_5', ''),
-                    'rk': ar or i.get('x_studio_remarks', ''),
-                })
+                try:
+                    sn = _sg(i, 'x_studio_sign_seq_number', 0)
+                    ar = _ea(str(_sg(i, 'x_studio_parent_location_display', '')))
+                    drs.append({
+                        'sn': sn if sn else '',
+                        'st': _el(str(_sg(i, 'x_studio_sign_type_label', ''))),
+                        'nb': bool(_sg(i, 'x_studio_needs_backer', False)),
+                        'rn': _sg(i, 'x_studio_arch_rm_num', ''),
+                        'rm': _sg(i, 'x_studio_arch_rm_name', ''),
+                        'c1': _sg(i, 'x_studio_copy_line_1', ''),
+                        'c2': _sg(i, 'x_studio_copy_line_2', ''),
+                        'c3': _sg(i, 'x_studio_copy_line_3', ''),
+                        'c4': _sg(i, 'x_studio_copy_line_4', ''),
+                        'c5': _sg(i, 'x_studio_copy_line_5', ''),
+                        'rk': ar or str(_sg(i, 'x_studio_remarks', '')),
+                    })
+                except Exception:
+                    pass  # Skip rows that fail
 
             # --- Paginate ---
             pgs = []
