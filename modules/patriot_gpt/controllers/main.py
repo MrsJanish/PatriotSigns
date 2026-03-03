@@ -2019,20 +2019,19 @@ class PatriotGPTController(http.Controller):
                 <tr>
                     <td class="center vcenter">{asn}</td>
                     <td class="vcenter">{room}</td>
-                    <td class="center vcenter">{nb}</td>
                     <td class="vcenter">{c1}</td>
                     <td class="vcenter">{c2}</td>
                     <td class="vcenter">{c3}</td>
                     <td class="vcenter">{c4}</td>
                     <td class="vcenter">{c5}</td>
+                    <td class="center vcenter">{nb}</td>
                     <td class="center vcenter bold">{st}</td>
-                    <td class="vcenter">{rk}</td>
                 </tr>""".format(
                         asn=val(row.get('area_sign', '')), room=room_cell,
                         nb=nb_val, st=val(row.get('sign_type', '')),
                         c1=val(row.get('copy_line_1', '')), c2=val(row.get('copy_line_2', '')),
                         c3=val(row.get('copy_line_3', '')), c4=val(row.get('copy_line_4', '')),
-                        c5=val(row.get('copy_line_5', '')), rk=val(row.get('remarks', '')))
+                        c5=val(row.get('copy_line_5', '')))
 
                 # Fill blank rows on last data page
                 if is_last:
@@ -2041,14 +2040,13 @@ class PatriotGPTController(http.Controller):
                 <tr>
                     <td class="center vcenter">&nbsp;</td>
                     <td class="vcenter">&nbsp;</td>
-                    <td class="center vcenter">&nbsp;</td>
                     <td class="vcenter">&nbsp;</td>
                     <td class="vcenter">&nbsp;</td>
                     <td class="vcenter">&nbsp;</td>
                     <td class="vcenter">&nbsp;</td>
                     <td class="vcenter">&nbsp;</td>
                     <td class="center vcenter">&nbsp;</td>
-                    <td class="vcenter">&nbsp;</td>
+                    <td class="center vcenter">&nbsp;</td>
                 </tr>"""
 
                 file_label = val(pname) + " - Official Sign Schedule"
@@ -2071,14 +2069,13 @@ class PatriotGPTController(http.Controller):
                 <tr>
                     <th style="width:50pt;">Area /<br>Sign #</th>
                     <th style="width:120pt;"><div><b>Room Number &amp; Name (current)</b></div><div style="font-size:5.5pt;font-style:italic;">Room Number &amp; Name (matching Floor Plans)</div></th>
-                    <th style="width:32pt;">Needs<br>Backer</th>
                     <th>Copy Line 1</th>
                     <th>Copy Line 2</th>
                     <th>Copy Line 3</th>
                     <th>Copy Line 4</th>
                     <th>Copy Line 5</th>
+                    <th style="width:32pt;">Needs<br>Backer</th>
                     <th style="width:32pt;">Sign<br>Type</th>
-                    <th style="width:40pt;">Remarks</th>
                 </tr>
             </thead>
             <tbody>
@@ -2103,14 +2100,13 @@ class PatriotGPTController(http.Controller):
                 <tr>
                     <td class="center vcenter">&nbsp;</td>
                     <td class="vcenter">&nbsp;</td>
-                    <td class="center vcenter">&nbsp;</td>
                     <td class="vcenter">&nbsp;</td>
                     <td class="vcenter">&nbsp;</td>
                     <td class="vcenter">&nbsp;</td>
                     <td class="vcenter">&nbsp;</td>
                     <td class="vcenter">&nbsp;</td>
                     <td class="center vcenter">&nbsp;</td>
-                    <td class="vcenter">&nbsp;</td>
+                    <td class="center vcenter">&nbsp;</td>
                 </tr>"""
 
             supp_label = val(pname) + " - Official Sign Schedule &mdash; SUPPLEMENTARY SHEET"
@@ -2132,14 +2128,13 @@ class PatriotGPTController(http.Controller):
                 <tr>
                     <th style="width:50pt;">Area /<br>Sign #</th>
                     <th style="width:120pt;"><div><b>Room Number &amp; Name (current)</b></div><div style="font-size:5.5pt;font-style:italic;">Room Number &amp; Name (matching Floor Plans)</div></th>
-                    <th style="width:32pt;">Needs<br>Backer</th>
                     <th>Copy Line 1</th>
                     <th>Copy Line 2</th>
                     <th>Copy Line 3</th>
                     <th>Copy Line 4</th>
                     <th>Copy Line 5</th>
+                    <th style="width:32pt;">Needs<br>Backer</th>
                     <th style="width:32pt;">Sign<br>Type</th>
-                    <th style="width:40pt;">Remarks</th>
                 </tr>
             </thead>
             <tbody>
