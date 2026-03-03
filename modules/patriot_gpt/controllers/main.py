@@ -1678,6 +1678,260 @@ class PatriotGPTController(http.Controller):
             }, 400)
 
     # =========================================================================
+    # Sign Schedule PDF Generator
+    # =========================================================================
+    @http.route('/api/gpt/sign_schedule/<int:lead_id>', type='http', auth='user', methods=['GET'], csrf=False)
+    def generate_sign_schedule(self, lead_id, **kwargs):
+        """
+        GET /api/gpt/sign_schedule/<lead_id> - Generate and download sign schedule PDF
+        Called from a server action button on the CRM lead form.
+        """
+        import base64
+        import subprocess
+        import tempfile
+        import os
+        from collections import OrderedDict
+        from datetime import datetime as dt
+
+        try:
+            lead = request.env['crm.lead'].browse(lead_id)
+            if not lead.exists():
+                return request.not_found()
+
+            alias = lead.x_studio_project_alias
+            if not alias:
+                return Response("This lead has no Assigned Alias. Please assign one first.", status=400)
+
+            alias_id = alias.id
+            pname = lead.name or alias.x_name or "Sign Schedule"
+            sb_name = lead.user_id.name if lead.user_id else "Tiffany Janish"
+            sb_email = lead.user_id.email if lead.user_id else "tiffany@omegasignsco.com"
+            pfor = lead.partner_id.name if lead.partner_id else ""
+
+            now = dt.now()
+            pd_str = now.strftime("%m/%d/%Y").lstrip("0").replace("/0", "/")
+
+            # --- Fetch data ---
+            insts = request.env['x_install_instance'].search_read(
+                [('x_studio_project_alias', '=', alias_id)],
+                fields=['x_name', 'x_studio_sign_seq_number', 'x_studio_sign_type_label',
+                        'x_studio_sign_type_dimensions', 'x_studio_needs_backer',
+                        'x_studio_arch_rm_num', 'x_studio_arch_rm_name',
+                        'x_studio_copy_line_1', 'x_studio_copy_line_2', 'x_studio_copy_line_3',
+                        'x_studio_copy_line_4', 'x_studio_copy_line_5',
+                        'x_studio_remarks', 'x_studio_sign_category',
+                        'x_studio_parent_location_display'],
+                order='x_studio_sign_seq_number asc', limit=0)
+
+            if not insts:
+                return Response("No install instances found for alias '%s'." % alias.x_name, status=400)
+
+            # --- Helpers ---
+            _esc = lambda x: ("" if x is False or x is None else str(x)).replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
+            _el = lambda l: l.split("|")[0].strip() if l else ""
+            _ed = lambda l: l.split("|", 1)[1].strip() if l and "|" in l else ""
+            _ea = lambda p: p.split("|")[0].strip() if p else ""
+
+            SIGN_CAT_KEY = [
+                ("DCAS", "Dimensional-Cast"), ("DCHA", "Dimensional-Channel"),
+                ("DCUT", "Dimensional-Cut"), ("DIG", "Digital Signage"),
+                ("ETCH", "Etched"), ("FAB", "Fabricated Sign"),
+                ("FILM", "Blackout Film"), ("FOAM", "Dimensional-Foam"),
+                ("PAN", "Panel/ADA/Wayfinding"), ("PLQ", "Cast Plaque"),
+                ("POST", "Post &amp; Panel"), ("TAG", "Door/Room Tags"),
+                ("TEMP", "Paint Template"), ("VIN", "Vinyl-Letters &amp; Graphics"),
+            ]
+            RPP = 26
+
+            # --- Compute sign counts ---
+            tg = OrderedDict()
+            cc = OrderedDict()
+            for i in insts:
+                cat = i.get('x_studio_sign_category')
+                cn = cat[1] if isinstance(cat, (list, tuple)) else (cat or "")
+                tl = _el(i.get('x_studio_sign_type_label', ''))
+                td = _ed(i.get('x_studio_sign_type_label', ''))
+                dm = i.get('x_studio_sign_type_dimensions', '') or ''
+                nb = i.get('x_studio_needs_backer', False)
+                k = (cn, tl)
+                if k not in tg:
+                    tg[k] = {'sc': cn, 'tl': tl, 'td': td, 'dm': dm, 'q': 0, 'bq': 0}
+                tg[k]['q'] += 1
+                if nb:
+                    tg[k]['bq'] += 1
+                cc[cn] = cc.get(cn, 0) + 1
+
+            tcl = list(tg.values())
+            tot = sum(t['q'] for t in tcl)
+
+            # --- Cover page counts rows ---
+            cr = ""
+            for t in tcl:
+                cr += '<tr><td class="c">' + _esc(t["sc"]) + '</td><td class="c">' + str(t["q"]) + '</td><td class="c b">' + _esc(t["tl"]) + '</td><td>' + _esc(t["td"]) + '</td><td class="c">' + _esc(t["dm"]) + '</td><td></td><td></td></tr>'
+            cr += '<tr class="tot"><td></td><td class="c b">' + str(tot) + '</td><td colspan="5"></td></tr>'
+
+            ccr = ""
+            for cn2, cnt in sorted(cc.items()):
+                ccr += '<tr><td>' + _esc(cn2) + '</td><td class="c">' + str(cnt) + '</td><td></td></tr>'
+
+            ak = ""
+            for ab, fn in SIGN_CAT_KEY:
+                ak += '<tr><td class="ac">' + ab + '</td><td>' + fn + '</td></tr>'
+
+            # --- Cover page HTML ---
+            cv = '<div class="cp"><table class="ly"><tr><td style="width:55%"><div class="tb">SIGN SCHEDULE</div><div class="cn">OMEGA SIGNS</div><div class="pn">' + _esc(pname) + '</div></td>'
+            cv += '<td style="width:45%;text-align:right;vertical-align:top"><table class="mt">'
+            cv += '<tr><td class="ml">Schedule by:</td><td class="mv">' + _esc(sb_name) + '</td></tr>'
+            cv += '<tr><td></td><td class="mv" style="font-size:7pt">' + _esc(sb_email) + '</td></tr>'
+            cv += '<tr><td class="ml">Printed for:</td><td class="mv">' + _esc(pfor) + '</td></tr>'
+            cv += '<tr><td class="ml">Created on:</td><td class="mv">' + pd_str + '</td></tr>'
+            cv += '<tr><td class="ml">Print Date:</td><td class="mv">' + pd_str + '</td></tr>'
+            cv += '<tr><td class="ml">Revision No:</td><td class="mv">1</td></tr>'
+            cv += '<tr><td class="ml">Last Revised:</td><td class="mv">' + pd_str + '</td></tr>'
+            cv += '</table></td></tr></table>'
+            cv += '<table class="ly" style="margin-top:8pt"><tr>'
+            cv += '<td style="width:65%;vertical-align:top;padding-right:8pt">'
+            cv += '<div class="sh">SIGN TYPES &amp; COUNTS</div>'
+            cv += '<table class="dt"><thead><tr><th style="width:50pt">Sign Cat</th><th style="width:30pt">Qty</th><th style="width:40pt">Sign Type Backer Qty</th><th>Sign Type Description</th><th style="width:55pt">Dimensions</th><th style="width:40pt">Notes</th><th style="width:40pt">Note2</th></tr></thead>'
+            cv += '<tbody>' + cr + '</tbody></table></td>'
+            cv += '<td style="width:35%;vertical-align:top">'
+            cv += '<div class="sh">SIGN CATEGORY COUNTS</div>'
+            cv += '<table class="dt"><thead><tr><th>Sign Categories</th><th style="width:55pt">Sign Cat Total Count</th><th style="width:60pt">Approval Status</th></tr></thead>'
+            cv += '<tbody>' + ccr + '</tbody></table>'
+            cv += '<p class="bn">* Panel Backer totals per Sign Type are shown in "Backers" column in Counts section</p></td></tr></table>'
+            cv += '<div class="sh" style="margin-top:10pt">SIGN CATEGORY ABBREVIATION KEY</div>'
+            cv += '<table class="at"><tbody>' + ak + '</tbody></table>'
+            cv += '<p class="imp">IMPORTANT: ONLY SIGN TYPES SHOWN ON THIS OFFICIAL SIGN SCHEDULE WILL BE PRODUCED. PLEASE ENSURE ALL APPROVED ARE ACCURATELY LISTED.</p></div>'
+
+            # --- Data rows ---
+            drs = []
+            for i in insts:
+                sn = i.get('x_studio_sign_seq_number', 0)
+                ar = _ea(i.get('x_studio_parent_location_display', ''))
+                drs.append({
+                    'sn': sn if sn else '', 'st': _el(i.get('x_studio_sign_type_label', '')),
+                    'nb': i.get('x_studio_needs_backer', False),
+                    'rn': i.get('x_studio_arch_rm_num', ''), 'rm': i.get('x_studio_arch_rm_name', ''),
+                    'c1': i.get('x_studio_copy_line_1', ''), 'c2': i.get('x_studio_copy_line_2', ''),
+                    'c3': i.get('x_studio_copy_line_3', ''), 'c4': i.get('x_studio_copy_line_4', ''),
+                    'c5': i.get('x_studio_copy_line_5', ''),
+                    'rk': ar or i.get('x_studio_remarks', ''),
+                })
+
+            # --- Paginate ---
+            pgs = []
+            for j in range(0, max(len(drs), 1), RPP):
+                pgs.append(drs[j:j + RPP])
+            tp = 1 + len(pgs) + 1
+
+            inst_text = 'INSTRUCTIONS: 1) LOCATION (per plans) "To Rm" for installer reference, not copy; 1) COPY exact sign copy'
+            thdr = '<th style="width:42pt">Area / Sign #</th><th style="width:32pt">Sign Type</th><th style="width:32pt">Needs Backer</th><th style="width:38pt">Rm #</th><th style="width:80pt">Room Name on Plans</th><th>Copy Line 1</th><th>Copy Line 2</th><th>Copy Line 3</th><th>Copy Line 4</th><th>Copy Line 5</th><th style="width:40pt">Remarks</th>'
+            blnk = '<tr>' + ''.join(['<td class="c vc">&nbsp;</td>'] * 4) + ''.join(['<td class="vc">&nbsp;</td>'] * 7) + '</tr>'
+
+            dp = ""
+            for idx, pr in enumerate(pgs):
+                rh = ""
+                for r in pr:
+                    nbv = "Y" if r['nb'] else ""
+                    rh += '<tr><td class="c vc">' + _esc(r["sn"]) + '</td><td class="c vc b">' + _esc(r["st"]) + '</td><td class="c vc">' + nbv + '</td><td class="c vc">' + _esc(r["rn"]) + '</td><td class="vc">' + _esc(r["rm"]) + '</td><td class="vc">' + _esc(r["c1"]) + '</td><td class="vc">' + _esc(r["c2"]) + '</td><td class="vc">' + _esc(r["c3"]) + '</td><td class="vc">' + _esc(r["c4"]) + '</td><td class="vc">' + _esc(r["c5"]) + '</td><td class="vc">' + _esc(r["rk"]) + '</td></tr>'
+                if idx == len(pgs) - 1:
+                    for _ in range(max(0, RPP - len(pr))):
+                        rh += blnk
+                fl = _esc(pname) + ' - Official Sign Schedule'
+                pn = idx + 2
+                dp += '<div class="dp"><div class="dh"><div class="it">' + inst_text + '</div><table class="ly"><tr><td>' + fl + '</td><td style="text-align:right">' + pd_str + '</td></tr></table></div><table class="dt st"><thead><tr>' + thdr + '</tr></thead><tbody>' + rh + '</tbody></table><p class="imp">IMPORTANT: ONLY SIGN TYPES SHOWN ON THIS OFFICIAL SIGN SCHEDULE WILL BE PRODUCED. PLEASE ENSURE ALL APPROVED ARE ACCURATELY LISTED.</p><div class="pf"><span>Omega Signs Co.</span><span style="float:right">Page ' + str(pn) + ' of ' + str(tp) + '</span></div></div>'
+
+            # --- Supplementary blank sheet ---
+            srh = ""
+            for _ in range(RPP):
+                srh += blnk
+            sfl = _esc(pname) + ' - Official Sign Schedule &mdash; SUPPLEMENTARY SHEET'
+            dp += '<div class="dp"><div class="dh"><div class="it">' + inst_text + '</div><table class="ly"><tr><td>' + sfl + '</td><td style="text-align:right">' + pd_str + '</td></tr></table></div><table class="dt st"><thead><tr>' + thdr + '</tr></thead><tbody>' + srh + '</tbody></table><p class="imp">IMPORTANT: ONLY SIGN TYPES SHOWN ON THIS OFFICIAL SIGN SCHEDULE WILL BE PRODUCED. PLEASE ENSURE ALL APPROVED ARE ACCURATELY LISTED.</p><div class="pf"><span>Omega Signs Co.</span><span style="float:right">Page ' + str(tp) + ' of ' + str(tp) + '</span></div></div>'
+
+            # --- CSS ---
+            css = '@page{size:letter landscape;margin:0.35in 0.4in 0.3in 0.4in;}'
+            css += 'body{font-family:Arial,Helvetica,sans-serif;font-size:7.5pt;color:#222;margin:0;padding:0;}'
+            css += 'table.ly{width:100%;border-collapse:collapse;}table.ly td{vertical-align:top;padding:0;border:none;}'
+            css += '.cp{page-break-after:always;}.tb{font-size:18pt;font-weight:bold;color:#1a3a5c;letter-spacing:1pt;}'
+            css += '.cn{font-size:14pt;font-weight:bold;color:#333;margin-top:2pt;}.pn{font-size:10pt;color:#555;margin-top:2pt;}'
+            css += '.mt{border-collapse:collapse;font-size:8pt;}.mt td{padding:1pt 4pt;border:none;}'
+            css += '.ml{font-weight:bold;color:#555;text-align:right;white-space:nowrap;}.mv{color:#222;}'
+            css += '.sh{font-size:8pt;font-weight:bold;color:#1a3a5c;background:#dce6f0;padding:3pt 6pt;margin-bottom:2pt;border:1px solid #aaa;}'
+            css += '.dt{width:100%;border-collapse:collapse;font-size:7pt;}'
+            css += '.dt thead th{background:#dce6f0;color:#1a3a5c;font-size:6.5pt;font-weight:bold;padding:3pt;border:1px solid #999;text-align:center;vertical-align:middle;}'
+            css += '.dt tbody td{padding:2pt 3pt;border:1px solid #bbb;font-size:7pt;vertical-align:middle;}'
+            css += '.dt .tot td{font-weight:bold;border-top:2px solid #333;background:#f0f0f0;}'
+            css += '.st tbody td{height:16pt;vertical-align:middle;}'
+            css += '.c{text-align:center;}.b{font-weight:bold;}.vc{vertical-align:middle;}'
+            css += '.at{border-collapse:collapse;font-size:7pt;margin-top:4pt;}.at td{padding:1pt 4pt;border:none;}'
+            css += '.ac{font-weight:bold;width:40pt;color:#1a3a5c;}'
+            css += '.imp{font-size:6.5pt;font-weight:bold;color:#c00;text-align:center;margin-top:4pt;padding:3pt;border:1px solid #c00;background:#fff8f8;}'
+            css += '.bn{font-size:6pt;color:#666;font-style:italic;margin-top:4pt;}'
+            css += '.dp{page-break-after:always;}.dh{margin-bottom:4pt;}.it{font-size:6pt;color:#888;margin-bottom:2pt;}'
+            css += '.pf{font-size:7pt;color:#555;margin-top:4pt;padding-top:2pt;border-top:1px solid #ccc;}'
+
+            html = '<!DOCTYPE html><html><head><meta charset="utf-8"><style>' + css + '</style></head><body>' + cv + dp + '</body></html>'
+
+            # --- Generate PDF with wkhtmltopdf ---
+            html_path = tempfile.mktemp(suffix='.html')
+            pdf_path = tempfile.mktemp(suffix='.pdf')
+
+            with open(html_path, 'w', encoding='utf-8') as f:
+                f.write(html)
+
+            proc = subprocess.run(
+                ['wkhtmltopdf', '--orientation', 'Landscape', '--page-size', 'Letter',
+                 '--margin-top', '9', '--margin-bottom', '8', '--margin-left', '10', '--margin-right', '10',
+                 '--encoding', 'UTF-8', '--quiet', html_path, pdf_path],
+                capture_output=True, text=True, timeout=120)
+
+            if proc.returncode != 0:
+                try:
+                    os.unlink(html_path)
+                except Exception:
+                    pass
+                _logger.error("wkhtmltopdf failed: %s", proc.stderr[:500])
+                return Response("PDF generation failed. Check server logs.", status=500)
+
+            with open(pdf_path, 'rb') as f:
+                pdf_data = f.read()
+
+            # Cleanup temp files
+            try:
+                os.unlink(html_path)
+                os.unlink(pdf_path)
+            except Exception:
+                pass
+
+            # Create attachment on CRM lead
+            safe_name = pname.replace(' ', '_').replace('/', '_')[:50]
+            filename = "SS_%s_%s.pdf" % (safe_name, now.strftime('%Y%m%d'))
+
+            request.env['ir.attachment'].create({
+                'name': filename,
+                'type': 'binary',
+                'datas': base64.b64encode(pdf_data).decode(),
+                'res_model': 'crm.lead',
+                'res_id': lead_id,
+                'mimetype': 'application/pdf',
+            })
+
+            # Return PDF as download
+            return Response(
+                pdf_data,
+                headers={
+                    'Content-Type': 'application/pdf',
+                    'Content-Disposition': 'attachment; filename="%s"' % filename,
+                    'Content-Length': str(len(pdf_data)),
+                },
+                status=200,
+            )
+
+        except Exception as e:
+            _logger.exception("Sign Schedule PDF Error:")
+            return Response("Error generating sign schedule: %s" % str(e), status=500)
+
+    # =========================================================================
     # Health Check
     # =========================================================================
     @http.route('/api/gpt/health', type='http', auth='public', methods=['GET'], csrf=False, cors='*')
