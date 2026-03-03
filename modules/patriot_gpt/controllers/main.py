@@ -1753,13 +1753,13 @@ class PatriotGPTController(http.Controller):
                     insts = request.env['x_install_instance'].search_read(
                         [('x_studio_project_alias', '=', alias_id)],
                         fields=valid_fields,
-                        order='x_studio_sign_seq_number asc', limit=0)
+                        order='x_studio_sign_seq_number asc')
                 except Exception:
                     # If ordering field doesn't exist, try without ordering
                     try:
                         insts = request.env['x_install_instance'].search_read(
                             [('x_studio_project_alias', '=', alias_id)],
-                            fields=valid_fields, limit=0)
+                            fields=valid_fields)
                     except Exception:
                         insts = []
 
