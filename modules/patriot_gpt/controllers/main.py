@@ -2060,11 +2060,11 @@ class PatriotGPTController(http.Controller):
                     <td class="vcenter">{room}</td>
                     <td class="center vcenter">{nb}</td>
                     <td class="center vcenter bold">{st}</td>
-                    <td class="vcenter">{c1}</td>
-                    <td class="vcenter">{c2}</td>
-                    <td class="vcenter">{c3}</td>
-                    <td class="vcenter">{c4}</td>
-                    <td class="vcenter">{c5}</td>
+                    <td class="vcenter copy-col-first">{c1}</td>
+                    <td class="vcenter copy-col">{c2}</td>
+                    <td class="vcenter copy-col">{c3}</td>
+                    <td class="vcenter copy-col">{c4}</td>
+                    <td class="vcenter copy-col-last">{c5}</td>
                     <td class="vcenter">{rk}</td>
                 </tr>""".format(
                         asn=val(row.get('area_sign', '')), room=room_cell,
@@ -2082,11 +2082,11 @@ class PatriotGPTController(http.Controller):
                     <td class="vcenter">&nbsp;</td>
                     <td class="center vcenter">&nbsp;</td>
                     <td class="center vcenter">&nbsp;</td>
-                    <td class="vcenter">&nbsp;</td>
-                    <td class="vcenter">&nbsp;</td>
-                    <td class="vcenter">&nbsp;</td>
-                    <td class="vcenter">&nbsp;</td>
-                    <td class="vcenter">&nbsp;</td>
+                    <td class="vcenter copy-col-first">&nbsp;</td>
+                    <td class="vcenter copy-col">&nbsp;</td>
+                    <td class="vcenter copy-col">&nbsp;</td>
+                    <td class="vcenter copy-col">&nbsp;</td>
+                    <td class="vcenter copy-col-last">&nbsp;</td>
                     <td class="vcenter">&nbsp;</td>
                 </tr>"""
 
@@ -2112,11 +2112,11 @@ class PatriotGPTController(http.Controller):
                     <th style="width:120pt;"><div><b>Room Number &amp; Name (current)</b></div><div style="font-size:5.5pt;font-style:italic;">Room Number &amp; Name (matching Floor Plans)</div></th>
                     <th style="width:32pt;">Needs<br>Backer</th>
                     <th style="width:32pt;">Sign<br>Type</th>
-                    <th style="width:60pt;">Copy Line 1</th>
-                    <th style="width:60pt;">Copy Line 2</th>
-                    <th style="width:60pt;">Copy Line 3</th>
-                    <th style="width:60pt;">Copy Line 4</th>
-                    <th style="width:60pt;">Copy Line 5</th>
+                    <th class="copy-header-first" style="width:60pt;">Copy Line 1</th>
+                    <th class="copy-header" style="width:60pt;">Copy Line 2</th>
+                    <th class="copy-header" style="width:60pt;">Copy Line 3</th>
+                    <th class="copy-header" style="width:60pt;">Copy Line 4</th>
+                    <th class="copy-header-last" style="width:60pt;">Copy Line 5</th>
                     <th style="width:40pt;">Remarks</th>
                 </tr>
             </thead>
@@ -2144,11 +2144,11 @@ class PatriotGPTController(http.Controller):
                     <td class="vcenter">&nbsp;</td>
                     <td class="center vcenter">&nbsp;</td>
                     <td class="center vcenter">&nbsp;</td>
-                    <td class="vcenter">&nbsp;</td>
-                    <td class="vcenter">&nbsp;</td>
-                    <td class="vcenter">&nbsp;</td>
-                    <td class="vcenter">&nbsp;</td>
-                    <td class="vcenter">&nbsp;</td>
+                    <td class="vcenter copy-col-first">&nbsp;</td>
+                    <td class="vcenter copy-col">&nbsp;</td>
+                    <td class="vcenter copy-col">&nbsp;</td>
+                    <td class="vcenter copy-col">&nbsp;</td>
+                    <td class="vcenter copy-col-last">&nbsp;</td>
                     <td class="vcenter">&nbsp;</td>
                 </tr>"""
 
@@ -2173,11 +2173,11 @@ class PatriotGPTController(http.Controller):
                     <th style="width:120pt;"><div><b>Room Number &amp; Name (current)</b></div><div style="font-size:5.5pt;font-style:italic;">Room Number &amp; Name (matching Floor Plans)</div></th>
                     <th style="width:32pt;">Needs<br>Backer</th>
                     <th style="width:32pt;">Sign<br>Type</th>
-                    <th style="width:60pt;">Copy Line 1</th>
-                    <th style="width:60pt;">Copy Line 2</th>
-                    <th style="width:60pt;">Copy Line 3</th>
-                    <th style="width:60pt;">Copy Line 4</th>
-                    <th style="width:60pt;">Copy Line 5</th>
+                    <th class="copy-header-first" style="width:60pt;">Copy Line 1</th>
+                    <th class="copy-header" style="width:60pt;">Copy Line 2</th>
+                    <th class="copy-header" style="width:60pt;">Copy Line 3</th>
+                    <th class="copy-header" style="width:60pt;">Copy Line 4</th>
+                    <th class="copy-header-last" style="width:60pt;">Copy Line 5</th>
                     <th style="width:40pt;">Remarks</th>
                 </tr>
             </thead>
@@ -2315,6 +2315,29 @@ class PatriotGPTController(http.Controller):
     .schedule-table tbody td {
         height: 16pt;
         vertical-align: middle;
+    }
+    /* Copy line section styling */
+    .copy-col {
+        background-color: #fffde6;
+    }
+    .copy-col-first {
+        background-color: #fffde6;
+        border-left: 2px solid #333 !important;
+    }
+    .copy-col-last {
+        background-color: #fffde6;
+        border-right: 2px solid #333 !important;
+    }
+    .copy-header {
+        background-color: #f5f0c8 !important;
+    }
+    .copy-header-first {
+        background-color: #f5f0c8 !important;
+        border-left: 2px solid #333 !important;
+    }
+    .copy-header-last {
+        background-color: #f5f0c8 !important;
+        border-right: 2px solid #333 !important;
     }
 
     /* Helpers */
