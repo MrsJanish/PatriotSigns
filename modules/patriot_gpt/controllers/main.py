@@ -2100,11 +2100,11 @@ class PatriotGPTController(http.Controller):
                     <th style="width:120pt;"><div><b>Room Number &amp; Name (current)</b></div><div style="font-size:5.5pt;font-style:italic;">Room Number &amp; Name (matching Floor Plans)</div></th>
                     <th style="width:32pt;">Needs<br>Backer</th>
                     <th style="width:32pt;">Sign<br>Type</th>
-                    <th>Copy Line 1</th>
-                    <th>Copy Line 2</th>
-                    <th>Copy Line 3</th>
-                    <th>Copy Line 4</th>
-                    <th>Copy Line 5</th>
+                    <th style="width:60pt;">Copy Line 1</th>
+                    <th style="width:60pt;">Copy Line 2</th>
+                    <th style="width:60pt;">Copy Line 3</th>
+                    <th style="width:60pt;">Copy Line 4</th>
+                    <th style="width:60pt;">Copy Line 5</th>
                     <th style="width:40pt;">Remarks</th>
                 </tr>
             </thead>
@@ -2161,11 +2161,11 @@ class PatriotGPTController(http.Controller):
                     <th style="width:120pt;"><div><b>Room Number &amp; Name (current)</b></div><div style="font-size:5.5pt;font-style:italic;">Room Number &amp; Name (matching Floor Plans)</div></th>
                     <th style="width:32pt;">Needs<br>Backer</th>
                     <th style="width:32pt;">Sign<br>Type</th>
-                    <th>Copy Line 1</th>
-                    <th>Copy Line 2</th>
-                    <th>Copy Line 3</th>
-                    <th>Copy Line 4</th>
-                    <th>Copy Line 5</th>
+                    <th style="width:60pt;">Copy Line 1</th>
+                    <th style="width:60pt;">Copy Line 2</th>
+                    <th style="width:60pt;">Copy Line 3</th>
+                    <th style="width:60pt;">Copy Line 4</th>
+                    <th style="width:60pt;">Copy Line 5</th>
                     <th style="width:40pt;">Remarks</th>
                 </tr>
             </thead>
