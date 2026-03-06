@@ -1969,13 +1969,13 @@ class PatriotGPTController(http.Controller):
                     <table class="data-table counts-table">
                         <thead>
                             <tr>
-                                <th style="width:50pt;">Sign Cat</th>
-                                <th style="width:30pt;">Qty</th>
-                                <th style="width:40pt;">Sign Type</th>
-                                <th style="width:40pt;">Backer Qty</th>
-                                <th>Sign Type Description</th>
-                                <th style="width:55pt;">Dimensions</th>
-                                <th style="width:40pt;">Notes</th>
+                                <th class="loc-header" style="width:50pt;">Sign Cat</th>
+                                <th class="loc-header" style="width:30pt;">Qty</th>
+                                <th class="loc-header" style="width:40pt;">Sign Type</th>
+                                <th class="loc-header" style="width:40pt;">Backer Qty</th>
+                                <th class="loc-header">Sign Type Description</th>
+                                <th class="loc-header" style="width:55pt;">Dimensions</th>
+                                <th class="loc-header" style="width:40pt;">Notes</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -1993,9 +1993,9 @@ class PatriotGPTController(http.Controller):
                     <table class="data-table cat-counts-table">
                         <thead>
                             <tr>
-                                <th>Sign Categories</th>
-                                <th style="width:55pt;">Sign Cat Total Count</th>
-                                <th style="width:60pt;">Approval Status</th>
+                                <th class="loc-header">Sign Categories</th>
+                                <th class="loc-header" style="width:55pt;">Sign Cat Total Count</th>
+                                <th class="loc-header" style="width:60pt;">Approval Status</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -2407,9 +2407,10 @@ class PatriotGPTController(http.Controller):
         margin-bottom: 4pt;
     }
     .instruction-text {
-        font-size: 6pt;
-        color: #888;
-        margin-bottom: 2pt;
+        font-size: 10pt;
+        color: #222;
+        font-weight: bold;
+        margin-bottom: 4pt;
     }
 
     .page-footer {
