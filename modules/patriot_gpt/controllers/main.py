@@ -1791,6 +1791,7 @@ class PatriotGPTController(http.Controller):
                 'x_studio_copy_line_4', 'x_studio_copy_line_5',
                 'x_studio_remarks', 'x_studio_sign_category',
                 'x_studio_parent_location_display',
+                'x_studio_1st_gen_parent_loc',
             ]
             try:
                 model_fields = request.env['x_install_instance'].fields_get()
@@ -1804,7 +1805,7 @@ class PatriotGPTController(http.Controller):
                     insts = request.env['x_install_instance'].search_read(
                         [('x_studio_project_alias', '=', alias_id)],
                         fields=valid_fields,
-                        order='x_studio_sign_seq_number asc')
+                        order='x_studio_1st_gen_parent_loc asc, x_studio_sign_seq_number asc, x_studio_arch_rm_num asc')
                 except Exception:
                     try:
                         insts = request.env['x_install_instance'].search_read(
@@ -1864,9 +1865,20 @@ class PatriotGPTController(http.Controller):
                         'copy_line_4': safe_get(inst, 'x_studio_copy_line_4', ''),
                         'copy_line_5': safe_get(inst, 'x_studio_copy_line_5', ''),
                         'remarks': val(safe_get(inst, 'x_studio_remarks', '')),
+                        # sort helpers
+                        '_parent_loc': str(safe_get(inst, 'x_studio_1st_gen_parent_loc', '') or '').lower(),
+                        '_sign_seq': safe_get(inst, 'x_studio_sign_seq_number', 0) or 0,
                     })
                 except Exception:
                     pass
+
+            # --- Sort: parent loc, sign seq, room number, sign type ---
+            data_rows.sort(key=lambda r: (
+                r.get('_parent_loc', ''),
+                r.get('_sign_seq', 0),
+                str(r.get('rm_num', '') or '').lower(),
+                str(r.get('sign_type', '') or '').lower(),
+            ))
 
             # --- Paginate ---
             pages = []
