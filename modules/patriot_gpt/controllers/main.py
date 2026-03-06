@@ -1786,6 +1786,7 @@ class PatriotGPTController(http.Controller):
                 'x_name', 'x_studio_sign_seq_number', 'x_studio_sign_type_label',
                 'x_studio_sign_type_dimensions', 'x_studio_needs_backer',
                 'x_studio_arch_rm_num', 'x_studio_arch_rm_name',
+                'x_studio_rm_fp', 'x_studio_rm_name_fp',
                 'x_studio_copy_line_1', 'x_studio_copy_line_2', 'x_studio_copy_line_3',
                 'x_studio_copy_line_4', 'x_studio_copy_line_5',
                 'x_studio_remarks', 'x_studio_sign_category',
@@ -1855,6 +1856,8 @@ class PatriotGPTController(http.Controller):
                         'needs_backer': bool(safe_get(inst, 'x_studio_needs_backer', False)),
                         'rm_num': safe_get(inst, 'x_studio_arch_rm_num', ''),
                         'rm_name': safe_get(inst, 'x_studio_arch_rm_name', ''),
+                        'rm_fp': safe_get(inst, 'x_studio_rm_fp', ''),
+                        'rm_name_fp': safe_get(inst, 'x_studio_rm_name_fp', ''),
                         'copy_line_1': safe_get(inst, 'x_studio_copy_line_1', ''),
                         'copy_line_2': safe_get(inst, 'x_studio_copy_line_2', ''),
                         'copy_line_3': safe_get(inst, 'x_studio_copy_line_3', ''),
@@ -2022,15 +2025,21 @@ class PatriotGPTController(http.Controller):
                 rows_html = ""
                 for row in page_rows:
                     nb_val = "Y" if row.get('needs_backer') else ""
+                    # Current room: rm_num + rm_name (bold top line)
                     rm_num_str = val(row.get('rm_num', ''))
                     rm_name_str = val(row.get('rm_name', ''))
-                    # Combined room cell: bold Rm# on top, italic Room Name below
-                    if rm_num_str and rm_name_str:
-                        room_cell = '<div><b>{rn}</b></div><div style="font-size:6pt;font-style:italic;">{rm}</div>'.format(rn=rm_num_str, rm=rm_name_str)
-                    elif rm_num_str:
-                        room_cell = '<b>{rn}</b>'.format(rn=rm_num_str)
-                    elif rm_name_str:
-                        room_cell = '<i>{rm}</i>'.format(rm=rm_name_str)
+                    current_room = (rm_num_str + ' ' + rm_name_str).strip() if (rm_num_str or rm_name_str) else ''
+                    # Floor plans room: rm_fp + rm_name_fp (italic bottom line)
+                    rm_fp_str = val(row.get('rm_fp', ''))
+                    rm_name_fp_str = val(row.get('rm_name_fp', ''))
+                    fp_room = (rm_fp_str + ' ' + rm_name_fp_str).strip() if (rm_fp_str or rm_name_fp_str) else ''
+                    # Combined room cell
+                    if current_room and fp_room:
+                        room_cell = '<div><b>{cr}</b></div><div style="font-size:6pt;font-style:italic;">{fp}</div>'.format(cr=current_room, fp=fp_room)
+                    elif current_room:
+                        room_cell = '<b>{cr}</b>'.format(cr=current_room)
+                    elif fp_room:
+                        room_cell = '<div style="font-size:6pt;font-style:italic;">{fp}</div>'.format(fp=fp_room)
                     else:
                         room_cell = ''
                     rows_html += """
