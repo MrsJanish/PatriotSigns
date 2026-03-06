@@ -1881,13 +1881,14 @@ class PatriotGPTController(http.Controller):
                     <td class="center">{sc}</td>
                     <td class="center">{qty}</td>
                     <td class="center bold">{tl}</td>
+                    <td class="center">{bq}</td>
                     <td>{td}</td>
                     <td class="center">{dm}</td>
                     <td></td>
-                    <td></td>
                 </tr>""".format(
                     sc=val(tc['sign_cat']), qty=tc['qty'],
-                    tl=val(tc['type_letter']), td=val(tc['type_desc']),
+                    tl=val(tc['type_letter']), bq=tc.get('backer_qty', 0) or '',
+                    td=val(tc['type_desc']),
                     dm=val(tc['dimensions']))
 
             total_count = sum(tc['qty'] for tc in type_counts)
@@ -1912,20 +1913,33 @@ class PatriotGPTController(http.Controller):
 
             cover_html = """
     <div class="cover-page">
+        <div class="cover-header-bar">PROJECT AND DOC VERSION DETAILS</div>
+
         <table class="layout header-table">
             <tr>
-                <td style="width:55%;">
-                    <div class="title-bar">SIGN SCHEDULE</div>
+                <td style="width:50%; vertical-align:top;">
                     <div class="company-name">OMEGA SIGNS</div>
-                    <div class="project-name">{pname}</div>
                 </td>
-                <td style="width:45%; text-align:right; vertical-align:top;">
+                <td style="width:50%; text-align:right; vertical-align:top;">
+                    <div class="project-name" style="font-weight:bold; font-size:11pt;">{pname}</div>
+                </td>
+            </tr>
+        </table>
+
+        <table class="layout" style="margin-top:4pt; border-top:1px solid #999;">
+            <tr>
+                <td style="width:50%; vertical-align:top; padding-top:3pt;">
+                    <div class="title-bar" style="font-size:12pt; margin-bottom:2pt;">SIGN SCHEDULE</div>
                     <table class="meta-table">
+                        <tr><td class="meta-label">Printed for:</td><td class="meta-value">{pfor}</td></tr>
+                        <tr><td class="meta-label">Print Date:</td><td class="meta-value">{pd}</td></tr>
+                    </table>
+                </td>
+                <td style="width:50%; text-align:right; vertical-align:top; padding-top:3pt;">
+                    <table class="meta-table" style="float:right;">
                         <tr><td class="meta-label">Schedule by:</td><td class="meta-value">{sb_name}</td></tr>
                         <tr><td></td><td class="meta-value" style="font-size:7pt;">{sb_email}</td></tr>
-                        <tr><td class="meta-label">Printed for:</td><td class="meta-value">{pfor}</td></tr>
                         <tr><td class="meta-label">Created on:</td><td class="meta-value">{pd}</td></tr>
-                        <tr><td class="meta-label">Print Date:</td><td class="meta-value">{pd}</td></tr>
                         <tr><td class="meta-label">Revision No:</td><td class="meta-value">1</td></tr>
                         <tr><td class="meta-label">Last Revised:</td><td class="meta-value">{pd}</td></tr>
                     </table>
@@ -1942,11 +1956,11 @@ class PatriotGPTController(http.Controller):
                             <tr>
                                 <th style="width:50pt;">Sign Cat</th>
                                 <th style="width:30pt;">Qty</th>
-                                <th style="width:40pt;">Sign Type Backer Qty</th>
+                                <th style="width:40pt;">Sign Type</th>
+                                <th style="width:40pt;">Backer Qty</th>
                                 <th>Sign Type Description</th>
                                 <th style="width:55pt;">Dimensions</th>
                                 <th style="width:40pt;">Notes</th>
-                                <th style="width:40pt;">Note2</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -1985,13 +1999,17 @@ class PatriotGPTController(http.Controller):
             </tbody>
         </table>
 
-        <p class="important-notice">IMPORTANT: ONLY SIGN TYPES SHOWN ON THIS OFFICIAL SIGN SCHEDULE WILL BE PRODUCED. PLEASE ENSURE ALL APPROVED ARE ACCURATELY LISTED.</p>
+        <p class="important-notice">IMPORTANT: ONLY SIGN TYPES SHOWN ON THIS <u>OFFICIAL SIGN SCHEDULE</u> WILL BE PRODUCED. PLEASE ENSURE ALL APPROVED ARE ACCURATELY LISTED.</p>
+        <div class="page-footer">
+            <span>Omega Signs Co.</span>
+            <span class="page-num">Page 1 of {tp}</span>
+        </div>
     </div>
     """.format(
                 pname=val(pname), sb_name=val(sb_name), sb_email=val(sb_email),
                 pfor=val(pfor), pd=pd_str,
                 count_rows=count_rows, total_count=total_count,
-                cat_rows=cat_rows, abbrev_html=abbrev_html)
+                cat_rows=cat_rows, abbrev_html=abbrev_html, tp=total_pages)
 
             # ===================================================================
             # BUILD DATA PAGES HTML (exact match to standalone script)
@@ -2183,6 +2201,16 @@ class PatriotGPTController(http.Controller):
     /* Cover page */
     .cover-page {
         page-break-after: always;
+    }
+    .cover-header-bar {
+        background: #4a7c3f;
+        color: #fff;
+        font-size: 14pt;
+        font-weight: bold;
+        text-align: center;
+        padding: 6pt 10pt;
+        margin-bottom: 6pt;
+        letter-spacing: 0.5pt;
     }
     .title-bar {
         font-size: 18pt;
