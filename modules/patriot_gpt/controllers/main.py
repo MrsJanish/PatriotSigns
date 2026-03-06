@@ -2029,7 +2029,7 @@ class PatriotGPTController(http.Controller):
             # ===================================================================
             # BUILD DATA PAGES HTML (exact match to standalone script)
             # ===================================================================
-            instruction = 'INSTRUCTIONS: 1) LOCATION (per plans) "To Rm" for installer reference, not copy; 1) COPY exact sign copy'
+            instruction = '<b>LOCATION</b> ON PLANS FOR INSTALLER REF.&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;<b>COPY</b> WILL APPEAR EXACTLY AS NOTED BELOW - <i>REVIEW CAREFULLY</i>'
 
             data_pages_html = ""
             for idx, page_rows in enumerate(pages):
@@ -2056,16 +2056,16 @@ class PatriotGPTController(http.Controller):
                         room_cell = ''
                     rows_html += """
                 <tr>
-                    <td class="center vcenter">{asn}</td>
-                    <td class="vcenter">{room}</td>
-                    <td class="center vcenter">{nb}</td>
-                    <td class="center vcenter bold">{st}</td>
+                    <td class="center vcenter loc-col">{asn}</td>
+                    <td class="vcenter loc-col">{room}</td>
+                    <td class="center vcenter loc-col">{nb}</td>
+                    <td class="center vcenter bold loc-col">{st}</td>
                     <td class="vcenter copy-col-first">{c1}</td>
                     <td class="vcenter copy-col">{c2}</td>
                     <td class="vcenter copy-col">{c3}</td>
                     <td class="vcenter copy-col">{c4}</td>
                     <td class="vcenter copy-col-last">{c5}</td>
-                    <td class="vcenter">{rk}</td>
+                    <td class="vcenter remarks-col">{rk}</td>
                 </tr>""".format(
                         asn=val(row.get('area_sign', '')), room=room_cell,
                         nb=nb_val, st=val(row.get('sign_type', '')),
@@ -2078,16 +2078,16 @@ class PatriotGPTController(http.Controller):
                     for _ in range(max(0, ROWS_PER_PAGE - len(page_rows))):
                         rows_html += """
                 <tr>
-                    <td class="center vcenter">&nbsp;</td>
-                    <td class="vcenter">&nbsp;</td>
-                    <td class="center vcenter">&nbsp;</td>
-                    <td class="center vcenter">&nbsp;</td>
+                    <td class="center vcenter loc-col">&nbsp;</td>
+                    <td class="vcenter loc-col">&nbsp;</td>
+                    <td class="center vcenter loc-col">&nbsp;</td>
+                    <td class="center vcenter loc-col">&nbsp;</td>
                     <td class="vcenter copy-col-first">&nbsp;</td>
                     <td class="vcenter copy-col">&nbsp;</td>
                     <td class="vcenter copy-col">&nbsp;</td>
                     <td class="vcenter copy-col">&nbsp;</td>
                     <td class="vcenter copy-col-last">&nbsp;</td>
-                    <td class="vcenter">&nbsp;</td>
+                    <td class="vcenter remarks-col">&nbsp;</td>
                 </tr>"""
 
                 file_label = val(pname) + " - Official Sign Schedule"
@@ -2108,16 +2108,16 @@ class PatriotGPTController(http.Controller):
         <table class="data-table schedule-table">
             <thead>
                 <tr>
-                    <th style="width:50pt;">Area /<br>Sign #</th>
-                    <th style="width:120pt;"><div><b>Room Number &amp; Name (current)</b></div><div style="font-size:5.5pt;font-style:italic;">Room Number &amp; Name (matching Floor Plans)</div></th>
-                    <th style="width:32pt;">Needs<br>Backer</th>
-                    <th style="width:32pt;">Sign<br>Type</th>
+                    <th class="loc-header" style="width:50pt;">Area /<br>Sign #</th>
+                    <th class="loc-header" style="width:120pt;"><div><b>Room Number &amp; Name (current)</b></div><div style="font-size:5.5pt;font-style:italic;">Room Number &amp; Name (matching Floor Plans)</div></th>
+                    <th class="loc-header" style="width:32pt;">Needs<br>Backer</th>
+                    <th class="loc-header" style="width:32pt;">Sign<br>Type</th>
                     <th class="copy-header-first" style="width:60pt;">Copy Line 1</th>
                     <th class="copy-header" style="width:60pt;">Copy Line 2</th>
                     <th class="copy-header" style="width:60pt;">Copy Line 3</th>
                     <th class="copy-header" style="width:60pt;">Copy Line 4</th>
                     <th class="copy-header-last" style="width:60pt;">Copy Line 5</th>
-                    <th style="width:40pt;">Remarks</th>
+                    <th class="remarks-header" style="width:40pt;">Remarks</th>
                 </tr>
             </thead>
             <tbody>
@@ -2140,16 +2140,16 @@ class PatriotGPTController(http.Controller):
             for _ in range(ROWS_PER_PAGE):
                 supp_rows += """
                 <tr>
-                    <td class="center vcenter">&nbsp;</td>
-                    <td class="vcenter">&nbsp;</td>
-                    <td class="center vcenter">&nbsp;</td>
-                    <td class="center vcenter">&nbsp;</td>
+                    <td class="center vcenter loc-col">&nbsp;</td>
+                    <td class="vcenter loc-col">&nbsp;</td>
+                    <td class="center vcenter loc-col">&nbsp;</td>
+                    <td class="center vcenter loc-col">&nbsp;</td>
                     <td class="vcenter copy-col-first">&nbsp;</td>
                     <td class="vcenter copy-col">&nbsp;</td>
                     <td class="vcenter copy-col">&nbsp;</td>
                     <td class="vcenter copy-col">&nbsp;</td>
                     <td class="vcenter copy-col-last">&nbsp;</td>
-                    <td class="vcenter">&nbsp;</td>
+                    <td class="vcenter remarks-col">&nbsp;</td>
                 </tr>"""
 
             supp_label = val(pname) + " - Official Sign Schedule &mdash; SUPPLEMENTARY SHEET"
@@ -2169,16 +2169,16 @@ class PatriotGPTController(http.Controller):
         <table class="data-table schedule-table">
             <thead>
                 <tr>
-                    <th style="width:50pt;">Area /<br>Sign #</th>
-                    <th style="width:120pt;"><div><b>Room Number &amp; Name (current)</b></div><div style="font-size:5.5pt;font-style:italic;">Room Number &amp; Name (matching Floor Plans)</div></th>
-                    <th style="width:32pt;">Needs<br>Backer</th>
-                    <th style="width:32pt;">Sign<br>Type</th>
+                    <th class="loc-header" style="width:50pt;">Area /<br>Sign #</th>
+                    <th class="loc-header" style="width:120pt;"><div><b>Room Number &amp; Name (current)</b></div><div style="font-size:5.5pt;font-style:italic;">Room Number &amp; Name (matching Floor Plans)</div></th>
+                    <th class="loc-header" style="width:32pt;">Needs<br>Backer</th>
+                    <th class="loc-header" style="width:32pt;">Sign<br>Type</th>
                     <th class="copy-header-first" style="width:60pt;">Copy Line 1</th>
                     <th class="copy-header" style="width:60pt;">Copy Line 2</th>
                     <th class="copy-header" style="width:60pt;">Copy Line 3</th>
                     <th class="copy-header" style="width:60pt;">Copy Line 4</th>
                     <th class="copy-header-last" style="width:60pt;">Copy Line 5</th>
-                    <th style="width:40pt;">Remarks</th>
+                    <th class="remarks-header" style="width:40pt;">Remarks</th>
                 </tr>
             </thead>
             <tbody>
@@ -2316,28 +2316,42 @@ class PatriotGPTController(http.Controller):
         height: 16pt;
         vertical-align: middle;
     }
+    /* Location columns (Area, Room, Needs Backer, Sign Type) */
+    .loc-col {
+        background-color: #f0f2e4;
+    }
+    .loc-header {
+        background-color: #d5d8a8 !important;
+    }
     /* Copy line section styling */
     .copy-col {
-        background-color: #fffde6;
+        background-color: #fff;
     }
     .copy-col-first {
-        background-color: #fffde6;
+        background-color: #fff;
         border-left: 2px solid #333 !important;
     }
     .copy-col-last {
-        background-color: #fffde6;
+        background-color: #fff;
         border-right: 2px solid #333 !important;
     }
     .copy-header {
-        background-color: #f5f0c8 !important;
+        background-color: #c8c8a0 !important;
     }
     .copy-header-first {
-        background-color: #f5f0c8 !important;
+        background-color: #c8c8a0 !important;
         border-left: 2px solid #333 !important;
     }
     .copy-header-last {
-        background-color: #f5f0c8 !important;
+        background-color: #c8c8a0 !important;
         border-right: 2px solid #333 !important;
+    }
+    /* Remarks column */
+    .remarks-col {
+        background-color: #fdf0ee;
+    }
+    .remarks-header {
+        background-color: #e8b8b0 !important;
     }
 
     /* Helpers */
