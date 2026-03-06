@@ -2053,12 +2053,13 @@ class PatriotGPTController(http.Controller):
                     <td class="vcenter">{c3}</td>
                     <td class="vcenter">{c4}</td>
                     <td class="vcenter">{c5}</td>
+                    <td class="vcenter">{rk}</td>
                 </tr>""".format(
                         asn=val(row.get('area_sign', '')), room=room_cell,
                         nb=nb_val, st=val(row.get('sign_type', '')),
                         c1=val(row.get('copy_line_1', '')), c2=val(row.get('copy_line_2', '')),
                         c3=val(row.get('copy_line_3', '')), c4=val(row.get('copy_line_4', '')),
-                        c5=val(row.get('copy_line_5', '')))
+                        c5=val(row.get('copy_line_5', '')), rk=val(row.get('remarks', '')))
 
                 # Fill blank rows on last data page
                 if is_last:
@@ -2069,6 +2070,7 @@ class PatriotGPTController(http.Controller):
                     <td class="vcenter">&nbsp;</td>
                     <td class="center vcenter">&nbsp;</td>
                     <td class="center vcenter">&nbsp;</td>
+                    <td class="vcenter">&nbsp;</td>
                     <td class="vcenter">&nbsp;</td>
                     <td class="vcenter">&nbsp;</td>
                     <td class="vcenter">&nbsp;</td>
@@ -2103,6 +2105,7 @@ class PatriotGPTController(http.Controller):
                     <th>Copy Line 3</th>
                     <th>Copy Line 4</th>
                     <th>Copy Line 5</th>
+                    <th style="width:40pt;">Remarks</th>
                 </tr>
             </thead>
             <tbody>
@@ -2129,6 +2132,7 @@ class PatriotGPTController(http.Controller):
                     <td class="vcenter">&nbsp;</td>
                     <td class="center vcenter">&nbsp;</td>
                     <td class="center vcenter">&nbsp;</td>
+                    <td class="vcenter">&nbsp;</td>
                     <td class="vcenter">&nbsp;</td>
                     <td class="vcenter">&nbsp;</td>
                     <td class="vcenter">&nbsp;</td>
@@ -2162,6 +2166,7 @@ class PatriotGPTController(http.Controller):
                     <th>Copy Line 3</th>
                     <th>Copy Line 4</th>
                     <th>Copy Line 5</th>
+                    <th style="width:40pt;">Remarks</th>
                 </tr>
             </thead>
             <tbody>
