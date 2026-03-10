@@ -1847,8 +1847,9 @@ class PatriotGPTController(http.Controller):
             for inst in insts:
                 try:
                     sign_num = safe_get(inst, 'x_studio_sign_seq_number', 0)
-                    area = extract_area(str(safe_get(inst, 'x_studio_parent_location_display', '')))
-                    # Area/Sign# = e.g. "HS_01" or "MS_02"
+                    parent_loc_raw = safe_get(inst, 'x_studio_1st_gen_parent_loc', '')
+                    area = parent_loc_raw[1] if isinstance(parent_loc_raw, (list, tuple)) and len(parent_loc_raw) > 1 else val(parent_loc_raw)
+                    # Sign Unit ID + Area
                     sn_str = str(int(sign_num)).zfill(2) if sign_num else ''
                     data_rows.append({
                         'area': area,
