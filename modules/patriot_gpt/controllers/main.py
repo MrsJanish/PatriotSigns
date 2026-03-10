@@ -2028,7 +2028,7 @@ class PatriotGPTController(http.Controller):
             # ===================================================================
             # BUILD DATA PAGES HTML (exact match to standalone script)
             # ===================================================================
-            instruction = '<b>LOCATION</b> ON PLANS FOR INSTALLER REF.&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;<b>COPY</b> WILL APPEAR EXACTLY AS NOTED BELOW - <i>REVIEW CAREFULLY</i>'
+            instruction = '<b>COPY</b> WILL APPEAR EXACTLY AS NOTED BELOW - <i>REVIEW CAREFULLY</i>'
 
             data_pages_html = ""
             for idx, page_rows in enumerate(pages):
@@ -2246,7 +2246,7 @@ class PatriotGPTController(http.Controller):
     .title-bar {
         font-size: 18pt;
         font-weight: bold;
-        color: #1a3a5c;
+        color: #000;
         letter-spacing: 1pt;
     }
     .company-name {
@@ -2281,7 +2281,7 @@ class PatriotGPTController(http.Controller):
     .section-header {
         font-size: 8pt;
         font-weight: bold;
-        color: #1a3a5c;
+        color: #000;
         background-color: #BEC397;
         padding: 3pt 6pt;
         margin-bottom: 2pt;
@@ -2296,7 +2296,7 @@ class PatriotGPTController(http.Controller):
     }
     .data-table thead th {
         background-color: #BEC397;
-        color: #1a3a5c;
+        color: #000;
         font-size: 6.5pt;
         font-weight: bold;
         padding: 3pt 3pt;
@@ -2386,7 +2386,7 @@ class PatriotGPTController(http.Controller):
     .abbrev-table .abbr-code {
         font-weight: bold;
         width: 40pt;
-        color: #1a3a5c;
+        color: #000;
     }
 
     /* Category counts table */
@@ -2422,9 +2422,10 @@ class PatriotGPTController(http.Controller):
     }
     .instruction-text {
         font-size: 10pt;
-        color: #222;
+        color: #000;
         font-weight: bold;
         margin-bottom: 4pt;
+        text-align: center;
     }
 
     .page-footer {
