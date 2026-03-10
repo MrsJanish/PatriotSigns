@@ -1850,9 +1850,9 @@ class PatriotGPTController(http.Controller):
                     area = extract_area(str(safe_get(inst, 'x_studio_parent_location_display', '')))
                     # Area/Sign# = e.g. "HS_01" or "MS_02"
                     sn_str = str(int(sign_num)).zfill(2) if sign_num else ''
-                    area_sign = (area + '_' + sn_str) if area and sn_str else (area or sn_str)
                     data_rows.append({
-                        'area_sign': area_sign,
+                        'area': area,
+                        'sign_unit_id': sn_str,
                         'sign_type': extract_sign_type_letter(str(safe_get(inst, 'x_studio_sign_type_label', ''))),
                         'needs_backer': bool(safe_get(inst, 'x_studio_needs_backer', False)),
                         'rm_num': safe_get(inst, 'x_studio_arch_rm_num', ''),
@@ -1895,7 +1895,7 @@ class PatriotGPTController(http.Controller):
                 <tr>
                     <td class="center">{sc}</td>
                     <td class="center">{qty}</td>
-                    <td class="center bold">{tl}</td>
+                    <td class="center bold sign-type-col">{tl}</td>
                     <td class="center">{bq}</td>
                     <td>{td}</td>
                     <td class="center">{dm}</td>
@@ -1914,7 +1914,6 @@ class PatriotGPTController(http.Controller):
                 <tr>
                     <td>{cn}</td>
                     <td class="center">{cnt}</td>
-                    <td></td>
                 </tr>""".format(cn=val(cat_name), cnt=count)
 
             abbrev_html = ""
@@ -1994,8 +1993,7 @@ class PatriotGPTController(http.Controller):
                         <thead>
                             <tr>
                                 <th class="loc-header">Sign Categories</th>
-                                <th class="loc-header" style="width:55pt;">Sign Cat Total Count</th>
-                                <th class="loc-header" style="width:60pt;">Approval Status</th>
+                                <th class="loc-header" style="width:80pt;">Sign Cat Total Count</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -2056,10 +2054,11 @@ class PatriotGPTController(http.Controller):
                         room_cell = ''
                     rows_html += """
                 <tr>
-                    <td class="center vcenter loc-col">{asn}</td>
+                    <td class="center vcenter loc-col">{area}</td>
+                    <td class="center vcenter loc-col">{suid}</td>
                     <td class="vcenter loc-col">{room}</td>
+                    <td class="center vcenter bold sign-type-col">{st}</td>
                     <td class="center vcenter loc-col">{nb}</td>
-                    <td class="center vcenter bold loc-col">{st}</td>
                     <td class="vcenter copy-col-first">{c1}</td>
                     <td class="vcenter copy-col">{c2}</td>
                     <td class="vcenter copy-col">{c3}</td>
@@ -2067,8 +2066,9 @@ class PatriotGPTController(http.Controller):
                     <td class="vcenter copy-col-last">{c5}</td>
                     <td class="vcenter remarks-col">{rk}</td>
                 </tr>""".format(
-                        asn=val(row.get('area_sign', '')), room=room_cell,
-                        nb=nb_val, st=val(row.get('sign_type', '')),
+                        area=val(row.get('area', '')), suid=val(row.get('sign_unit_id', '')),
+                        room=room_cell,
+                        st=val(row.get('sign_type', '')), nb=nb_val,
                         c1=val(row.get('copy_line_1', '')), c2=val(row.get('copy_line_2', '')),
                         c3=val(row.get('copy_line_3', '')), c4=val(row.get('copy_line_4', '')),
                         c5=val(row.get('copy_line_5', '')), rk=val(row.get('remarks', '')))
@@ -2079,8 +2079,9 @@ class PatriotGPTController(http.Controller):
                         rows_html += """
                 <tr>
                     <td class="center vcenter loc-col">&nbsp;</td>
-                    <td class="vcenter loc-col">&nbsp;</td>
                     <td class="center vcenter loc-col">&nbsp;</td>
+                    <td class="vcenter loc-col">&nbsp;</td>
+                    <td class="center vcenter sign-type-col">&nbsp;</td>
                     <td class="center vcenter loc-col">&nbsp;</td>
                     <td class="vcenter copy-col-first">&nbsp;</td>
                     <td class="vcenter copy-col">&nbsp;</td>
@@ -2108,10 +2109,11 @@ class PatriotGPTController(http.Controller):
         <table class="data-table schedule-table">
             <thead>
                 <tr>
-                    <th class="loc-header" style="width:50pt;">Area /<br>Sign #</th>
+                    <th class="loc-header" style="width:35pt;">Area</th>
+                    <th class="loc-header" style="width:40pt;">Sign<br>Unit ID</th>
                     <th class="loc-header" style="width:120pt;"><div><b>Room Number &amp; Name (current)</b></div><div style="font-size:5.5pt;font-style:italic;">Room Number &amp; Name (matching Floor Plans)</div></th>
+                    <th class="sign-type-header" style="width:32pt;">Sign<br>Type</th>
                     <th class="loc-header" style="width:32pt;">Needs<br>Backer</th>
-                    <th class="loc-header" style="width:32pt;">Sign<br>Type</th>
                     <th class="copy-header-first" style="width:60pt;">Copy Line 1</th>
                     <th class="copy-header" style="width:60pt;">Copy Line 2</th>
                     <th class="copy-header" style="width:60pt;">Copy Line 3</th>
@@ -2141,8 +2143,9 @@ class PatriotGPTController(http.Controller):
                 supp_rows += """
                 <tr>
                     <td class="center vcenter loc-col">&nbsp;</td>
-                    <td class="vcenter loc-col">&nbsp;</td>
                     <td class="center vcenter loc-col">&nbsp;</td>
+                    <td class="vcenter loc-col">&nbsp;</td>
+                    <td class="center vcenter sign-type-col">&nbsp;</td>
                     <td class="center vcenter loc-col">&nbsp;</td>
                     <td class="vcenter copy-col-first">&nbsp;</td>
                     <td class="vcenter copy-col">&nbsp;</td>
@@ -2169,10 +2172,11 @@ class PatriotGPTController(http.Controller):
         <table class="data-table schedule-table">
             <thead>
                 <tr>
-                    <th class="loc-header" style="width:50pt;">Area /<br>Sign #</th>
+                    <th class="loc-header" style="width:35pt;">Area</th>
+                    <th class="loc-header" style="width:40pt;">Sign<br>Unit ID</th>
                     <th class="loc-header" style="width:120pt;"><div><b>Room Number &amp; Name (current)</b></div><div style="font-size:5.5pt;font-style:italic;">Room Number &amp; Name (matching Floor Plans)</div></th>
+                    <th class="sign-type-header" style="width:32pt;">Sign<br>Type</th>
                     <th class="loc-header" style="width:32pt;">Needs<br>Backer</th>
-                    <th class="loc-header" style="width:32pt;">Sign<br>Type</th>
                     <th class="copy-header-first" style="width:60pt;">Copy Line 1</th>
                     <th class="copy-header" style="width:60pt;">Copy Line 2</th>
                     <th class="copy-header" style="width:60pt;">Copy Line 3</th>
@@ -2229,8 +2233,8 @@ class PatriotGPTController(http.Controller):
         page-break-after: always;
     }
     .cover-header-bar {
-        background: #4a7c3f;
-        color: #fff;
+        background: #BEC397;
+        color: #333;
         font-size: 14pt;
         font-weight: bold;
         text-align: center;
@@ -2277,10 +2281,10 @@ class PatriotGPTController(http.Controller):
         font-size: 8pt;
         font-weight: bold;
         color: #1a3a5c;
-        background-color: #dce6f0;
+        background-color: #BEC397;
         padding: 3pt 6pt;
         margin-bottom: 2pt;
-        border: 1px solid #aaa;
+        border: 1px solid #BEC397;
     }
 
     /* Data tables */
@@ -2290,18 +2294,18 @@ class PatriotGPTController(http.Controller):
         font-size: 7pt;
     }
     .data-table thead th {
-        background-color: #dce6f0;
+        background-color: #BEC397;
         color: #1a3a5c;
         font-size: 6.5pt;
         font-weight: bold;
         padding: 3pt 3pt;
-        border: 1px solid #999;
+        border: 1px solid #BEC397;
         text-align: center;
         vertical-align: middle;
     }
     .data-table tbody td {
         padding: 2pt 3pt;
-        border: 1px solid #bbb;
+        border: 1px solid #BEC397;
         font-size: 7pt;
         vertical-align: middle;
     }
@@ -2316,12 +2320,19 @@ class PatriotGPTController(http.Controller):
         height: 16pt;
         vertical-align: middle;
     }
-    /* Location columns (Area, Room, Needs Backer, Sign Type) */
+    /* Location columns */
     .loc-col {
-        background-color: #f0f2e4;
+        background-color: #fff;
     }
     .loc-header {
-        background-color: #d5d8a8 !important;
+        background-color: #BEC397 !important;
+    }
+    /* Sign Type column special bg */
+    .sign-type-col {
+        background-color: #E9EBDD;
+    }
+    .sign-type-header {
+        background-color: #E9EBDD !important;
     }
     /* Copy line section styling */
     .copy-col {
@@ -2336,22 +2347,22 @@ class PatriotGPTController(http.Controller):
         border-right: 2px solid #333 !important;
     }
     .copy-header {
-        background-color: #c8c8a0 !important;
+        background-color: #DADDC5 !important;
     }
     .copy-header-first {
-        background-color: #c8c8a0 !important;
+        background-color: #DADDC5 !important;
         border-left: 2px solid #333 !important;
     }
     .copy-header-last {
-        background-color: #c8c8a0 !important;
+        background-color: #DADDC5 !important;
         border-right: 2px solid #333 !important;
     }
     /* Remarks column */
     .remarks-col {
-        background-color: #fdf0ee;
+        background-color: #fff;
     }
     .remarks-header {
-        background-color: #e8b8b0 !important;
+        background-color: #BEC397 !important;
     }
 
     /* Helpers */
@@ -2364,10 +2375,12 @@ class PatriotGPTController(http.Controller):
         border-collapse: collapse;
         font-size: 7pt;
         margin-top: 4pt;
+        border: 1px solid #D9DCC2;
     }
     .abbrev-table td {
         padding: 1pt 4pt;
         border: none;
+        background-color: #E3E5D1;
     }
     .abbrev-table .abbr-code {
         font-weight: bold;
