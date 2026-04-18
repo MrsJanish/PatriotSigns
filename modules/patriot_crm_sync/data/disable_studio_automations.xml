@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!--
+        Disable the old Studio-based automations that this module replaces.
+        These were database-level automations that only synced name + partner.
+        The patriot_crm_sync module now handles everything via proper Python overrides.
+
+        Automation #13: Auto-Create Project When Won
+        Automation #15: Sync Opportunity → Project
+        Automation #16: Sync Project → Opportunity
+    -->
+
+    <!-- Disable #13 — replaced by CrmLead.write() override -->
+    <function model="base.automation" name="write">
+        <value eval="[13]"/>
+        <value eval="{'active': False}"/>
+    </function>
+
+    <!-- Disable #15 — replaced by CrmLead._sync_to_project() -->
+    <function model="base.automation" name="write">
+        <value eval="[15]"/>
+        <value eval="{'active': False}"/>
+    </function>
+
+    <!-- Disable #16 — replaced by ProjectProject._sync_to_crm() -->
+    <function model="base.automation" name="write">
+        <value eval="[16]"/>
+        <value eval="{'active': False}"/>
+    </function>
+</odoo>
