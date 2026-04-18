@@ -1,6 +1,6 @@
 {
     'name': 'Patriot CRM-Project Sync',
-    'version': '1.0',
+    'version': '1.1',
     'summary': 'Bidirectional sync between CRM leads and Projects',
     'description': '''
         Automatically creates a Project when a CRM lead is marked as Won,
@@ -20,6 +20,7 @@
     'depends': ['crm', 'project', 'sale_management', 'sale_project'],
     'data': [
         'data/disable_studio_automations.xml',
+        'views/project_views.xml',
     ],
     'installable': True,
     'application': False,
