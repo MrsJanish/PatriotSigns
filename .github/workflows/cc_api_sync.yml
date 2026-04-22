@@ -1,0 +1,55 @@
+name: CC API Sync → Odoo CRM
+
+on:
+  # Run every 4 hours
+  schedule:
+    - cron: '0 */4 * * *'
+
+  # Manual trigger with options
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: 'Dry run (preview only, no Odoo writes)'
+        required: false
+        default: 'false'
+        type: choice
+        options:
+          - 'false'
+          - 'true'
+      days:
+        description: 'Only sync projects updated in the last N days (blank = all)'
+        required: false
+        type: string
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: pip install requests
+
+      - name: Sync CC projects to Odoo CRM
+        env:
+          CC_API_KEY: ${{ secrets.CC_API_KEY }}
+          ODOO_URL: ${{ secrets.ODOO_URL }}
+          ODOO_DB: ${{ secrets.ODOO_DB }}
+          ODOO_USER: ${{ secrets.ODOO_USER }}
+          ODOO_PASSWORD: ${{ secrets.ODOO_PASSWORD }}
+        run: |
+          ARGS=""
+          if [ "${{ github.event.inputs.dry_run }}" = "true" ]; then
+            ARGS="$ARGS --dry-run --verbose"
+          fi
+          if [ -n "${{ github.event.inputs.days }}" ]; then
+            ARGS="$ARGS --days ${{ github.event.inputs.days }}"
+          fi
+          python cc_api_sync.py $ARGS

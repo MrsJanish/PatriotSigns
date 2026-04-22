@@ -1,0 +1,774 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Install Checklist Editor — Patriot Signs</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.0.379/pdf.min.mjs" type="module"></script>
+    <script src="https://unpkg.com/pdf-lib@1.17.1/dist/pdf-lib.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        :root {
+            --bg: #0f1117;
+            --surface: #1a1d27;
+            --surface-2: #252833;
+            --border: #333748;
+            --text: #e4e6ed;
+            --text-dim: #8b8fa3;
+            --accent: #6366f1;
+            --accent-hover: #818cf8;
+            --success: #22c55e;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --info: #3b82f6;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        /* ── Header ── */
+        .header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 12px 20px;
+            background: var(--surface);
+            border-bottom: 1px solid var(--border);
+            z-index: 100;
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .logo {
+            font-size: 18px;
+            font-weight: 700;
+            background: linear-gradient(135deg, var(--accent), #a78bfa);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .file-name {
+            font-size: 14px;
+            color: var(--text-dim);
+            padding: 4px 12px;
+            background: var(--surface-2);
+            border-radius: 6px;
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        /* ── Buttons ── */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 8px 16px;
+            border: none;
+            border-radius: 8px;
+            font-family: inherit;
+            font-size: 13px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.15s;
+        }
+
+        .btn-primary {
+            background: var(--accent);
+            color: white;
+        }
+        .btn-primary:hover { background: var(--accent-hover); }
+
+        .btn-secondary {
+            background: var(--surface-2);
+            color: var(--text);
+            border: 1px solid var(--border);
+        }
+        .btn-secondary:hover { background: var(--border); }
+
+        .btn-success {
+            background: var(--success);
+            color: white;
+        }
+        .btn-success:hover { opacity: 0.9; }
+
+        .btn-danger {
+            background: rgba(239,68,68,0.15);
+            color: var(--danger);
+            border: 1px solid rgba(239,68,68,0.3);
+        }
+        .btn-danger:hover { background: rgba(239,68,68,0.25); }
+
+        .btn:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+        }
+
+        /* ── Main Layout ── */
+        .main {
+            flex: 1;
+            display: flex;
+            overflow: hidden;
+        }
+
+        /* ── Sidebar ── */
+        .sidebar {
+            width: 320px;
+            background: var(--surface);
+            border-right: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .sidebar-header {
+            padding: 16px;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .sidebar-header h3 {
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        .marker-count {
+            font-size: 12px;
+            padding: 2px 8px;
+            background: var(--accent);
+            color: white;
+            border-radius: 10px;
+        }
+
+        .marker-list {
+            flex: 1;
+            overflow-y: auto;
+            padding: 8px;
+        }
+
+        .marker-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px 12px;
+            background: var(--surface-2);
+            border-radius: 8px;
+            margin-bottom: 6px;
+            cursor: pointer;
+            transition: all 0.15s;
+            border: 1px solid transparent;
+        }
+
+        .marker-item:hover {
+            border-color: var(--border);
+        }
+
+        .marker-item.selected {
+            border-color: var(--accent);
+            background: rgba(99, 102, 241, 0.1);
+        }
+
+        .marker-number {
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            background: var(--accent);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            font-weight: 700;
+            flex-shrink: 0;
+        }
+
+        .marker-info {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .marker-label {
+            font-size: 13px;
+            font-weight: 500;
+        }
+
+        .marker-label input {
+            background: transparent;
+            border: none;
+            color: var(--text);
+            font-family: inherit;
+            font-size: 13px;
+            font-weight: 500;
+            width: 100%;
+            outline: none;
+        }
+
+        .marker-pos {
+            font-size: 11px;
+            color: var(--text-dim);
+        }
+
+        .marker-delete {
+            background: none;
+            border: none;
+            color: var(--text-dim);
+            cursor: pointer;
+            padding: 4px;
+            border-radius: 4px;
+            font-size: 16px;
+            line-height: 1;
+        }
+        .marker-delete:hover { color: var(--danger); }
+
+        /* ── PDF Canvas Area ── */
+        .canvas-area {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: auto;
+            position: relative;
+            background: #0a0b0f;
+            background-image:
+                radial-gradient(circle at 1px 1px, rgba(255,255,255,0.03) 1px, transparent 0);
+            background-size: 24px 24px;
+        }
+
+        .canvas-wrapper {
+            position: relative;
+            cursor: crosshair;
+        }
+
+        .canvas-wrapper.mode-select {
+            cursor: default;
+        }
+
+        #pdf-canvas {
+            display: block;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+            border-radius: 4px;
+        }
+
+        /* ── Markers on Canvas ── */
+        .marker-pin {
+            position: absolute;
+            width: 32px;
+            height: 32px;
+            transform: translate(-50%, -50%);
+            cursor: pointer;
+            z-index: 10;
+            transition: transform 0.1s;
+        }
+
+        .marker-pin:hover {
+            transform: translate(-50%, -50%) scale(1.15);
+        }
+
+        .marker-pin-circle {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: var(--accent);
+            border: 3px solid white;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.4);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            font-weight: 700;
+            color: white;
+        }
+
+        .marker-pin.status-installed .marker-pin-circle { background: var(--success); }
+        .marker-pin.status-missing .marker-pin-circle { background: var(--warning); }
+        .marker-pin.status-problem .marker-pin-circle { background: var(--danger); }
+        .marker-pin.status-na .marker-pin-circle { background: var(--text-dim); }
+
+        /* ── Drop Zone ── */
+        .drop-zone {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 16px;
+            padding: 60px;
+            text-align: center;
+        }
+
+        .drop-zone-icon {
+            font-size: 64px;
+            opacity: 0.3;
+        }
+
+        .drop-zone h2 {
+            font-size: 20px;
+            font-weight: 600;
+        }
+
+        .drop-zone p {
+            color: var(--text-dim);
+            font-size: 14px;
+        }
+
+        /* ── Toolbar ── */
+        .toolbar {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 6px;
+            padding: 8px;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+            z-index: 50;
+        }
+
+        .toolbar .btn {
+            padding: 8px 14px;
+            font-size: 12px;
+        }
+
+        .toolbar .btn.active {
+            background: var(--accent);
+            color: white;
+        }
+
+        .page-nav {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 0 8px;
+            color: var(--text-dim);
+            font-size: 13px;
+        }
+
+        .page-nav button {
+            background: var(--surface-2);
+            border: 1px solid var(--border);
+            color: var(--text);
+            width: 28px;
+            height: 28px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        .page-nav button:hover { background: var(--border); }
+
+        /* ── Status Legend ── */
+        .legend {
+            padding: 12px 16px;
+            border-top: 1px solid var(--border);
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            font-size: 11px;
+            color: var(--text-dim);
+        }
+
+        .legend-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+        }
+
+        /* ── Toast ── */
+        .toast {
+            position: fixed;
+            bottom: 80px;
+            left: 50%;
+            transform: translateX(-50%) translateY(100px);
+            background: var(--surface);
+            border: 1px solid var(--border);
+            padding: 10px 20px;
+            border-radius: 10px;
+            font-size: 13px;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+            transition: transform 0.3s;
+            z-index: 200;
+        }
+        .toast.show { transform: translateX(-50%) translateY(0); }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="header-left">
+            <div class="logo">Install Checklist Editor</div>
+            <div class="file-name" id="fileName">No file loaded</div>
+        </div>
+        <div class="header-actions">
+            <button class="btn btn-secondary" onclick="openFile()">📂 Open PDF</button>
+            <button class="btn btn-success" id="exportBtn" onclick="exportPDF()" disabled>📤 Export Fillable PDF</button>
+        </div>
+    </div>
+
+    <div class="main">
+        <div class="sidebar">
+            <div class="sidebar-header">
+                <h3>Sign Markers</h3>
+                <span class="marker-count" id="markerCount">0</span>
+            </div>
+            <div class="marker-list" id="markerList">
+                <div style="padding: 20px; text-align: center; color: var(--text-dim); font-size: 13px;">
+                    Open a PDF and click to place markers
+                </div>
+            </div>
+            <div class="legend">
+                <div class="legend-item"><div class="legend-dot" style="background: var(--accent)"></div> Not Installed</div>
+                <div class="legend-item"><div class="legend-dot" style="background: var(--success)"></div> Installed</div>
+                <div class="legend-item"><div class="legend-dot" style="background: var(--warning)"></div> Missing</div>
+                <div class="legend-item"><div class="legend-dot" style="background: var(--danger)"></div> Problem</div>
+                <div class="legend-item"><div class="legend-dot" style="background: var(--text-dim)"></div> N/A</div>
+            </div>
+        </div>
+
+        <div class="canvas-area" id="canvasArea">
+            <div class="drop-zone" id="dropZone">
+                <div class="drop-zone-icon">📋</div>
+                <h2>Drop a floor plan PDF here</h2>
+                <p>or click "Open PDF" above</p>
+                <button class="btn btn-primary" onclick="openFile()" style="margin-top: 8px;">Open PDF</button>
+            </div>
+            <div class="canvas-wrapper" id="canvasWrapper" style="display:none;">
+                <canvas id="pdf-canvas"></canvas>
+            </div>
+            <div class="toolbar" id="toolbar" style="display: none;">
+                <button class="btn btn-secondary active" id="modePlaceBtn" onclick="setMode('place')">📌 Place</button>
+                <button class="btn btn-secondary" id="modeSelectBtn" onclick="setMode('select')">🖱 Select</button>
+                <div style="width:1px; background: var(--border); margin: 0 4px;"></div>
+                <div class="page-nav">
+                    <button onclick="prevPage()">‹</button>
+                    <span id="pageInfo">1 / 1</span>
+                    <button onclick="nextPage()">›</button>
+                </div>
+                <div style="width:1px; background: var(--border); margin: 0 4px;"></div>
+                <button class="btn btn-secondary" onclick="zoomOut()">−</button>
+                <span style="font-size: 12px; color: var(--text-dim); min-width: 40px; text-align: center;" id="zoomLevel">100%</span>
+                <button class="btn btn-secondary" onclick="zoomIn()">+</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="toast" id="toast"></div>
+    <input type="file" id="fileInput" accept="application/pdf" style="display:none;">
+
+    <script type="module">
+        // ── PDF.js Setup ──
+        const pdfjsLib = await import('https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.0.379/pdf.min.mjs');
+        pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.0.379/pdf.worker.min.mjs';
+
+        // ── State ──
+        let pdfDoc = null;
+        let pdfBytes = null;
+        let currentPage = 1;
+        let scale = 1.5;
+        let mode = 'place';
+        let markers = {};  // { pageNum: [{ id, x, y, label, status }] }
+        let selectedMarker = null;
+        let nextId = 1;
+
+        const STATUS_OPTIONS = [
+            { value: 'not_installed', label: 'Not Installed', color: '#6366f1' },
+            { value: 'installed', label: 'Installed', color: '#22c55e' },
+            { value: 'missing', label: 'Missing Sign', color: '#f59e0b' },
+            { value: 'problem', label: 'Problem', color: '#ef4444' },
+            { value: 'na', label: 'N/A', color: '#8b8fa3' },
+        ];
+
+        // ── Elements ──
+        const canvas = document.getElementById('pdf-canvas');
+        const ctx = canvas.getContext('2d');
+        const canvasWrapper = document.getElementById('canvasWrapper');
+        const canvasArea = document.getElementById('canvasArea');
+        const dropZone = document.getElementById('dropZone');
+        const toolbar = document.getElementById('toolbar');
+
+        // ── File Input ──
+        window.openFile = () => document.getElementById('fileInput').click();
+
+        document.getElementById('fileInput').addEventListener('change', async (e) => {
+            const file = e.target.files[0];
+            if (file) await loadPDF(file);
+        });
+
+        // ── Drag & Drop ──
+        canvasArea.addEventListener('dragover', (e) => { e.preventDefault(); dropZone.style.opacity = '0.7'; });
+        canvasArea.addEventListener('dragleave', () => { dropZone.style.opacity = '1'; });
+        canvasArea.addEventListener('drop', async (e) => {
+            e.preventDefault();
+            dropZone.style.opacity = '1';
+            const file = e.dataTransfer.files[0];
+            if (file && file.type === 'application/pdf') await loadPDF(file);
+        });
+
+        // ── Load PDF ──
+        async function loadPDF(file) {
+            pdfBytes = await file.arrayBuffer();
+            pdfDoc = await pdfjsLib.getDocument({ data: pdfBytes.slice(0) }).promise;
+            currentPage = 1;
+            markers = {};
+            nextId = 1;
+
+            document.getElementById('fileName').textContent = file.name;
+            dropZone.style.display = 'none';
+            canvasWrapper.style.display = 'block';
+            toolbar.style.display = 'flex';
+            document.getElementById('exportBtn').disabled = false;
+
+            await renderPage();
+            toast('PDF loaded — click to place sign markers');
+        }
+
+        // ── Render Page ──
+        async function renderPage() {
+            const page = await pdfDoc.getPage(currentPage);
+            const viewport = page.getViewport({ scale });
+            canvas.width = viewport.width;
+            canvas.height = viewport.height;
+
+            await page.render({ canvasContext: ctx, viewport }).promise;
+            document.getElementById('pageInfo').textContent = `${currentPage} / ${pdfDoc.numPages}`;
+            document.getElementById('zoomLevel').textContent = `${Math.round(scale * 100)}%`;
+
+            renderMarkerPins();
+            renderMarkerList();
+        }
+
+        // ── Place Marker ──
+        canvasWrapper.addEventListener('click', (e) => {
+            if (mode !== 'place' || !pdfDoc) return;
+            if (e.target.closest('.marker-pin')) return;
+
+            const rect = canvas.getBoundingClientRect();
+            const x = ((e.clientX - rect.left) / rect.width) * 100;
+            const y = ((e.clientY - rect.top) / rect.height) * 100;
+
+            if (!markers[currentPage]) markers[currentPage] = [];
+            const marker = {
+                id: nextId++,
+                x, y,
+                label: `Sign ${markers[currentPage].length + 1}`,
+                status: 'not_installed'
+            };
+            markers[currentPage].push(marker);
+
+            renderMarkerPins();
+            renderMarkerList();
+            selectMarker(marker.id);
+        });
+
+        // ── Render Marker Pins ──
+        function renderMarkerPins() {
+            canvasWrapper.querySelectorAll('.marker-pin').forEach(el => el.remove());
+            const pageMarkers = markers[currentPage] || [];
+
+            pageMarkers.forEach((m, i) => {
+                const pin = document.createElement('div');
+                pin.className = `marker-pin status-${m.status.replace('not_installed', 'default')}`;
+                pin.style.left = `${m.x}%`;
+                pin.style.top = `${m.y}%`;
+                pin.dataset.id = m.id;
+                pin.innerHTML = `<div class="marker-pin-circle">${i + 1}</div>`;
+                pin.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    selectMarker(m.id);
+                    setMode('select');
+                });
+                canvasWrapper.appendChild(pin);
+            });
+        }
+
+        // ── Render Sidebar List ──
+        function renderMarkerList() {
+            const list = document.getElementById('markerList');
+            const pageMarkers = markers[currentPage] || [];
+            const total = Object.values(markers).reduce((s, m) => s + m.length, 0);
+            document.getElementById('markerCount').textContent = total;
+
+            if (pageMarkers.length === 0) {
+                list.innerHTML = '<div style="padding: 20px; text-align: center; color: var(--text-dim); font-size: 13px;">Click on the PDF to place sign markers</div>';
+                return;
+            }
+
+            list.innerHTML = pageMarkers.map((m, i) => `
+                <div class="marker-item ${selectedMarker === m.id ? 'selected' : ''}" data-id="${m.id}" onclick="window._selectMarker(${m.id})">
+                    <div class="marker-number" style="background: ${STATUS_OPTIONS.find(s => s.value === m.status)?.color || 'var(--accent)'}">${i + 1}</div>
+                    <div class="marker-info">
+                        <div class="marker-label">
+                            <input type="text" value="${m.label}" 
+                                onclick="event.stopPropagation()" 
+                                onchange="window._renameMarker(${m.id}, this.value)"
+                                placeholder="Sign label...">
+                        </div>
+                        <div class="marker-pos">
+                            <select onchange="window._setStatus(${m.id}, this.value)" onclick="event.stopPropagation()" style="background: var(--bg); color: var(--text); border: 1px solid var(--border); border-radius: 4px; padding: 2px 4px; font-size: 11px; font-family: inherit;">
+                                ${STATUS_OPTIONS.map(s => `<option value="${s.value}" ${m.status === s.value ? 'selected' : ''}>${s.label}</option>`).join('')}
+                            </select>
+                        </div>
+                    </div>
+                    <button class="marker-delete" onclick="event.stopPropagation(); window._deleteMarker(${m.id})">×</button>
+                </div>
+            `).join('');
+        }
+
+        // ── Marker Actions ──
+        window._selectMarker = (id) => selectMarker(id);
+        window._renameMarker = (id, label) => {
+            const m = findMarker(id);
+            if (m) { m.label = label; renderMarkerPins(); }
+        };
+        window._setStatus = (id, status) => {
+            const m = findMarker(id);
+            if (m) { m.status = status; renderMarkerPins(); renderMarkerList(); }
+        };
+        window._deleteMarker = (id) => {
+            for (const page in markers) {
+                markers[page] = markers[page].filter(m => m.id !== id);
+            }
+            if (selectedMarker === id) selectedMarker = null;
+            renderMarkerPins();
+            renderMarkerList();
+        };
+
+        function selectMarker(id) {
+            selectedMarker = id;
+            renderMarkerList();
+        }
+
+        function findMarker(id) {
+            for (const page in markers) {
+                const m = markers[page].find(m => m.id === id);
+                if (m) return m;
+            }
+            return null;
+        }
+
+        // ── Mode Toggle ──
+        window.setMode = (m) => {
+            mode = m;
+            document.getElementById('modePlaceBtn').classList.toggle('active', m === 'place');
+            document.getElementById('modeSelectBtn').classList.toggle('active', m === 'select');
+            canvasWrapper.classList.toggle('mode-select', m === 'select');
+        };
+
+        // ── Page Nav ──
+        window.prevPage = async () => {
+            if (currentPage > 1) { currentPage--; await renderPage(); }
+        };
+        window.nextPage = async () => {
+            if (pdfDoc && currentPage < pdfDoc.numPages) { currentPage++; await renderPage(); }
+        };
+
+        // ── Zoom ──
+        window.zoomIn = async () => { scale = Math.min(3, scale + 0.25); await renderPage(); };
+        window.zoomOut = async () => { scale = Math.max(0.5, scale - 0.25); await renderPage(); };
+
+        // ── Export Fillable PDF ──
+        window.exportPDF = async () => {
+            if (!pdfBytes) return;
+
+            const { PDFDocument, PDFName, PDFArray, PDFString, rgb, StandardFonts } = PDFLib;
+            const doc = await PDFDocument.load(pdfBytes);
+            const font = await doc.embedFont(StandardFonts.Helvetica);
+            const form = doc.getForm();
+
+            for (const [pageNumStr, pageMarkers] of Object.entries(markers)) {
+                const pageIndex = parseInt(pageNumStr) - 1;
+                const page = doc.getPage(pageIndex);
+                const { width, height } = page.getSize();
+
+                pageMarkers.forEach((m, i) => {
+                    const fieldName = `sign_${pageNumStr}_${i + 1}`;
+                    const pdfX = (m.x / 100) * width;
+                    const pdfY = height - (m.y / 100) * height;
+
+                    // Draw a small label above the dropdown
+                    page.drawText(m.label, {
+                        x: pdfX - 2,
+                        y: pdfY + 14,
+                        size: 7,
+                        font,
+                        color: rgb(0.3, 0.3, 0.3),
+                    });
+
+                    // Create dropdown form field
+                    const dropdown = form.createDropdown(fieldName);
+                    dropdown.addOptions([
+                        'Not Installed',
+                        'Installed',
+                        'Missing Sign',
+                        'Problem',
+                        'N/A',
+                    ]);
+
+                    // Map status to option
+                    const statusMap = {
+                        'not_installed': 'Not Installed',
+                        'installed': 'Installed',
+                        'missing': 'Missing Sign',
+                        'problem': 'Problem',
+                        'na': 'N/A',
+                    };
+                    dropdown.select(statusMap[m.status] || 'Not Installed');
+
+                    dropdown.addToPage(page, {
+                        x: pdfX - 5,
+                        y: pdfY - 12,
+                        width: 90,
+                        height: 14,
+                        font,
+                        borderWidth: 0.5,
+                    });
+                });
+            }
+
+            const exportedBytes = await doc.save();
+            const blob = new Blob([exportedBytes], { type: 'application/pdf' });
+            const url = URL.createObjectURL(blob);
+
+            const a = document.createElement('a');
+            a.href = url;
+            const baseName = document.getElementById('fileName').textContent.replace('.pdf', '');
+            a.download = `${baseName}_INSTALL_CHECKLIST.pdf`;
+            a.click();
+            URL.revokeObjectURL(url);
+
+            const total = Object.values(markers).reduce((s, m) => s + m.length, 0);
+            toast(`Exported fillable PDF with ${total} sign markers`);
+        };
+
+        // ── Toast ──
+        function toast(msg) {
+            const el = document.getElementById('toast');
+            el.textContent = msg;
+            el.classList.add('show');
+            setTimeout(() => el.classList.remove('show'), 3000);
+        }
+    </script>
+</body>
+</html>

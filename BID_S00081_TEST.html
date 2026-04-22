@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<style>
+    @page {
+        size: letter;
+        margin: 0.6in 0.75in;
+    }
+
+    body {
+        font-family: Helvetica, Arial, sans-serif;
+        font-size: 11px;
+        color: #333333;
+    }
+
+    /* Layout tables have no borders */
+    table.layout {
+        width: 100%;
+        border-collapse: collapse;
+    }
+    table.layout td {
+        vertical-align: top;
+        padding: 0;
+    }
+
+    /* Line items table */
+    table.items {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 10px;
+        margin-bottom: 10px;
+    }
+    table.items thead th {
+        background-color: #f0f3f7;
+        color: #1a3a5c;
+        font-size: 10px;
+        padding: 8px 10px;
+        border-bottom: 2px solid #1a3a5c;
+        text-align: left;
+    }
+    table.items tbody td {
+        padding: 7px 10px;
+        border-bottom: 1px solid #eeeeee;
+        vertical-align: top;
+        font-size: 11px;
+    }
+    table.items .section-row td {
+        background-color: #f0f3f7;
+        color: #1a3a5c;
+        font-size: 10px;
+        font-weight: bold;
+        padding: 5px 10px;
+        border-bottom: 1px solid #dddddd;
+    }
+
+    /* Totals table */
+    table.totals {
+        width: 250px;
+        border-collapse: collapse;
+        margin-left: auto;
+    }
+    table.totals td {
+        padding: 5px 10px;
+        font-size: 11px;
+    }
+
+    .section-label {
+        font-size: 10px;
+        color: #1a3a5c;
+        border-bottom: 1px solid #dddddd;
+        padding-bottom: 4px;
+        margin-bottom: 6px;
+        font-weight: bold;
+    }
+</style>
+</head>
+<body>
+
+<!-- ===== HEADER ===== -->
+<table class="layout" style="border-bottom: 3px solid #1a3a5c; padding-bottom: 12px; margin-bottom: 20px;">
+    <tr>
+        <td style="width: 60%;">
+            <span style="font-size: 26px; font-weight: bold; color: #1a3a5c;">Patriot ADA Signs</span><br/>
+            <span style="font-size: 11px; color: #666666;">ADA Compliant Signage Solutions</span>
+        </td>
+        <td style="width: 40%; text-align: right; font-size: 10px; color: #555555;">
+            12601 S. Riverview Rd<br/>
+            Oklahoma City, Oklahoma<br/>
+            +1 405-283-4647<br/>
+            sales@omegasignsco.com<br/>
+            patriotadasigns.com
+        </td>
+    </tr>
+</table>
+
+<!-- ===== TITLE BAR ===== -->
+<table class="layout" style="margin-bottom: 20px;">
+    <tr>
+        <td style="background-color: #1a3a5c; color: white; padding: 10px 20px; font-size: 18px; font-weight: bold; letter-spacing: 2px;">
+            BID PROPOSAL
+        </td>
+    </tr>
+</table>
+
+<!-- ===== INFO SECTION ===== -->
+<table class="layout" style="margin-bottom: 20px;">
+    <tr>
+        <td style="width: 50%; padding-right: 20px;">
+            <div class="section-label">SUBMITTED TO</div>
+            <p>
+                <strong>Best of the Best GC</strong><br/>
+                123 Main St<br>Oklahoma City, Oklahoma 73170
+                <br/>(405) 555-0100
+                <br/>contact@bestgc.com
+            </p>
+        </td>
+        <td style="width: 50%; padding-left: 20px;">
+            <div class="section-label">PROPOSAL DETAILS</div>
+            <p>
+                <strong>Proposal #:</strong> S00081<br/>
+                <strong>Date:</strong> April 25, 2025<br/>
+                <strong>Valid Until:</strong> June 24, 2025<br/>
+                <strong>Prepared By:</strong> Carter Janish
+            </p>
+        </td>
+    </tr>
+</table>
+
+<!-- ===== LINE ITEMS ===== -->
+<table class="items">
+    <thead>
+        <tr>
+            <th style="width: 40px; text-align: center;">#</th>
+            <th>Description</th>
+            <th style="width: 55px; text-align: center;">Qty</th>
+            <th style="width: 85px; text-align: right;">Unit Price</th>
+            <th style="width: 85px; text-align: right;">Amount</th>
+        </tr>
+    </thead>
+    <tbody>
+        
+            <tr>
+                <td class="center">1</td>
+                <td>Panel (contract Submittals/milestone)<br>Sign Types Approval Process</td>
+                <td class="center">1</td>
+                <td class="right">$1.00</td>
+                <td class="right">$1.00</td>
+            </tr>
+            <tr class="section-row">
+                <td colspan="5"><strong>Panel/ADA Signage</strong></td>
+            </tr>
+            <tr>
+                <td class="center">2</td>
+                <td>Panel, 8x8<br>Sign Type A</td>
+                <td class="center">5</td>
+                <td class="right">$1.00</td>
+                <td class="right">$5.00</td>
+            </tr>
+            <tr>
+                <td class="center">3</td>
+                <td>Panel, 8x8<br>Sign Type B</td>
+                <td class="center">3</td>
+                <td class="right">$1.00</td>
+                <td class="right">$3.00</td>
+            </tr>
+    </tbody>
+</table>
+
+<!-- ===== TOTALS ===== -->
+<table class="totals">
+    <tr>
+        <td style="padding: 5px 10px; border-bottom: 1px solid #eeeeee; font-size: 11px;">Subtotal</td>
+        <td style="padding: 5px 10px; border-bottom: 1px solid #eeeeee; font-size: 11px; text-align: right;">$9.00</td>
+    </tr>
+    
+        <tr>
+            <td style="padding: 5px 10px; border-bottom: 1px solid #eee; font-size: 11px;">Tax</td>
+            <td style="padding: 5px 10px; border-bottom: 1px solid #eee; font-size: 11px; text-align: right;">$0.70</td>
+        </tr>
+    <tr>
+        <td style="padding: 8px 10px; border-top: 2px solid #1a3a5c; border-bottom: 2px solid #1a3a5c; font-size: 14px; font-weight: bold; color: #1a3a5c;">Total Bid Amount</td>
+        <td style="padding: 8px 10px; border-top: 2px solid #1a3a5c; border-bottom: 2px solid #1a3a5c; font-size: 14px; font-weight: bold; color: #1a3a5c; text-align: right;">$9.70</td>
+    </tr>
+</table>
+
+<!-- ===== TERMS ===== -->
+<div style="margin-top: 25px; padding-top: 12px; border-top: 1px solid #dddddd;">
+    <div class="section-label">TERMS &amp; CONDITIONS</div>
+    <ul style="font-size: 10px; color: #555555; padding-left: 18px; line-height: 1.8;">
+        <li>All signage manufactured to ADA/TAS compliance standards</li>
+        <li>Pricing valid for the duration noted above</li>
+        <li>Installation labor included unless otherwise noted</li>
+        <li>Payment terms: Net 30 from date of invoice</li>
+        <li>Submittals provided for approval prior to fabrication</li>
+        <li>Lead time: 4-6 weeks from submittal approval</li>
+        <li>This proposal does not include permit fees, engineering, or structural modifications</li>
+    </ul>
+</div>
+
+<!-- ===== SIGNATURES ===== -->
+<table class="layout" style="margin-top: 35px;">
+    <tr>
+        <td style="width: 45%; padding-right: 30px;">
+            <div style="border-bottom: 1px solid #333333; height: 28px;">&nbsp;</div>
+            <div style="font-size: 9px; color: #999999; padding-top: 3px;">Authorized Signature &mdash; Patriot ADA Signs</div>
+        </td>
+        <td style="width: 10%;">&nbsp;</td>
+        <td style="width: 45%; padding-left: 30px;">
+            <div style="border-bottom: 1px solid #333333; height: 28px;">&nbsp;</div>
+            <div style="font-size: 9px; color: #999999; padding-top: 3px;">Date</div>
+        </td>
+    </tr>
+</table>
+
+<table class="layout" style="margin-top: 25px;">
+    <tr>
+        <td style="width: 45%; padding-right: 30px;">
+            <div style="border-bottom: 1px solid #333333; height: 28px;">&nbsp;</div>
+            <div style="font-size: 9px; color: #999999; padding-top: 3px;">Accepted By &mdash; Best of the Best GC</div>
+        </td>
+        <td style="width: 10%;">&nbsp;</td>
+        <td style="width: 45%; padding-left: 30px;">
+            <div style="border-bottom: 1px solid #333333; height: 28px;">&nbsp;</div>
+            <div style="font-size: 9px; color: #999999; padding-top: 3px;">Date</div>
+        </td>
+    </tr>
+</table>
+
+<!-- ===== FOOTER ===== -->
+<div style="margin-top: 35px; text-align: center; font-size: 9px; color: #999999; border-top: 1px solid #eeeeee; padding-top: 8px;">
+    Patriot ADA Signs &bull; 12601 S. Riverview Rd, Oklahoma City, Oklahoma &bull; +1 405-283-4647 &bull; patriotadasigns.com
+</div>
+
+</body>
+</html>

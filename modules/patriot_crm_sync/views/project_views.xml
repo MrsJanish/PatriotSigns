@@ -2,6 +2,22 @@
 <odoo>
 
     <!-- ============================================================
+         Project Kanban: Click opens project form, not task list
+         ============================================================ -->
+    <record id="view_project_kanban_open_form" model="ir.ui.view">
+        <field name="name">project.project.kanban.open_form</field>
+        <field name="model">project.project</field>
+        <field name="inherit_id" ref="project.view_project_kanban"/>
+        <field name="priority">20</field>
+        <field name="arch" type="xml">
+            <kanban position="attributes">
+                <attribute name="action"></attribute>
+                <attribute name="type"></attribute>
+            </kanban>
+        </field>
+    </record>
+
+    <!-- ============================================================
          Project Form: Add CRM-synced fields in a dedicated tab
          ============================================================ -->
     <record id="view_project_form_crm_sync" model="ir.ui.view">
