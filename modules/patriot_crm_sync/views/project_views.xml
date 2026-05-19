@@ -62,21 +62,11 @@
                 </page>
 
                 <page string="Sign Types" name="sign_types_page">
-                    <field name="x_studio_related_field_ke_1ibpjr5k8" string="Sign Types" readonly="1">
-                        <tree>
-                            <field name="x_name" string="Sign Type"/>
-                            <field name="x_studio_quantity" string="Qty"/>
-                            <field name="x_studio_category" string="Category"/>
-                        </tree>
-                    </field>
+                    <field name="x_studio_related_field_ke_1ibpjr5k8" string="Sign Types" readonly="1"/>
                 </page>
 
                 <page string="Locations" name="locations_page">
-                    <field name="x_studio_locations" string="Locations" readonly="1">
-                        <tree>
-                            <field name="x_name" string="Location"/>
-                        </tree>
-                    </field>
+                    <field name="x_studio_locations" string="Locations" readonly="1"/>
                 </page>
             </xpath>
 

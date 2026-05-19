@@ -1,6 +1,6 @@
 {
     'name': 'Patriot CRM-Project Sync',
-    'version': '1.2',
+    'version': '1.3',
     'summary': 'Bidirectional sync between CRM leads and Projects',
     'description': '''
         Automatically creates a Project when a CRM lead is marked as Won,
@@ -19,9 +19,11 @@
     'author': 'Omega Laser Design Inc',
     'depends': ['crm', 'project', 'sale_management', 'sale_project'],
     'data': [
-        'data/disable_studio_automations.xml',
+        'security/ir.model.access.csv',
+        'views/sign_types_views.xml',
         'views/project_views.xml',
     ],
+    'post_init_hook': '_disable_studio_automations',
     'installable': True,
     'application': False,
     'license': 'OPL-1',

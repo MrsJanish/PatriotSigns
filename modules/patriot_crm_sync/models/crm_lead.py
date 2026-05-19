@@ -1,5 +1,5 @@
 import logging
-from odoo import models, api
+from odoo import fields, models, api
 
 _logger = logging.getLogger(__name__)
 
@@ -43,6 +43,34 @@ SYNC_TRIGGER_FIELDS = set(FIELD_MAP_CRM_TO_PROJECT.keys())
 
 class CrmLead(models.Model):
     _inherit = 'crm.lead'
+
+    # ----------------------------------------------------------
+    # Studio-originated fields — declared here so the module is
+    # self-contained and installable on fresh databases.
+    # ----------------------------------------------------------
+    x_studio_project_temp = fields.Many2one(
+        'project.project', string='Linked Project', ondelete='set null',
+    )
+    x_studio_contract_amount = fields.Float('Contract Amount')
+    x_studio_contract_no = fields.Char('Contract No.')
+    x_studio_contract_date_issued = fields.Date('Contract Date Issued')
+    x_studio_retainage_percentage = fields.Float('Retainage %')
+    x_studio_warranty_period = fields.Char('Warranty Period')
+    x_studio_billing = fields.Char('Billing')
+    x_studio_project_contract_number = fields.Char('Project/Contract No.')
+    x_studio_gc_project_no = fields.Char('GC Project No.')
+    x_studio_pa_due_date = fields.Date('Pay App Due Date')
+    x_studio_needs_attention = fields.Boolean('Needs Attention')
+    x_studio_project_alias = fields.Char('Project Alias')
+    x_studio_team_contacts = fields.Many2many(
+        'res.partner', 'x_crm_lead_team_contacts_rel',
+        'lead_id', 'partner_id', string='Team Contacts',
+    )
+    x_studio_project_stage = fields.Char('Project Stage')
+    x_studio_city_state = fields.Char('City / State')
+    x_studio_owner = fields.Many2one(
+        'res.partner', string='Owner', ondelete='set null',
+    )
 
     # ----------------------------------------------------------
     # Write override — handles both auto-create and sync

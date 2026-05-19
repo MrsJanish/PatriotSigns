@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="view_x_sign_types_tree" model="ir.ui.view">
+        <field name="name">x_sign_types.tree</field>
+        <field name="model">x_sign_types</field>
+        <field name="arch" type="xml">
+            <list>
+                <field name="x_name" string="Sign Type"/>
+                <field name="x_studio_quantity" string="Qty"/>
+                <field name="x_studio_category" string="Category"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_x_defined_locations_tree" model="ir.ui.view">
+        <field name="name">x_defined_locations.tree</field>
+        <field name="model">x_defined_locations</field>
+        <field name="arch" type="xml">
+            <list>
+                <field name="x_name" string="Location"/>
+            </list>
+        </field>
+    </record>
+
+</odoo>

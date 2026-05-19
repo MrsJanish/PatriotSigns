@@ -1,0 +1,3 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_x_sign_types_user,x_sign_types user,model_x_sign_types,base.group_user,1,1,1,1
+access_x_defined_locations_user,x_defined_locations user,model_x_defined_locations,base.group_user,1,1,1,1

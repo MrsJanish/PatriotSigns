@@ -1,5 +1,5 @@
 import logging
-from odoo import models, api
+from odoo import fields, models, api
 
 _logger = logging.getLogger(__name__)
 
@@ -40,6 +40,45 @@ SYNC_TRIGGER_FIELDS = set(FIELD_MAP_PROJECT_TO_CRM.keys())
 
 class ProjectProject(models.Model):
     _inherit = 'project.project'
+
+    # ----------------------------------------------------------
+    # Studio-originated fields — declared here so the module is
+    # self-contained and installable on fresh databases.
+    # ----------------------------------------------------------
+    x_studio_project_bid = fields.Many2one(
+        'crm.lead', string='Linked CRM Lead', ondelete='set null',
+    )
+    x_studio_opportunity_name = fields.Many2one(
+        'crm.lead', string='Opportunity (fallback)', ondelete='set null',
+    )
+    x_studio_contract_amount = fields.Float('Contract Amount')
+    x_studio_contract_no = fields.Char('Contract No.')
+    x_studio_project_contract_number = fields.Char('Project/Contract No.')
+    x_studio_contract_date = fields.Date('Contract Date')
+    x_studio_retainage_percentage = fields.Float('Retainage %')
+    x_studio_warranty_period = fields.Char('Warranty Period')
+    x_studio_billing = fields.Char('Billing')
+    x_studio_payapp_due_date = fields.Date('Pay App Due Date')
+    x_studio_sequence = fields.Char('GC Project No.')
+    x_studio_project_stage_sync = fields.Char('Project Stage')
+    x_studio_city_state = fields.Char('City / State')
+    x_studio_opportunity_customer = fields.Many2one(
+        'res.partner', string='Owner', ondelete='set null',
+    )
+    x_studio_project_alias = fields.Char('Project Alias')
+    x_studio_needs_attention = fields.Boolean('Needs Attention')
+    x_studio_team_contacts = fields.Many2many(
+        'res.partner', 'x_project_team_contacts_rel',
+        'project_id', 'partner_id', string='Team Contacts',
+    )
+    x_studio_description = fields.Text('CRM Description')
+    x_studio_project_name_text = fields.Char('Project Name (text)')
+    x_studio_related_field_ke_1ibpjr5k8 = fields.One2many(
+        'x_sign_types', 'x_studio_generated_project', string='Sign Types',
+    )
+    x_studio_locations = fields.One2many(
+        'x_defined_locations', 'x_studio_project_won', string='Locations',
+    )
 
     # ----------------------------------------------------------
     # Write override — sync project changes back to CRM
