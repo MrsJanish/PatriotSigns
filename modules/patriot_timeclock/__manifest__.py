@@ -36,11 +36,11 @@ Managers assign work via drag-and-drop kanban.
         'data/production_phases.xml',
         'views/time_punch_views.xml',
         'views/time_clock_kiosk_views.xml',
+        'views/menu.xml',
         'views/barcode_kiosk_views.xml',
         'views/production_phase_views.xml',
         'views/work_assignment_views.xml',
         'views/my_work_templates.xml',
-        'views/menu.xml',
     ],
     'assets': {
         'web.assets_backend': [
