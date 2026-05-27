@@ -229,9 +229,21 @@ class PatriotGPTController(http.Controller):
                 
                 limit = int(kwargs.get('limit', 10))
                 order = kwargs.get('order', '')
-                
+
+                # count_only=1: skip search_read entirely, return {"count": N}
+                if str(kwargs.get('count_only', '')).lower() in ('1', 'true'):
+                    count = Model.search_count(domain)
+                    _logger.info(f"GPT API COUNT: domain={domain}, count={count}")
+                    return self._response({'count': count})
+
+                # ids_only=1: return flat list of IDs (minimal payload)
+                if str(kwargs.get('ids_only', '')).lower() in ('1', 'true'):
+                    ids = Model.search(domain, limit=limit, order=order or None).ids
+                    _logger.info(f"GPT API IDS: domain={domain}, returned={len(ids)}")
+                    return self._response(ids)
+
                 _logger.info(f"GPT API SEARCH: domain={domain}, fields={fields}, limit={limit}")
-                
+
                 records = Model.search_read(domain, fields=fields if fields else None, limit=limit, order=order if order else None)
                 _logger.info(f"GPT API SEARCH: Found {len(records)} records")
                 return self._response(records)
