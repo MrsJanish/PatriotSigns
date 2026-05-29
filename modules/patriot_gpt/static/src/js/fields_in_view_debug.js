@@ -2,17 +2,18 @@
 import { _t } from "@web/core/l10n/translation";
 import { registry } from "@web/core/registry";
 
-// Fields that Odoo auto-loads for every view but that aren't real columns.
+// Fields Odoo auto-loads for every view but that aren't real columns.
 const TECH = new Set([
     "id", "create_date", "create_uid", "write_date", "write_uid", "display_name", "__last_update",
 ]);
 
 /**
- * Debug-menu item: "Fields in this view".
- * Appears on any model/view (developer mode). Resolves the current view via
- * get_view, then opens ir.model.fields filtered to exactly that view's fields.
+ * Debug-menu item factory. Opens ir.model.fields for the current model/view.
+ *   inverse = false -> fields IN the current view
+ *   inverse = true  -> fields NOT in the current view
  */
-function fieldsInView({ component, env }) {
+function makeFieldsItem(ctx, inverse) {
+    const { component, env } = ctx;
     const config = component.env.config;
     const resModel = component.props.resModel || (config && config.resModel);
     const viewType = config && config.viewType;
@@ -22,8 +23,8 @@ function fieldsInView({ component, env }) {
     }
     return {
         type: "item",
-        description: _t("Fields in this view"),
-        sequence: 275,
+        description: inverse ? _t("Fields NOT in this view") : _t("Fields in this view"),
+        sequence: inverse ? 276 : 275,
         section: "ui",
         callback: async () => {
             const res = await env.services.orm.call(resModel, "get_view", [], {
@@ -34,18 +35,17 @@ function fieldsInView({ component, env }) {
             const names = (Array.isArray(m) ? m : Object.keys(m)).filter((f) => !TECH.has(f));
             env.services.action.doAction({
                 type: "ir.actions.act_window",
-                name: _t("Fields in %(model)s %(type)s view (%(n)s)", {
-                    model: resModel,
-                    type: viewType,
-                    n: names.length,
-                }),
+                name: inverse
+                    ? _t("Fields NOT in %(model)s %(type)s view", { model: resModel, type: viewType })
+                    : _t("Fields in %(model)s %(type)s view (%(n)s)", { model: resModel, type: viewType, n: names.length }),
                 res_model: "ir.model.fields",
                 views: [[false, "list"], [false, "form"]],
-                domain: [["model", "=", resModel], ["name", "in", names]],
+                domain: [["model", "=", resModel], ["name", inverse ? "not in" : "in", names]],
                 target: "current",
             });
         },
     };
 }
 
-registry.category("debug").category("view").add("fieldsInView", fieldsInView);
+registry.category("debug").category("view").add("fieldsInView", (ctx) => makeFieldsItem(ctx, false));
+registry.category("debug").category("view").add("fieldsNotInView", (ctx) => makeFieldsItem(ctx, true));
