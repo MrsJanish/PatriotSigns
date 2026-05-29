@@ -1,6 +1,6 @@
 {
     'name': 'Patriot GPT API Connector',
-    'version': '2.1',
+    'version': '2.2',
     'summary': 'Full REST API for AI Agents (ChatGPT, Gemini, MCP)',
     'description': '''
         Exposes comprehensive REST endpoints for AI agents to interact with Odoo:
@@ -13,15 +13,19 @@
         - View definitions (Navigation)
         - Onchange simulation (Navigation)
         - Server action execution
-        
+
         Authenticates via native Odoo API Keys or login:password.
     ''',
     'category': 'Technical',
     'author': 'Omega Laser Design Inc',
     'depends': ['base', 'web', 'base_automation'],
     'data': [],
+    'assets': {
+        'web.assets_backend': [
+            'patriot_gpt/static/src/js/fields_in_view_debug.js',
+        ],
+    },
     'installable': True,
     'application': False,
     'license': 'OPL-1',
 }
-
