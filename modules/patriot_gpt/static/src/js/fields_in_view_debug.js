@@ -36,8 +36,8 @@ function makeFieldsItem(ctx, inverse) {
             env.services.action.doAction({
                 type: "ir.actions.act_window",
                 name: inverse
-                    ? _t("Fields NOT in %(model)s %(type)s view", { model: resModel, type: viewType })
-                    : _t("Fields in %(model)s %(type)s view (%(n)s)", { model: resModel, type: viewType, n: names.length }),
+                    ? _t("Fields NOT in %(model)s %(type)s view (view %(v)s)", { model: resModel, type: viewType, v: res.id })
+                    : _t("Fields in %(model)s %(type)s view (view %(v)s, %(n)s fields)", { model: resModel, type: viewType, v: res.id, n: names.length }),
                 res_model: "ir.model.fields",
                 views: [[false, "list"], [false, "form"]],
                 domain: [["model", "=", resModel], ["name", inverse ? "not in" : "in", names]],
