@@ -33,11 +33,16 @@ function makeFieldsItem(ctx, inverse) {
             });
             const m = (res.models && res.models[resModel]) || {};
             const names = (Array.isArray(m) ? m : Object.keys(m)).filter((f) => !TECH.has(f));
+            let qty = names.length;
+            if (inverse) {
+                const total = await env.services.orm.searchCount("ir.model.fields", [["model", "=", resModel]]);
+                qty = total - names.length;
+            }
             env.services.action.doAction({
                 type: "ir.actions.act_window",
                 name: inverse
-                    ? _t("Fields NOT in %(model)s %(type)s view (view %(v)s)", { model: resModel, type: viewType, v: res.id })
-                    : _t("Fields in %(model)s %(type)s view (view %(v)s, %(n)s fields)", { model: resModel, type: viewType, v: res.id, n: names.length }),
+                    ? _t("Fields NOT in %(model)s %(type)s view (ID %(v)s, Qty. %(q)s)", { model: resModel, type: viewType, v: res.id, q: qty })
+                    : _t("Fields in %(model)s %(type)s view (ID %(v)s, Qty. %(q)s)", { model: resModel, type: viewType, v: res.id, q: qty }),
                 res_model: "ir.model.fields",
                 views: [[false, "list"], [false, "form"]],
                 domain: [["model", "=", resModel], ["name", inverse ? "not in" : "in", names]],
